@@ -1,0 +1,16 @@
+{
+  "schemaVersion": "od-design-system-project/v1",
+  "id": "example-studio",
+  "name": "Example Studio (synthetic)",
+  "category": "Experimental",
+  "description": "Synthetic fixture for testing an Instagram-to-OpenDesign package contract; not an observed brand.",
+  "source": {
+    "type": "github",
+    "url": "https://github.com/ValenFelizia/instagram-to-opendesign"
+  },
+  "files": {
+    "design": "DESIGN.md",
+    "tokens": "tokens.css"
+  },
+  "assetsDir": "assets"
+}

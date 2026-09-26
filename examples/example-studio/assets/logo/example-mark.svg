@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" role="img" aria-labelledby="title">
+  <title id="title">Synthetic Example Studio mark</title>
+  <rect width="120" height="120" rx="24" fill="#315a46"/>
+  <path d="M34 76V44h52M34 60h38M34 76h52" fill="none" stroke="#fffdf8" stroke-linecap="round" stroke-width="8"/>
+</svg>

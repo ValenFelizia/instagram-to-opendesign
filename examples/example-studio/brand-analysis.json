@@ -1,0 +1,51 @@
+{
+  "schemaVersion": "instagram-to-opendesign-brand-analysis/v1",
+  "subject": {
+    "displayName": "Example Studio",
+    "sourcePlatform": "synthetic"
+  },
+  "generatedAt": "2026-09-26T00:00:00Z",
+  "evidence": [
+    {
+      "id": "E-001",
+      "kind": "manual",
+      "sourcePath": "source/evidence.md",
+      "summary": "Synthetic fixture brief, not an Instagram observation."
+    },
+    {
+      "id": "E-002",
+      "kind": "image",
+      "sourcePath": "assets/logo/example-mark.svg",
+      "summary": "Original SVG created only for this fixture."
+    }
+  ],
+  "inferences": [
+    {
+      "id": "I-001",
+      "topic": "color.accent",
+      "value": "#315a46",
+      "confidence": "low",
+      "evidenceIds": ["E-001"],
+      "rationale": "Chosen for the hypothetical fixture brief; no real brand evidence exists.",
+      "status": "needs-review"
+    },
+    {
+      "id": "I-002",
+      "topic": "typography.display",
+      "value": "Georgia, 'Times New Roman', serif",
+      "confidence": "low",
+      "evidenceIds": ["E-001"],
+      "rationale": "A fixture choice to exercise the token contract, not a detected font.",
+      "status": "needs-review"
+    },
+    {
+      "id": "I-003",
+      "topic": "asset.logo",
+      "value": "assets/logo/example-mark.svg",
+      "confidence": "low",
+      "evidenceIds": ["E-002"],
+      "rationale": "The SVG is original fixture art and has no relationship to a real profile.",
+      "status": "needs-review"
+    }
+  ]
+}

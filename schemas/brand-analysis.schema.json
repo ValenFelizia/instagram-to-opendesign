@@ -1,0 +1,79 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/ValenFelizia/instagram-to-opendesign/blob/main/schemas/brand-analysis.schema.json",
+  "title": "Instagram to OpenDesign brand analysis",
+  "description": "Importer-owned inference record. It is not part of the OpenDesign manifest schema.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schemaVersion", "subject", "generatedAt", "evidence", "inferences"],
+  "properties": {
+    "schemaVersion": {
+      "const": "instagram-to-opendesign-brand-analysis/v1"
+    },
+    "subject": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["displayName", "sourcePlatform"],
+      "properties": {
+        "displayName": { "type": "string", "minLength": 1 },
+        "sourcePlatform": { "enum": ["instagram", "synthetic"] },
+        "profileUrl": { "type": "string", "format": "uri" }
+      }
+    },
+    "generatedAt": { "type": "string", "format": "date-time" },
+    "evidence": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/evidence" }
+    },
+    "inferences": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/inference" }
+    }
+  },
+  "$defs": {
+    "evidence": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "kind", "sourcePath", "summary"],
+      "properties": {
+        "id": { "type": "string", "pattern": "^[A-Za-z0-9-]+$" },
+        "kind": { "enum": ["image", "text", "metadata", "manual"] },
+        "sourcePath": {
+          "type": "string",
+          "pattern": "^(?!/)(?!.*(?:^|/)\\.\\.(?:/|$))[A-Za-z0-9._/-]+$"
+        },
+        "summary": { "type": "string", "minLength": 1 }
+      }
+    },
+    "inference": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "topic", "value", "confidence", "evidenceIds", "rationale", "status"],
+      "properties": {
+        "id": { "type": "string", "pattern": "^[A-Za-z0-9-]+$" },
+        "topic": { "type": "string", "minLength": 1 },
+        "value": { "type": ["string", "null"] },
+        "confidence": { "enum": ["high", "medium", "low", null] },
+        "evidenceIds": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": { "type": "string" }
+        },
+        "rationale": { "type": "string", "minLength": 1 },
+        "status": { "enum": ["verified", "inferred", "needs-review"] }
+      },
+      "allOf": [
+        {
+          "if": { "properties": { "status": { "enum": ["verified", "inferred"] } } },
+          "then": {
+            "properties": {
+              "value": { "type": "string", "minLength": 1 },
+              "confidence": { "enum": ["high", "medium", "low"] },
+              "evidenceIds": { "minItems": 1 }
+            }
+          }
+        }
+      ]
+    }
+  }
+}
