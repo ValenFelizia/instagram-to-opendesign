@@ -2,7 +2,7 @@
 
 An early open source experiment to turn evidence from a public Instagram profile into a traceable brand package that OpenDesign can use.
 
-**Status:** Contract definition. There is no importer or runnable CLI yet. The first milestone is a static package that matches OpenDesign's current `design-systems/<slug>/` contract. See [VAL-88](https://linear.app/valenf/issue/VAL-88/definir-contrato-de-salida-y-compatibilidad-actual-con-opendesign).
+**Status:** Static contract fixture complete; there is no importer or runnable CLI yet. See the [OpenDesign output contract](docs/output-contract.md), [synthetic package](examples/example-studio/), and [VAL-88](https://linear.app/valenf/issue/VAL-88/definir-contrato-de-salida-y-compatibilidad-actual-con-opendesign). The fixture has been checked against upstream schemas, but has not been exercised in a running OpenDesign instance.
 
 ## Goal
 
@@ -19,7 +19,7 @@ The current product scope is tracked in the [Linear project](https://linear.app/
 
 ## Development
 
-There is no install or build step yet. Issue VAL-88 defines the output contract before pipeline implementation begins. Contributions and questions are welcome; read [CONTRIBUTING.md](CONTRIBUTING.md).
+There is no install or build step yet. The output contract is documented before pipeline implementation begins. Contributions and questions are welcome; read [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ## License
 
