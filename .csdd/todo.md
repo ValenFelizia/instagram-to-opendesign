@@ -2,6 +2,13 @@
 
 ## In Progress
 
+- [ ] GitHub #3 / VAL-90 — Evidence Processor y contact sheet visual.
+  - Owner: Valentin Felizia
+  - Agent: Codex
+  - Branch: `feat/evidence-processor` (sobre `feat/instagram-ingestion`)
+  - Scope: selección visual, corpus de captions, referencias a assets y clasificación revisable.
+  - Verification: bundle sintético local y, si hay perfil real disponible, revisión de evidencia real.
+
 - [ ] GitHub #2 / VAL-89 — Ingesta de perfil público con Apify y fuente normalizada reproducible.
   - Owner: Valentin Felizia
   - Agent: Codex

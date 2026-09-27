@@ -1,5 +1,15 @@
 # Decisions
 
+## DEC-003 — Clasificación visual revisable en la primera validación
+
+- Status: accepted for the first profile
+- Date: 2026-09-26
+- Context: VAL-90 necesita distinguir piezas gráficas de fotos de producto antes de inferir identidad. La primera validación usa 15–25 publicaciones y aún no requiere procesamiento masivo.
+- Decision: generar un contact sheet e índice con etiquetas manuales `brand-graphic`, `product-photo` y `mixed`, además de rasgos visuales y grupos de composición revisables en `review.json`. Las imágenes sin revisión quedan fuera de señales confirmadas.
+- Rationale: una revisión humana de un perfil pequeño permite auditar la distinción entre identidad y color incidental sin introducir una API de visión en esta etapa.
+- Consequence: el procesador prepara y separa evidencia, pero completar la clasificación requiere revisión humana y no escala automáticamente a muchos perfiles. Una API de visión podrá sugerir etiquetas detrás de esta interfaz en una iteración posterior.
+
+
 ## DEC-002 — Ingesta mediante Apify detrás de una interfaz
 
 - Status: accepted
