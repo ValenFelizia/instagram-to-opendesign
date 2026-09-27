@@ -21,6 +21,11 @@ export async function ingest(usernameInput, { outputRoot = 'data', postLimit = 2
   try {
     await downloadAssets(source, temporaryDir, { fetchImpl });
     await writeFile(path.join(temporaryDir, 'instagram-source.json'), `${JSON.stringify(source, null, 2)}\n`);
+    try {
+      const review = await readFile(path.join(finalDir, 'evidence', 'review.json'));
+      await mkdir(path.join(temporaryDir, 'evidence'), { recursive: true });
+      await writeFile(path.join(temporaryDir, 'evidence', 'review.json'), review);
+    } catch (error) { if (error.code !== 'ENOENT') throw error; }
     let hadPrevious = false;
     try {
       await rename(finalDir, backupDir);

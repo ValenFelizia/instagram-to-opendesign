@@ -20,7 +20,7 @@ El proyecto investiga si un perfil público de Instagram puede aportar evidencia
 
 ## Interfaces and Contracts
 
-La etapa de ingesta produce `instagram-source.json` y assets locales dentro de un directorio ignorado por Git. El JSON conserva metadatos del perfil público, enlaces, publicaciones recientes, captions, URLs de origen, rutas de archivos y procedencia del proveedor. La interfaz del proveedor queda aislada de la normalización para poder cambiar el servicio de extracción. Fuente: VAL-89 / GitHub #2.
+La etapa de ingesta produce `instagram-source.json` y assets locales dentro de un directorio ignorado por Git. El JSON conserva metadatos del perfil público, enlaces, publicaciones recientes, captions, URLs de origen, rutas de archivos, autor principal de cada publicación y procedencia del proveedor. Las colaboraciones presentes en el feed se conservan aunque el autor principal difiera del perfil solicitado. La interfaz del proveedor queda aislada de la normalización para poder cambiar el servicio de extracción. Fuente: VAL-89 / GitHub #2 y validación real con `@felisa_fr`.
 
 El paquete nuevo para OpenDesign usa `design-systems/<slug>/manifest.json`, `DESIGN.md` y `tokens.css`. El manifiesto v1 exige `schemaVersion: od-design-system-project/v1`, un `id` igual al slug, nombre, categoría, `source` y rutas fijas a los dos archivos canónicos. El CSS final declara los 56 tokens compartidos de `TOKEN_SCHEMA`. Fuente: [`nexu-io/open-design` a `1b47e60`](https://github.com/nexu-io/open-design/tree/1b47e60bd46641469fcd8b69c496c4e3a548bc28), esquema de manifiesto, esquema de tokens y guía de authoring. El detalle operativo y sus límites están en `docs/output-contract.md`.
 

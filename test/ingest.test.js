@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { mkdtemp, readFile, rm, stat } from 'node:fs/promises';
+import { mkdir, mkdtemp, readFile, rm, stat, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import os from 'node:os';
 import { normalizeSource } from '../src/normalize.js';
@@ -16,13 +16,18 @@ const sample = {
 };
 
 test('normalizes public profile, post and media without raw provider fields', () => {
-  const source = normalizeSource('@Example.Studio', sample, '2026-01-02T00:00:00Z');
+  const source = normalizeSource('@Example.Studio', { ...sample, posts: [
+    ...sample.posts,
+    { shortCode: 'COLLAB', ownerUsername: 'partner', caption: 'Joint work', timestamp: '2025-12-31T00:00:00Z' },
+  ] }, '2026-01-02T00:00:00Z');
   assert.equal(source.schemaVersion, 'instagram-source/v1');
   assert.equal(source.profile.username, 'example.studio');
   assert.equal(source.posts[0].caption, 'Our look');
+  assert.equal(source.posts[1].ownerUsername, 'partner');
+  assert.equal(source.posts.length, 2);
   assert.equal(source.posts[0].media.length, 1);
   assert.equal(source.posts[0].media[0].remoteUrl, imageUrl);
-  assert.equal(source.posts[0].ownerUsername, undefined);
+  assert.equal(source.posts[0].ownerUsername, 'example.studio');
 });
 
 test('ingests media locally and preserves earlier output on download failure', async () => {
@@ -37,10 +42,15 @@ test('ingests media locally and preserves earlier output on download failure', a
     assert.equal(saved.profile.avatar.assetPath, 'assets/avatar.jpg');
     assert.equal(saved.posts[0].media[0].assetPath, 'assets/post-ABC123-1.jpg');
     assert.equal((await stat(path.join(outputDir, saved.posts[0].media[0].assetPath))).size, 15);
+    await mkdir(path.join(outputDir, 'evidence'));
+    await writeFile(path.join(outputDir, 'evidence', 'review.json'), '{"profile/avatar":{"classification":"brand-graphic"}}');
+    await ingest('example.studio', options);
+    assert.match(await readFile(path.join(outputDir, 'evidence', 'review.json'), 'utf8'), /brand-graphic/);
+    const stable = await readFile(path.join(outputDir, 'instagram-source.json'), 'utf8');
     await assert.rejects(() => ingest('example.studio', {
       ...options, fetchImpl: async () => new Response('error', { status: 404 }),
     }), /HTTP 404/);
-    assert.equal((await readFile(path.join(outputDir, 'instagram-source.json'), 'utf8')), JSON.stringify(saved, null, 2) + '\n');
+    assert.equal((await readFile(path.join(outputDir, 'instagram-source.json'), 'utf8')), stable);
   } finally { await rm(root, { recursive: true, force: true }); }
 });
 
