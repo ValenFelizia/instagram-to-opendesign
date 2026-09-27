@@ -1,5 +1,15 @@
 # Decisions
 
+## DEC-002 — Ingesta mediante Apify detrás de una interfaz
+
+- Status: accepted
+- Date: 2026-09-26
+- Context: VAL-89 pide obtener datos públicos sin construir un scraper propio y evaluar Apify primero.
+- Decision: usar el Actor mantenido `apify/instagram-scraper` con dos ejecuciones (`details` y `posts`), encapsulado en `src/providers/apify.js`. El resto del pipeline consume un contrato normalizado, no el payload del Actor.
+- Rationale: el Actor documenta ambos tipos de resultado y la API de Apify permite ejecutar, esperar y leer el dataset. Se evita una dependencia npm para mantener el primer CLI ejecutable con Node 20+.
+- Consequence: la ingesta real requiere cuenta/token de Apify y puede incurrir en costo; el formato del Actor puede cambiar. Las pruebas sintéticas cubren el contrato local, pero se requiere una prueba real antes de declarar terminado VAL-89.
+- Evidence: [Actor de Instagram](https://apify.com/apify/instagram-scraper) y [API v2 de Apify](https://docs.apify.com/api/v2).
+
 ## DEC-001 — Separar la inferencia del manifiesto de OpenDesign
 
 - Status: accepted
