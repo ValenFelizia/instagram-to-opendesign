@@ -2,7 +2,7 @@
 
 An early open source experiment to turn evidence from a public Instagram profile into a traceable brand package that OpenDesign can use.
 
-**Status:** Static OpenDesign contract fixture complete. The ingestion stage is under development in [GitHub issue #2](https://github.com/ValenFelizia/instagram-to-opendesign/issues/2). See the [OpenDesign output contract](docs/output-contract.md), [synthetic package](examples/example-studio/), and [ingestion guide](docs/ingestion.md). The fixture has been checked against upstream schemas, but has not been exercised in a running OpenDesign instance.
+**Status:** Static OpenDesign contract fixture complete. The ingestion and evidence stages are under development in GitHub [#2](https://github.com/ValenFelizia/instagram-to-opendesign/issues/2) and [#3](https://github.com/ValenFelizia/instagram-to-opendesign/issues/3). See the [OpenDesign output contract](docs/output-contract.md), [synthetic package](examples/example-studio/), [ingestion guide](docs/ingestion.md), and [evidence guide](docs/evidence-processor.md). The fixture has been checked against upstream schemas, but has not been exercised in a running OpenDesign instance.
 
 ## Goal
 
@@ -19,7 +19,7 @@ Product context originated in the [Linear project](https://linear.app/valenf/pro
 
 ## Development
 
-Node 20+ runs the ingestion stage without dependencies; see [docs/ingestion.md](docs/ingestion.md). Contributions and questions are welcome; read [CONTRIBUTING.md](CONTRIBUTING.md).
+Node 20+ runs the ingestion and evidence stages without dependencies; see [docs/ingestion.md](docs/ingestion.md) and [docs/evidence-processor.md](docs/evidence-processor.md). Contributions and questions are welcome; read [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ## License
 
