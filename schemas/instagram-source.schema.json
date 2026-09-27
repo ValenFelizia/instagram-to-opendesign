@@ -1,0 +1,60 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/ValenFelizia/instagram-to-opendesign/schemas/instagram-source.schema.json",
+  "title": "Normalized Instagram source v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schemaVersion", "source", "profile", "posts"],
+  "properties": {
+    "schemaVersion": { "const": "instagram-source/v1" },
+    "source": {
+      "type": "object", "additionalProperties": false,
+      "required": ["provider", "profileUrl", "extractedAt", "runIds"],
+      "properties": {
+        "provider": { "type": "string" }, "profileUrl": { "type": "string", "format": "uri" },
+        "extractedAt": { "type": "string", "format": "date-time" },
+        "runIds": { "type": "array", "items": { "type": "string" } }
+      }
+    },
+    "profile": {
+      "type": "object", "additionalProperties": false,
+      "required": ["username", "fullName", "biography", "externalUrls", "category", "followersCount", "postsCount", "avatar"],
+      "properties": {
+        "username": { "type": "string" },
+        "fullName": { "type": ["string", "null"] }, "biography": { "type": ["string", "null"] },
+        "externalUrls": { "type": "array", "items": { "type": "string", "format": "uri" } },
+        "category": { "type": ["string", "null"] },
+        "followersCount": { "type": ["integer", "null"], "minimum": 0 },
+        "postsCount": { "type": ["integer", "null"], "minimum": 0 },
+        "avatar": { "oneOf": [{ "$ref": "#/$defs/media" }, { "type": "null" }] }
+      }
+    },
+    "posts": {
+      "type": "array",
+      "items": {
+        "type": "object", "additionalProperties": false,
+        "required": ["id", "url", "ownerUsername", "type", "timestamp", "caption", "likesCount", "commentsCount", "media"],
+        "properties": {
+          "id": { "type": "string" }, "url": { "type": "string", "format": "uri" },
+          "ownerUsername": { "type": ["string", "null"] },
+          "type": { "type": ["string", "null"] }, "timestamp": { "type": ["string", "null"] },
+          "caption": { "type": "string" },
+          "likesCount": { "type": ["integer", "null"], "minimum": 0 },
+          "commentsCount": { "type": ["integer", "null"], "minimum": 0 },
+          "media": { "type": "array", "items": { "$ref": "#/$defs/media" } }
+        }
+      }
+    }
+  },
+  "$defs": {
+    "media": {
+      "type": "object", "additionalProperties": false,
+      "required": ["kind", "remoteUrl", "assetPath"],
+      "properties": {
+        "id": { "type": "string" }, "kind": { "enum": ["image", "video"] },
+        "remoteUrl": { "type": "string", "format": "uri" },
+        "assetPath": { "type": ["string", "null"] }
+      }
+    }
+  }
+}

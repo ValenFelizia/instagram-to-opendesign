@@ -4,6 +4,13 @@
 
 ## Ready to Land
 
+- [ ] GitHub #2 / VAL-89 — Ingesta de perfil público con Apify y fuente normalizada reproducible.
+  - Owner: Valentin Felizia
+  - Agent: Codex
+  - Branch: `feat/instagram-ingestion`
+  - Scope: PR #7.
+  - Verification: Apify devolvió 15 posts públicos de `@felisa_fr` (3 con otro autor principal), 93 imágenes y 10 videos descargados; esquema `instagram-source/v1` válido; 3 pruebas locales pasan. Los datos reales quedan sólo en `data/` ignorado por Git.
+
 ## Blocked
 
 ## Pending

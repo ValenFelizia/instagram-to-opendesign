@@ -1,6 +1,6 @@
 # Contributing
 
-Thanks for your interest. This project is at the contract-definition stage, so please start with a focused issue or discussion before implementing a large pipeline change.
+Thanks for your interest. Start with a focused GitHub issue or discussion before implementing a large pipeline change.
 
 ## Ground rules
 
@@ -9,7 +9,7 @@ Thanks for your interest. This project is at the contract-definition stage, so p
 - Do not commit access tokens, private profile data, third-party images without redistribution rights, or generated brand packages containing such material.
 - Keep changes small and explain how you verified them in the pull request.
 
-Project coordination and durable decisions are tracked in `.csdd/`. The [Linear project](https://linear.app/valenf/project/instagram-opendesign-brand-importer-c97b589cc0b2) contains the current product plan; access to it may require permission.
+Public work is tracked in [GitHub Issues](https://github.com/ValenFelizia/instagram-to-opendesign/issues). Project coordination and durable decisions are tracked in `.csdd/`. The [Linear project](https://linear.app/valenf/project/instagram-opendesign-brand-importer-c97b589cc0b2) is historical product context; access to it may require permission.
 
 ## Pull requests
 

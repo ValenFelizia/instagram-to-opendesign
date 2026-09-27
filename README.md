@@ -2,7 +2,7 @@
 
 An early open source experiment to turn evidence from a public Instagram profile into a traceable brand package that OpenDesign can use.
 
-**Status:** Static contract fixture complete; there is no importer or runnable CLI yet. See the [OpenDesign output contract](docs/output-contract.md), [synthetic package](examples/example-studio/), and [VAL-88](https://linear.app/valenf/issue/VAL-88/definir-contrato-de-salida-y-compatibilidad-actual-con-opendesign). The fixture has been checked against upstream schemas, but has not been exercised in a running OpenDesign instance.
+**Status:** Static OpenDesign contract fixture complete. The ingestion stage is under development in [GitHub issue #2](https://github.com/ValenFelizia/instagram-to-opendesign/issues/2). See the [OpenDesign output contract](docs/output-contract.md), [synthetic package](examples/example-studio/), and [ingestion guide](docs/ingestion.md). The fixture has been checked against upstream schemas, but has not been exercised in a running OpenDesign instance.
 
 ## Goal
 
@@ -15,11 +15,11 @@ Test whether an Instagram profile can provide useful evidence for an initial bra
 - **Proposed stages:** extraction, evidence processing, multimodal brand analysis, and OpenDesign package generation. These stages are planned, not implemented.
 - **Excluded initially:** a SaaS UI, continuous synchronization, a productized MCP server, other social networks, and adapters for other design systems.
 
-The current product scope is tracked in the [Linear project](https://linear.app/valenf/project/instagram-opendesign-brand-importer-c97b589cc0b2). Technical decisions that are stable enough for the repository live in `.csdd/` and, as the implementation grows, in public documentation here.
+Product context originated in the [Linear project](https://linear.app/valenf/project/instagram-opendesign-brand-importer-c97b589cc0b2). Public work is tracked in [GitHub Issues](https://github.com/ValenFelizia/instagram-to-opendesign/issues) and developed through pull requests. Technical decisions live in `.csdd/` and public documentation here.
 
 ## Development
 
-There is no install or build step yet. The output contract is documented before pipeline implementation begins. Contributions and questions are welcome; read [CONTRIBUTING.md](CONTRIBUTING.md).
+Node 20+ runs the ingestion stage without dependencies; see [docs/ingestion.md](docs/ingestion.md). Contributions and questions are welcome; read [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ## License
 
