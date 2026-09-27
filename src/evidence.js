@@ -26,6 +26,7 @@ function imageEntries(source, profileDir) {
     for (const media of post.media) {
       if (media.kind !== 'image') continue;
       entries.push({ id: `${post.id}/${media.id}`, postId: post.id, postUrl: post.url,
+        ownerUsername: post.ownerUsername ?? null,
         assetPath: media.assetPath, absolutePath: safeAsset(profileDir, media.assetPath) });
     }
   }
@@ -37,8 +38,13 @@ function selectRepresentative(entries, limit = 24) {
   const ids = new Set();
   const add = (entry) => { if (entry && !ids.has(entry.id) && chosen.length < limit) { chosen.push(entry); ids.add(entry.id); } };
   add(entries.find((entry) => !entry.postId));
-  for (const entry of entries) if (entry.postId && !chosen.some((item) => item.postId === entry.postId)) add(entry);
-  for (const entry of entries) add(entry);
+  const groups = new Map();
+  for (const entry of entries) if (entry.postId) groups.set(entry.postId, [...(groups.get(entry.postId) ?? []), entry]);
+  for (let index = 0; chosen.length < limit; index++) {
+    let found = false;
+    for (const group of groups.values()) if (group[index]) { add(group[index]); found = true; }
+    if (!found) break;
+  }
   return chosen;
 }
 
@@ -73,40 +79,46 @@ function contactSheet(entries, reviews, evidenceDir) {
     const y = Math.floor(index / columns) * cellHeight;
     const relative = path.relative(evidenceDir, entry.absolutePath).replaceAll('\\', '/');
     const label = reviews[entry.id].classification ?? 'unreviewed';
-    return `<g transform="translate(${x} ${y})"><rect width="320" height="370" fill="#fff" stroke="#d6d6d6"/><image href="${escapeXml(relative)}" x="10" y="10" width="300" height="300" preserveAspectRatio="xMidYMid meet"/><text x="10" y="330" font-size="14" font-family="sans-serif">${escapeXml(entry.id)}</text><text x="10" y="352" font-size="12" font-family="sans-serif" fill="#555">${escapeXml(label)}</text></g>`;
+    const owner = entry.ownerUsername ? ` · @${entry.ownerUsername}` : '';
+    return `<g transform="translate(${x} ${y})"><rect width="320" height="370" fill="#fff" stroke="#d6d6d6"/><image href="${escapeXml(relative)}" x="10" y="10" width="300" height="300" preserveAspectRatio="xMidYMid meet"/><text x="10" y="330" font-size="14" font-family="sans-serif">${escapeXml(entry.id)}</text><text x="10" y="352" font-size="12" font-family="sans-serif" fill="#555">${escapeXml(label + owner)}</text></g>`;
   }).join('');
   return `<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="${columns * cellWidth}" height="${Math.max(1, rows) * cellHeight}" viewBox="0 0 ${columns * cellWidth} ${Math.max(1, rows) * cellHeight}"><rect width="100%" height="100%" fill="#f3f3f3"/>${cells}</svg>\n`;
 }
 
 function evidenceMarkdown(source, entries, selected, reviews) {
-  const category = (name) => entries.filter((entry) => reviews[entry.id].classification === name);
+  const category = (name) => selected.filter((entry) => reviews[entry.id].classification === name);
   const lines = [
     `# Evidence: @${source.profile.username}`, '',
     `Source: [public Instagram profile](${source.source.profileUrl}) · captured ${source.source.extractedAt} via ${source.source.provider}.`,
-    '', `Posts: ${source.posts.length} · image assets: ${entries.length} · shown in contact sheet: ${selected.length}.`,
+    '', `Posts: ${source.posts.length} · image assets indexed: ${entries.length} · representative images shown: ${selected.length}.`,
     '', '[Contact sheet](contact-sheet.svg) · [Caption corpus](captions.md) · [Review file](review.json)',
     '', '## Profile signals', '',
     `- Name: ${escapeMd(source.profile.fullName ?? '(not available)')}`,
     `- Bio: ${escapeMd(source.profile.biography ?? '(not available)')}`,
     `- Links: ${source.profile.externalUrls.map((url) => `<${url}>`).join(', ') || '(none)'}`,
   ];
-  if (source.profile.avatar?.assetPath) lines.push(`- Avatar: [candidate mark or profile image](../${source.profile.avatar.assetPath}) (requires review)`);
-  lines.push('', '## Visual categories', '', 'These are observations, not brand rules. Product and photo colors must not be promoted to brand colors without separate evidence.', '');
+  if (source.profile.avatar?.assetPath) {
+    const avatarStatus = reviews['profile/avatar']?.classification ?? 'unreviewed';
+    lines.push(`- Avatar: [candidate mark or profile image](../${source.profile.avatar.assetPath}) · ${avatarStatus}`);
+  }
+  const remaining = entries.length - selected.filter((entry) => reviews[entry.id].classification).length;
+  lines.push('', '## Visual categories', '', `Categories below cover the representative selection only. ${remaining} indexed images remain outside the reviewed selection or are unreviewed. The full image index remains in \`evidence.json\` and \`review.json\`. These are observations, not brand rules. Product and photo colors must not be promoted to brand colors without separate evidence. Posts authored by collaborators are marked by username and must be assessed separately from @${source.profile.username}-owned graphics.`, '');
   for (const [label, heading] of [['brand-graphic', 'Brand graphics'], ['product-photo', 'Product photos'], ['mixed', 'Mixed'], [null, 'Unreviewed']]) {
-    const group = label ? category(label) : entries.filter((entry) => !reviews[entry.id].classification);
+    const group = label ? category(label) : selected.filter((entry) => !reviews[entry.id].classification);
     lines.push(`### ${heading} (${group.length})`, '');
     for (const entry of group) {
       const review = reviews[entry.id];
       const signals = Object.entries(review.features).filter(([, value]) => value).map(([key]) => key);
       if (review.compositionGroup) signals.push(`composition: ${review.compositionGroup}`);
-      lines.push(`- [${escapeMd(entry.id)}](../${entry.assetPath}) · [source](${entry.postUrl})${signals.length ? ` · ${signals.join(', ')}` : ''}${review.notes ? ` · ${escapeMd(review.notes)}` : ''}`);
+      const owner = entry.ownerUsername && entry.ownerUsername !== source.profile.username ? ` · authored by @${entry.ownerUsername}` : '';
+      lines.push(`- [${escapeMd(entry.id)}](../${entry.assetPath}) · [source](${entry.postUrl})${owner}${signals.length ? ` · ${signals.join(', ')}` : ''}${review.notes ? ` · ${escapeMd(review.notes)}` : ''}`);
     }
     if (!group.length) lines.push('- None.');
     lines.push('');
   }
   lines.push('## Repeated compositions', '');
   const groups = new Map();
-  for (const entry of entries) {
+  for (const entry of selected) {
     const group = reviews[entry.id].compositionGroup;
     if (group) groups.set(group, [...(groups.get(group) ?? []), entry.id]);
   }
@@ -133,7 +145,7 @@ export async function processEvidence(profileDir, { maxImages = 24 } = {}) {
   const selected = selectRepresentative(entries, maxImages);
   const captions = [
     `# Caption corpus: @${source.profile.username}`, '',
-    ...source.posts.flatMap((post) => [`## [${post.id}](${post.url}) · ${post.timestamp ?? 'date unavailable'}`, '', post.caption || '(empty caption)', '']),
+    ...source.posts.flatMap((post) => [`## [${post.id}](${post.url}) · ${post.timestamp ?? 'date unavailable'} · author @${post.ownerUsername ?? 'unknown'}`, '', post.caption || '(empty caption)', '']),
   ].join('\n');
   const index = { schemaVersion: 'evidence/v1', sourceProfile: source.source.profileUrl,
     capturedAt: source.source.extractedAt, selectedImageIds: selected.map((entry) => entry.id),

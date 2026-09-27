@@ -12,7 +12,7 @@ test('builds reviewable evidence and keeps labels on regeneration', async () => 
     await mkdir(path.join(dir, 'assets'));
     const source = normalizeSource('example.studio', {
       profile: { username: 'example.studio', fullName: 'Example', biography: 'Studio', profilePicUrl: 'https://scontent.cdninstagram.com/a.jpg' },
-      posts: [{ shortCode: 'ABC123', ownerUsername: 'example.studio', caption: 'A caption',
+      posts: [{ shortCode: 'ABC123', ownerUsername: 'partner', caption: 'A caption',
         displayUrl: 'https://scontent.cdninstagram.com/b.jpg' }], runs: [],
     }, '2026-01-01T00:00:00Z');
     source.profile.avatar.assetPath = 'assets/avatar.jpg';
@@ -35,7 +35,9 @@ test('builds reviewable evidence and keeps labels on regeneration', async () => 
     assert.match(evidence, /Product photos \(1\)/);
     assert.match(evidence, /Unreviewed \(1\)/);
     assert.match(evidence, /overlay/);
+    assert.match(evidence, /authored by @partner/);
     assert.match(await readFile(path.join(first.evidenceDir, 'captions.md'), 'utf8'), /A caption/);
+    assert.match(await readFile(path.join(first.evidenceDir, 'captions.md'), 'utf8'), /author @partner/);
     assert.match(await readFile(path.join(first.evidenceDir, 'contact-sheet.svg'), 'utf8'), /\.\.\/assets\/post-ABC123-1\.jpg/);
   } finally { await rm(dir, { recursive: true, force: true }); }
 });
