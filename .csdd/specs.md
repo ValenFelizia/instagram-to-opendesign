@@ -20,7 +20,7 @@ El proyecto investiga si un perfil público de Instagram puede aportar evidencia
 
 ## Interfaces and Contracts
 
-La etapa de ingesta produce `instagram-source.json` y assets locales dentro de un directorio ignorado por Git. El JSON conserva metadatos del perfil público, enlaces, publicaciones recientes, captions, URLs de origen, rutas de archivos y procedencia del proveedor. La interfaz del proveedor queda aislada de la normalización para poder cambiar el servicio de extracción. Fuente: VAL-89 / GitHub #2.
+La etapa de ingesta produce `instagram-source.json` y assets locales dentro de un directorio ignorado por Git. El JSON conserva metadatos del perfil público, enlaces, publicaciones recientes, captions, URLs de origen, rutas de archivos, autor principal de cada publicación y procedencia del proveedor. Las colaboraciones presentes en el feed se conservan aunque el autor principal difiera del perfil solicitado. La interfaz del proveedor queda aislada de la normalización para poder cambiar el servicio de extracción. Fuente: VAL-89 / GitHub #2 y validación real con `@felisa_fr`.
 
 El procesador de evidencia consume `instagram-source.json` y sus assets; produce un contact sheet, corpus de captions, `evidence.md` y un índice legible por máquina. La clase visual de cada imagen (`brand-graphic`, `product-photo`, `mixed`) es una observación revisable: las imágenes sin clasificar no aportan evidencia de colores de marca. Fuente: VAL-90 / GitHub #3.
 

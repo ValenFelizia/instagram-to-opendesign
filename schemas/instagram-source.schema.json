@@ -33,9 +33,10 @@
       "type": "array",
       "items": {
         "type": "object", "additionalProperties": false,
-        "required": ["id", "url", "type", "timestamp", "caption", "likesCount", "commentsCount", "media"],
+        "required": ["id", "url", "ownerUsername", "type", "timestamp", "caption", "likesCount", "commentsCount", "media"],
         "properties": {
           "id": { "type": "string" }, "url": { "type": "string", "format": "uri" },
+          "ownerUsername": { "type": ["string", "null"] },
           "type": { "type": ["string", "null"] }, "timestamp": { "type": ["string", "null"] },
           "caption": { "type": "string" },
           "likesCount": { "type": ["integer", "null"], "minimum": 0 },

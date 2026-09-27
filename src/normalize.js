@@ -51,16 +51,17 @@ export function normalizeSource(usernameInput, collected, extractedAt = new Date
   };
   const seen = new Set();
   for (const raw of collected.posts ?? []) {
-    if (raw.ownerUsername && cleanUsername(raw.ownerUsername) !== username) continue;
     const shortCode = string(raw.shortCode);
     if (!shortCode || !/^[A-Za-z0-9_-]+$/.test(shortCode) || seen.has(shortCode)) continue;
     seen.add(shortCode);
     source.posts.push({
       id: shortCode, url: `https://www.instagram.com/p/${shortCode}/`,
+      ownerUsername: string(raw.ownerUsername),
       type: string(raw.type), timestamp: string(raw.timestamp), caption: string(raw.caption) ?? '',
       likesCount: count(raw.likesCount), commentsCount: count(raw.commentsCount),
       media: mediaFor(raw),
     });
   }
+  source.posts.sort((a, b) => (Date.parse(b.timestamp ?? '') || 0) - (Date.parse(a.timestamp ?? '') || 0));
   return source;
 }
