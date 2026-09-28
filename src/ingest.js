@@ -21,11 +21,18 @@ export async function ingest(usernameInput, { outputRoot = 'data', postLimit = 2
   try {
     await downloadAssets(source, temporaryDir, { fetchImpl });
     await writeFile(path.join(temporaryDir, 'instagram-source.json'), `${JSON.stringify(source, null, 2)}\n`);
-    try {
-      const review = await readFile(path.join(finalDir, 'evidence', 'review.json'));
-      await mkdir(path.join(temporaryDir, 'evidence'), { recursive: true });
-      await writeFile(path.join(temporaryDir, 'evidence', 'review.json'), review);
-    } catch (error) { if (error.code !== 'ENOENT') throw error; }
+    for (const [previous, next] of [
+      ['evidence/review.json', 'evidence/review.json'],
+      ['brand-analysis.json', 'brand-analysis.json'],
+      ['color-proposals.json', 'color-proposals.json'],
+      ['analysis-state.json', 'analysis-state.json'],
+    ]) {
+      try {
+        const content = await readFile(path.join(finalDir, previous));
+        await mkdir(path.dirname(path.join(temporaryDir, next)), { recursive: true });
+        await writeFile(path.join(temporaryDir, next), content);
+      } catch (error) { if (error.code !== 'ENOENT') throw error; }
+    }
     let hadPrevious = false;
     try {
       await rename(finalDir, backupDir);

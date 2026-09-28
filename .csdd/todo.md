@@ -4,13 +4,13 @@
 
 ## Ready to Land
 
-- [ ] GitHub #4 / VAL-91 — Brand Analyzer multimodal con confianza y evidencia.
+- [ ] GitHub #5 / VAL-92 — Compilar paquete OpenDesign y CLI de punta a punta.
   - Owner: Valentin Felizia
   - Agent: Codex
-  - Branch: `feat/brand-analyzer`
-  - Scope: CLI de análisis, integración de visión, validación del schema v1, pruebas y documentación.
-  - Landing: PR #10 hacia `main`; requiere revisión humana antes de merge.
-  - Verification: 11 pruebas pasan; ejecución real con `@felisa_fr` produjo 10 inferencias trazables. Color y tipografía se sustentan en el avatar; UI quedó `needs-review`. El resultado real permanece local e ignorado por Git.
+  - Branch: `codex/val-92-package`
+  - PR: https://github.com/ValenFelizia/instagram-to-opendesign/pull/11
+  - Scope: orquestador reanudable, propuestas de tokens, compilador OpenDesign, validación real y documentación.
+  - Verification: 15 pruebas; paquete real de `@felisa_fr` cargado por el catálogo de OpenDesign `0.23.1` en daemon aislado, con incertidumbre conservada; segunda ejecución reutilizó etapas pagas. Datos reales y credenciales ignorados por Git.
 
 ## Blocked
 
@@ -21,6 +21,13 @@
 ## Recently Completed
 
 Retention: 5
+
+- [x] GitHub #4 / VAL-91 — Brand Analyzer multimodal con confianza y evidencia.
+  - Owner: Valentin Felizia
+  - Agent: Codex
+  - Scope: released
+  - Landed: `main` @ `90f453f` (PR #10)
+  - Verification: 11 pruebas y ejecución real con `@felisa_fr`: 10 inferencias trazables, color y tipografía respaldados por el avatar, UI `needs-review`; datos reales locales e ignorados por Git.
 
 - [x] GitHub #3 / VAL-90 — Evidence Processor y contact sheet visual.
   - Owner: Valentin Felizia

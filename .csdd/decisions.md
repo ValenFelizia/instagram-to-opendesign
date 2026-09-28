@@ -1,5 +1,15 @@
 # Decisions
 
+## DEC-005 — Compilar paquete mínimo sin reimportación normalizadora
+
+- Status: accepted for VAL-92
+- Date: 2026-09-28
+- Context: el análisis describe la identidad sin hexadecimales ni fuentes exactas, y OpenDesign requiere `tokens.css`. En la prueba real, `od design-systems import-local` reconstruyó `DESIGN.md` desde el directorio como proyecto crudo y perdió las advertencias de incertidumbre.
+- Decision: generar colores candidatos con una llamada adicional limitada a gráficos propios revisados, completar los 56 tokens con valores funcionales provisionales y conservar la procedencia en `brand-analysis.json` y `source/`. Mantener el perfil mínimo sin `sourceFiles`. Para cargar el paquete precompilado en OpenDesign, instalar su carpeta en el catálogo de sistemas de usuario; no usar `import-local` como prueba de preservación del paquete.
+- Rationale: mantiene visibles el análisis y sus límites en el `DESIGN.md` que lee el agente, sin inventar reglas verificadas ni asumir los requisitos del perfil rich.
+- Consequence: los valores CSS requieren revisión de marca, la instalación local es distinta del importador de proyectos crudos y los datos reales permanecen fuera del repo público. La utilidad del paquete frente a una baseline se mide en VAL-93.
+- Evidence: ejecución aislada de `od design-systems import-local` y `od design-systems show user:felisa-fr` con el paquete generado; [guía OpenDesign](https://github.com/nexu-io/open-design/blob/main/docs/design-systems.md).
+
 ## DEC-004 — Primer Brand Analyzer mediante visión con revisión posterior
 
 - Status: accepted for VAL-91

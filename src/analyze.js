@@ -94,7 +94,7 @@ export async function prepareAnalysis(profileDir) {
     excludedUnreviewed, excludedCollaborator, imageBytes: bytes };
 }
 
-async function validateAnalysis(analysis, prepared) {
+export async function validateAnalysis(analysis, prepared) {
   const schema = JSON.parse(await readFile(new URL('../schemas/brand-analysis.schema.json', import.meta.url), 'utf8'));
   const ajv = new Ajv2020({ allErrors: true, strictTypes: false });
   addFormats(ajv);
