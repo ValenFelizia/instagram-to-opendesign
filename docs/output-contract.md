@@ -1,6 +1,6 @@
 # Output contract for OpenDesign (VAL-88)
 
-This document describes the **current OpenDesign target**, pinned to [`nexu-io/open-design` at `1b47e60`](https://github.com/nexu-io/open-design/tree/1b47e60bd46641469fcd8b69c496c4e3a548bc28). Recheck the upstream schemas and guards before changing the generator; this is a compatibility snapshot, not a new OpenDesign format.
+This document describes the **current OpenDesign target**, pinned to [`nexu-io/open-design` at `1b47e60`](https://github.com/nexu-io/open-design/tree/1b47e60bd46641469fcd8b69c496c4e3a548bc28). The manifest, token schema, and package-quality guard had the same Git blob hashes on current main when VAL-92 was implemented. Recheck upstream before future changes; this is a compatibility snapshot, not a new OpenDesign format.
 
 ## Package layout
 
@@ -43,4 +43,6 @@ Use one H1 and substantive H2 sections for visual theme, color roles, typography
 
 ## Rich profile boundary
 
-OpenDesign also supports `USAGE.md`, component fixtures, previews, derived tokens, and Tailwind output. Declaring them triggers additional guard and runtime expectations. They are outside the first static fixture. The minimum profile is enough to establish discovery and prompt context; this issue does **not** claim the package has passed a live import or produces a better design. Those checks require a running OpenDesign instance and the later [VAL-93 experiment](https://linear.app/valenf/issue/VAL-93/validar-el-mvp-con-felisa-contra-una-baseline-manual).
+OpenDesign also supports `USAGE.md`, component fixtures, previews, derived tokens, and Tailwind output. Declaring them triggers additional guard and runtime expectations. They are outside the first static fixture. The minimum profile is enough to establish discovery and prompt context. VAL-92 tested a real package in an isolated OpenDesign daemon; the later [VAL-93 experiment](https://linear.app/valenf/issue/VAL-93/validar-el-mvp-con-felisa-contra-una-baseline-manual) will test whether it improves a resulting design.
+
+The `import-local` CLI route normalizes a raw source directory and rewrites `DESIGN.md`, losing the authored uncertainty. Installing the compiled folder into OpenDesign's user design-system catalog preserved its manifest and prose; `od design-systems show user:felisa-fr` returned the expected package. See the [package CLI guide](package-cli.md) for this compatibility boundary.

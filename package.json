@@ -10,11 +10,14 @@
     "ingest": "node bin/instagram-ingest.js",
     "evidence": "node bin/process-evidence.js",
     "analyze": "node bin/analyze-brand.js",
-    "test": "node --test"
+    "brand:instagram": "node --env-file=.env.local bin/brand-instagram.js",
+    "brand:compile": "node bin/compile-brand.js",
+    "test": "node --test test/analyze.test.js test/evidence.test.js test/ingest.test.js test/package.test.js"
   },
   "license": "MIT",
   "dependencies": {
     "ajv": "^8.20.0",
-    "ajv-formats": "^3.0.1"
+    "ajv-formats": "^3.0.1",
+    "sharp": "^0.35.5"
   }
 }
