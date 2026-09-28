@@ -2,6 +2,13 @@
 
 ## In Progress
 
+- [ ] GitHub #4 / VAL-91 — Brand Analyzer multimodal con confianza y evidencia.
+  - Owner: Valentin Felizia
+  - Agent: Codex
+  - Branch: `feat/brand-analyzer`
+  - Scope: CLI de análisis, integración de visión, validación del schema v1, pruebas y documentación.
+  - Verification: pruebas sintéticas y ejecución real con `@felisa_fr` tras disponer de `OPENAI_API_KEY`.
+
 ## Ready to Land
 
 ## Blocked

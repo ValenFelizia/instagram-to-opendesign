@@ -1,5 +1,15 @@
 # Decisions
 
+## DEC-004 — Primer Brand Analyzer mediante visión con revisión posterior
+
+- Status: accepted for VAL-91
+- Date: 2026-09-28
+- Context: la evidencia revisada de VAL-90 permite probar inferencias de marca para un perfil real, pero no confirma decisiones de la dueña de la marca.
+- Decision: usar `gpt-6-luna` con razonamiento `high` mediante Responses API para un borrador de diez temas; enviar sólo imágenes y captions propios revisados. Validar esquema y referencias localmente, conservar incertidumbre y no producir estados `verified` automáticamente.
+- Rationale: permite evaluar un analizador multimodal reproducible con costo acotado por una sola solicitud y un máximo de 24 imágenes, manteniendo el control de inferencias en el repositorio.
+- Consequence: la ejecución real requiere `OPENAI_API_KEY` y puede generar costo; una persona debe revisar las propuestas antes de compilar el paquete OpenDesign. Los datos reales y el JSON generado permanecen ignorados por Git.
+- Evidence: [modelo](https://developers.openai.com/api/docs/models/gpt-6-luna), [imágenes como entrada](https://developers.openai.com/api/docs/guides/images-vision) y [salida estructurada](https://developers.openai.com/api/docs/guides/structured-outputs).
+
 ## DEC-003 — Clasificación visual revisable en la primera validación
 
 - Status: accepted for the first profile

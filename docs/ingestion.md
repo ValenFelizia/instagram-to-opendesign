@@ -1,6 +1,6 @@
 # Instagram ingestion
 
-GitHub [#2](https://github.com/ValenFelizia/instagram-to-opendesign/issues/2) implements the extraction stage. Node 20+ is required; there are no npm dependencies. Only public Instagram profiles are in scope.
+GitHub [#2](https://github.com/ValenFelizia/instagram-to-opendesign/issues/2) implements the extraction stage. Node 20+ is required; this command uses only Node core modules. Only public Instagram profiles are in scope.
 
 Apify's maintained [Instagram Scraper](https://apify.com/apify/instagram-scraper) is called once for `details` and once for `posts`. The [Apify API](https://docs.apify.com/api/v2) runs the Actor, polls it, and reads each result dataset. `APIFY_TOKEN` is sent in an Authorization header. Two Actor runs may incur charges; the API request caps each at USD 2. The provider is isolated in `src/providers/apify.js`.
 
