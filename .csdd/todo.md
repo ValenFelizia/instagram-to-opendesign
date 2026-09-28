@@ -2,13 +2,15 @@
 
 ## In Progress
 
+## Ready to Land
+
 - [ ] GitHub #5 / VAL-92 — Compilar paquete OpenDesign y CLI de punta a punta.
   - Owner: Valentin Felizia
   - Agent: Codex
   - Branch: `codex/val-92-package`
+  - PR: https://github.com/ValenFelizia/instagram-to-opendesign/pull/11
   - Scope: orquestador reanudable, propuestas de tokens, compilador OpenDesign, validación real y documentación.
-
-## Ready to Land
+  - Verification: 15 pruebas; paquete real de `@felisa_fr` cargado por el catálogo de OpenDesign `0.23.1` en daemon aislado, con incertidumbre conservada; segunda ejecución reutilizó etapas pagas. Datos reales y credenciales ignorados por Git.
 
 ## Blocked
 
