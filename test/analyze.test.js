@@ -12,7 +12,7 @@ async function fixture() {
   await mkdir(path.join(dir, 'evidence'));
   const profileUrl = 'https://www.instagram.com/example.studio/';
   const posts = [
-    { id: 'OWN1', ownerUsername: 'example.studio', caption: 'Tejé con calma.', media: [] },
+    { id: 'OWN1', ownerUsername: 'Example.Studio', caption: 'Tejé con calma.', media: [] },
     { id: 'PARTNER', ownerUsername: 'partner', caption: 'Partner event', media: [] },
     { id: 'OWN2', ownerUsername: 'example.studio', caption: 'Taller de crochet', media: [] },
     { id: 'OWN3', ownerUsername: 'example.studio', caption: '', media: [] },

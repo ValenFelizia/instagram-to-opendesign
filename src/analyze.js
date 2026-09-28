@@ -12,6 +12,8 @@ const IMAGE_MIME = new Map([['.jpg', 'image/jpeg'], ['.jpeg', 'image/jpeg'],
 
 const evidenceId = (prefix, key) => `${prefix}-${createHash('sha256').update(key).digest('hex').slice(0, 16).toUpperCase()}`;
 const compact = (value) => String(value ?? '').replace(/\s+/g, ' ').trim();
+const isProfileOwned = (owner, username) => typeof owner === 'string' &&
+  owner.replace(/^@/, '').toLowerCase() === username.toLowerCase();
 
 async function localFile(root, relativePath) {
   if (typeof relativePath !== 'string' || !/^[A-Za-z0-9._/-]+$/.test(relativePath)) {
@@ -59,7 +61,7 @@ export async function prepareAnalysis(profileDir) {
     }
     const ownAvatar = imageId === 'profile/avatar' && image.postId == null;
     const post = image.postId ? posts.get(image.postId) : null;
-    if (!ownAvatar && (!post || post.ownerUsername !== source.profile.username)) {
+    if (!ownAvatar && (!post || !isProfileOwned(post.ownerUsername, source.profile.username))) {
       excludedCollaborator++;
       continue;
     }
@@ -75,7 +77,7 @@ export async function prepareAnalysis(profileDir) {
   if (!images.length) throw new Error('No reviewed, profile-owned images are available for analysis.');
   const captionPath = 'evidence/captions.md';
   await localFile(root, captionPath);
-  const captions = source.posts.filter((post) => post.ownerUsername === source.profile.username && compact(post.caption))
+  const captions = source.posts.filter((post) => isProfileOwned(post.ownerUsername, source.profile.username) && compact(post.caption))
     .map((post) => ({ postId: post.id, evidenceId: evidenceId('E-CAP', post.id), caption: post.caption }));
   const evidence = [{ id: 'E-PROFILE', kind: 'metadata', sourcePath: 'instagram-source.json',
     summary: `Perfil @${source.profile.username}: ${compact(source.profile.fullName)}. Bio: ${compact(source.profile.biography) || '(vacía)'}` }];
