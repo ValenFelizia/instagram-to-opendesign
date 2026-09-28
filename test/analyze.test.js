@@ -125,6 +125,23 @@ test('rejects incomplete responses and missing topics without writing output', a
   } finally { await rm(dir, { recursive: true, force: true }); }
 });
 
+test('preserves prior analysis when the API is incomplete or refuses', async () => {
+  const dir = await fixture();
+  try {
+    const prepared = await prepareAnalysis(dir);
+    const outputPath = path.join(dir, 'brand-analysis.json');
+    await writeFile(outputPath, 'prior valid analysis');
+    for (const response of [
+      { status: 'incomplete', output: [] },
+      { status: 'completed', output: [{ type: 'message', content: [{ type: 'refusal', refusal: 'No' }] }] },
+    ]) {
+      await assert.rejects(() => analyzeBrand(prepared, { token: 'synthetic-key',
+        fetchImpl: async () => Response.json(response) }), /incomplete|refused/);
+      assert.equal(await readFile(outputPath, 'utf8'), 'prior valid analysis');
+    }
+  } finally { await rm(dir, { recursive: true, force: true }); }
+});
+
 test('rejects selected asset paths outside the profile directory before any API request', async () => {
   const dir = await fixture();
   try {
