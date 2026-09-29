@@ -2,13 +2,15 @@
 
 ## In Progress
 
+## Ready to Land
+
 - [ ] GitHub #6 / VAL-93 — Validar el MVP con Felisa frente al intento manual.
   - Owner: Valentin Felizia
   - Agent: Codex
   - Branch: `codex/val-93-validation`
-  - Scope: protocolo público, corrida local en OpenDesign con las mismas imágenes, comparación visual y conclusión basada en evidencia.
-
-## Ready to Land
+  - PR: https://github.com/ValenFelizia/instagram-to-opendesign/pull/12
+  - Scope: comparación hero y Story en OpenDesign, corrección de instalación del paquete y decisión documentada.
+  - Verification: 15 pruebas; fixture sintético seleccionable en OpenDesign `0.23.1`; Story preferida por la dueña guardada localmente en `data/` e ignorada por Git. El paquete no mostró ventaja visual clara; no avanzar a MCP.
 
 ## Blocked
 
