@@ -238,6 +238,10 @@ export async function compilePackage(prepared, analysis, colorProposals, { outpu
       files: { design: 'DESIGN.md', tokens: 'tokens.css' }, assetsDir: 'assets',
     };
     await write(root, 'manifest.json', json(manifest));
+    // OpenDesign's user catalog defaults unmarked folders to draft, which cannot
+    // be selected when creating a project. Published here means usable locally;
+    // the brand observations in DESIGN.md remain provisional.
+    await write(root, 'metadata.json', json({ status: 'published' }));
     await write(root, 'DESIGN.md', designMarkdown(packagedAnalysis, tokens, colorProposals.candidates));
     await write(root, 'tokens.css', tokens.css);
     await write(root, 'brand-analysis.json', json(packagedAnalysis));

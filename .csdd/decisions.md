@@ -1,5 +1,25 @@
 # Decisions
 
+## DEC-007 — Mantener el importador como flujo local tras la prueba con Felisa
+
+- Status: accepted for VAL-93
+- Date: 2026-09-28
+- Context: el primer hero con paquete respetó la identidad verificada pero repitió el collage y falló a 390 px. Un segundo hero de producto funcionó en móvil, pero la dueña lo rechazó por convencional. Dos Stories del mismo bolso, con prompt y assets idénticos, produjeron soluciones similares; la dueña prefirió la versión sin paquete.
+- Decision: concluir que el paquete no mostró una mejora visual clara ni una reducción demostrada de esfuerzo en estos casos. Mantenerlo como herramienta local y revisable; no ampliar todavía a MCP. Entregar la Story manual preferida como archivo local tras sustituir la captura del bolso por la foto original del mismo producto.
+- Rationale: el storefront ya proporciona tipografía, color y copy verificados, de modo que el paquete de Instagram aporta contexto, pero poco valor incremental para un brief tan fijado. La preferencia de la dueña y los errores visuales pesan más que una ejecución técnica exitosa.
+- Consequence: la siguiente hipótesis es proponer varias rutas de composición y comprobar la calidad de los assets antes de generar. La pieza final requiere inspección en el editor de Instagram con el sticker nativo antes de publicarse; ningún asset real se incorpora al repositorio OSS.
+- Evidence: protocolo y resultados en `docs/mvp-validation.md`; HTML, capturas y notas reales en `data/felisa_fr/validation/` ignorado por Git; feedback de la dueña en esta validación.
+
+## DEC-006 — Habilitar el paquete en el catálogo local de OpenDesign
+
+- Status: accepted for VAL-93
+- Date: 2026-09-28
+- Context: el paquete de Felisa se podía leer con `od design-systems show`, pero un proyecto nuevo rechazó `user:felisa-fr` con `DESIGN_SYSTEM_NOT_PUBLISHED` porque una carpeta de usuario sin `metadata.json` se trata como `draft`.
+- Decision: el compilador escribe `metadata.json` con `status: published` junto al manifiesto. Ese estado habilita su selección en un proyecto local; las inferencias de identidad siguen siendo provisionales y revisables en `DESIGN.md` y las fuentes.
+- Rationale: un paquete descubierto pero no seleccionable no cumple el flujo que VAL-92 prometió validar. La marca de catálogo no altera el análisis ni envía el paquete a un servicio público.
+- Consequence: las instalaciones anteriores deben recompilarse y copiar el archivo nuevo al catálogo. La prueba de Felisa se realiza en una instancia aislada y los assets reales siguen fuera del repositorio.
+- Evidence: OpenDesign `0.23.1` en daemon aislado; creación de proyecto fallida sin `metadata.json`, exitosa con `status: published`; proyecto nuevo creado desde el fixture público `user:example-studio`; 15 pruebas del importador.
+
 ## DEC-005 — Compilar paquete mínimo sin reimportación normalizadora
 
 - Status: accepted for VAL-92

@@ -2,7 +2,7 @@
 
 An early open source experiment to turn evidence from a public Instagram profile into a traceable brand package that OpenDesign can use.
 
-**Status:** Ingestion, reviewable evidence, and multimodal analysis are implemented. The OpenDesign package compiler is tracked in GitHub [#5](https://github.com/ValenFelizia/instagram-to-opendesign/issues/5). See the [package CLI guide](docs/package-cli.md), [OpenDesign output contract](docs/output-contract.md), [synthetic package](examples/example-studio/), [ingestion guide](docs/ingestion.md), [evidence guide](docs/evidence-processor.md), and [analysis guide](docs/brand-analyzer.md).
+**Status:** Ingestion, reviewable evidence, multimodal analysis, and the local OpenDesign package compiler are implemented. The first Felisa trial found no clear design advantage over a manual prompt, so deeper integration is deferred. The generated identity remains provisional. See the [validation results](docs/mvp-validation.md), [package CLI guide](docs/package-cli.md), [OpenDesign output contract](docs/output-contract.md), [synthetic package](examples/example-studio/), [ingestion guide](docs/ingestion.md), [evidence guide](docs/evidence-processor.md), and [analysis guide](docs/brand-analyzer.md).
 
 ## Goal
 

@@ -15,6 +15,7 @@ El proyecto investiga si un perfil público de Instagram puede aportar evidencia
 - El trabajo inicial se prepara para publicarse como software de código abierto; el contenido del repositorio será público. Fuente: solicitud del usuario.
 - El soporte para otros sistemas de diseño queda fuera del alcance inicial. Fuente: solicitud del usuario.
 - No comenzar con scraper propio de Instagram, servidor MCP, SaaS o sincronización continua. Fuente: descripción del proyecto en Linear.
+- La validación Felisa debe comparar la misma pieza y los mismos archivos con y sin paquete cuando exista una baseline reproducible, registrar correcciones y preservar los resultados reales fuera de Git. Para Stories, Fer añadirá el sticker de enlace en Instagram tras revisar el PNG; no se simula como botón dentro del arte. Fuente: VAL-93 / GitHub #6 y solicitud del usuario.
 
 ## Invariants
 
@@ -29,5 +30,7 @@ El Brand Analyzer consume sólo las imágenes seleccionadas, revisadas y propias
 El CLI `brand:instagram` reutiliza ingesta y análisis locales, prepara evidencia y se detiene si falta clasificar una imagen seleccionada propia. Repetir el mismo comando después de la revisión continúa el pipeline; `--refresh` y `--reanalyze` hacen explícitos los nuevos cargos posibles. El compilador sin proveedores convierte el análisis en un paquete local ignorado por Git bajo `brand-output/<slug>/`; remapea todas las fuentes de `brand-analysis.json` a archivos incluidos, excluye posts de otros autores y conserva el paquete anterior ante fallos. Una segunda llamada de visión puede proponer colores aproximados desde gráficos propios revisados; los demás tokens funcionales y tipografía de UI son provisionales. Fuente: VAL-92 / GitHub #5 y DEC-005.
 
 El paquete nuevo para OpenDesign usa `design-systems/<slug>/manifest.json`, `DESIGN.md` y `tokens.css`. El manifiesto v1 exige `schemaVersion: od-design-system-project/v1`, un `id` igual al slug, nombre, categoría, `source` y rutas fijas a los dos archivos canónicos. El CSS final declara los 56 tokens compartidos de `TOKEN_SCHEMA`. Fuente: [`nexu-io/open-design` a `1b47e60`](https://github.com/nexu-io/open-design/tree/1b47e60bd46641469fcd8b69c496c4e3a548bc28), esquema de manifiesto, esquema de tokens y guía de authoring. El detalle operativo y sus límites están en `docs/output-contract.md`.
+
+Al instalar el paquete en el catálogo de usuario de OpenDesign, `metadata.json` debe marcarlo `published` para habilitar la creación de proyectos. Es un estado del catálogo local, no una verificación de las inferencias ni publicación externa. Fuente: prueba de integración VAL-93 y DEC-006.
 
 `brand-analysis.json` es un contrato de este importador, no un campo del manifiesto de OpenDesign. Su esquema inicial está en `schemas/brand-analysis.schema.json` y conserva valor candidato, confianza, evidencia, justificación breve y estado de revisión por inferencia. Fuente: VAL-88 y decisión técnica DEC-001.

@@ -2,15 +2,13 @@
 
 ## In Progress
 
-## Ready to Land
-
-- [ ] GitHub #5 / VAL-92 — Compilar paquete OpenDesign y CLI de punta a punta.
+- [ ] GitHub #6 / VAL-93 — Validar el MVP con Felisa frente al intento manual.
   - Owner: Valentin Felizia
   - Agent: Codex
-  - Branch: `codex/val-92-package`
-  - PR: https://github.com/ValenFelizia/instagram-to-opendesign/pull/11
-  - Scope: orquestador reanudable, propuestas de tokens, compilador OpenDesign, validación real y documentación.
-  - Verification: 15 pruebas; paquete real de `@felisa_fr` cargado por el catálogo de OpenDesign `0.23.1` en daemon aislado, con incertidumbre conservada; segunda ejecución reutilizó etapas pagas. Datos reales y credenciales ignorados por Git.
+  - Branch: `codex/val-93-validation`
+  - Scope: protocolo público, corrida local en OpenDesign con las mismas imágenes, comparación visual y conclusión basada en evidencia.
+
+## Ready to Land
 
 ## Blocked
 
@@ -21,6 +19,14 @@
 ## Recently Completed
 
 Retention: 5
+
+- [x] GitHub #5 / VAL-92 — Compilar paquete OpenDesign y CLI de punta a punta.
+  - Owner: Valentin Felizia
+  - Agent: Codex
+  - Scope: released
+  - Updated: 2026-09-28
+  - Landed: `main` @ `655cc87` (PR #11)
+  - Verification: 15 pruebas; paquete real de `@felisa_fr` cargado por el catálogo de OpenDesign en daemon aislado, con incertidumbre conservada.
 
 - [x] GitHub #4 / VAL-91 — Brand Analyzer multimodal con confianza y evidencia.
   - Owner: Valentin Felizia
@@ -49,10 +55,3 @@ Retention: 5
   - Scope: released
   - Landed: `main` @ `6129683`
   - Verification: parser de manifiesto de OpenDesign `1b47e60`, 56/56 tokens, schema de análisis, referencias de evidencia y archivos remotos comprobados. La prueba en una instancia de OpenDesign queda para una validación de integración posterior.
-
-- [x] Inicializar y publicar el repositorio OSS.
-  - Owner: Valentin Felizia
-  - Agent: Codex
-  - Scope: released
-  - Landed: `main` @ `6129683`
-  - Verification: repositorio público y contenido remoto comprobados en `ValenFelizia/instagram-to-opendesign`.
