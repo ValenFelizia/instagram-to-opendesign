@@ -2,7 +2,7 @@
 
 An early open source experiment to turn evidence from a public Instagram profile into a traceable brand package that OpenDesign can use.
 
-**Status:** Ingestion, reviewable evidence, and multimodal analysis are implemented. The OpenDesign package compiler is tracked in GitHub [#5](https://github.com/ValenFelizia/instagram-to-opendesign/issues/5). See the [package CLI guide](docs/package-cli.md), [OpenDesign output contract](docs/output-contract.md), [synthetic package](examples/example-studio/), [ingestion guide](docs/ingestion.md), [evidence guide](docs/evidence-processor.md), and [analysis guide](docs/brand-analyzer.md).
+**Status:** Ingestion, reviewable evidence, multimodal analysis, local OpenDesign compilation, and a human-readable HTML report are implemented. See the [package CLI guide](docs/package-cli.md), [brand report guide](docs/brand-report.md), [OpenDesign output contract](docs/output-contract.md), [synthetic package](examples/example-studio/), [ingestion guide](docs/ingestion.md), [evidence guide](docs/evidence-processor.md), and [analysis guide](docs/brand-analyzer.md).
 
 ## Goal
 
@@ -19,7 +19,7 @@ Product context originated in the [Linear project](https://linear.app/valenf/pro
 
 ## Development
 
-Node 20+ and `pnpm install` run the project. The package compiler uses Sharp to create a local WebP moodboard. See the guides above and [CONTRIBUTING.md](CONTRIBUTING.md).
+Node 20+ and `pnpm install` run the project. The package compiler uses Sharp to create a local WebP moodboard; the report generator uses it for portable thumbnails. See the guides above and [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ## License
 

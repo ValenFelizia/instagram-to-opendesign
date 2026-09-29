@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 import { runPipeline } from '../src/pipeline.js';
+import { buildBrandReport } from '../src/report.js';
 
 const usage = "Usage: pnpm brand:instagram '@username' [--refresh] [--reanalyze]";
 const args = process.argv.slice(2);
@@ -22,6 +23,8 @@ try {
     process.exitCode = 2;
   } else {
     console.log(`OpenDesign package: ${result.outputDir}`);
+    const report = await buildBrandReport(`data/${result.username}`);
+    console.log(`Brand report: ${report.outputPath}`);
     console.log(`Reused existing source: ${!result.ingested}; reused analysis: ${!result.analyzed}; reused color proposal: ${!result.colorProposed}.`);
     if (result.colorUsage) console.log(`Color API usage: ${result.colorUsage.input_tokens ?? '?'} input, ${result.colorUsage.output_tokens ?? '?'} output tokens.`);
   }

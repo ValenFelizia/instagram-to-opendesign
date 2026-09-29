@@ -2,7 +2,15 @@
 
 ## In Progress
 
+
 ## Ready to Land
+
+- [ ] GitHub #13 — Informe HTML de identidad para revisar el perfil analizado.
+  - Owner: Valentin Felizia
+  - Agent: Codex
+  - Branch: `codex/brand-report`
+  - Scope: generador local reutilizable, revisión visual con Felisa y documentación pública sin datos reales.
+  - Verification: 18 pruebas, HTML real local para `@felisa_fr` con 18 imágenes propias revisadas y 12 captions; render de 1440 px y 390 px sin desborde y con todas las imágenes cargadas.
 
 - [ ] GitHub #5 / VAL-92 — Compilar paquete OpenDesign y CLI de punta a punta.
   - Owner: Valentin Felizia

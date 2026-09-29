@@ -1,5 +1,15 @@
 # Decisions
 
+## DEC-006 — Informe HTML autónomo para revisar el borrador
+
+- Status: accepted for the first report
+- Date: 2026-09-28
+- Context: los JSON y el paquete OpenDesign permiten auditar fuentes pero no ofrecen una lectura accesible a la dueña de una marca antes de usar el paquete.
+- Decision: generar un HTML local de una página a partir del análisis validado, con miniaturas propias revisadas incorporadas, enlaces internos a evidencia, estados y colores candidatos claramente provisionales. El navegador no carga scripts ni recursos externos.
+- Rationale: se puede abrir, revisar y exportar a PDF sin servidor ni credenciales; el mismo archivo sigue siendo reproducible desde el snapshot local.
+- Consequence: el HTML contiene copias reducidas de imágenes y textos del perfil; permanece en `data/` ignorado por Git y requiere permiso para redistribución. La salida real de Felisa no entra al repo público.
+- Evidence: pruebas sintéticas de referencias, escape HTML, exclusión de colaboraciones y conservación del archivo previo; render local de Felisa en escritorio y móvil.
+
 ## DEC-005 — Compilar paquete mínimo sin reimportación normalizadora
 
 - Status: accepted for VAL-92
