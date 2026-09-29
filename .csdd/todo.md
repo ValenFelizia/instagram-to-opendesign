@@ -9,6 +9,7 @@
   - Owner: Valentin Felizia
   - Agent: Codex
   - Branch: `codex/brand-report`
+  - PR: https://github.com/ValenFelizia/instagram-to-opendesign/pull/14
   - Scope: generador local reutilizable, revisión visual con Felisa y documentación pública sin datos reales.
   - Verification: 18 pruebas, HTML real local para `@felisa_fr` con 18 imágenes propias revisadas y 12 captions; render de 1440 px y 390 px sin desborde y con todas las imágenes cargadas.
 
