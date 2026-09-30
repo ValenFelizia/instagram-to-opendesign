@@ -272,6 +272,8 @@ export async function compilePackage(prepared, analysis, colorProposals, { outpu
       files: { design: 'DESIGN.md', tokens: 'tokens.css' }, assetsDir: 'assets',
     };
     await write(root, 'manifest.json', json(manifest));
+    // Published means selectable in the local catalog, not verified brand identity.
+    await write(root, 'metadata.json', json({ status: 'published' }));
     const decisionExport = structuredClone(decisions.document);
     for (const source of decisions.sources) {
       const target = `source/manual/${source.id}${path.extname(source.path)}`;

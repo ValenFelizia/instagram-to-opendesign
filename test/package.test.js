@@ -80,6 +80,8 @@ test('pauses for review, resumes with one command, and reuses paid stages', asyn
     assert.equal(manifest.id, 'example-studio');
     assert.equal(manifest.source.type, 'local');
     assert.equal(manifest.sourceFiles, undefined);
+    const catalogMetadata = JSON.parse(await readFile(path.join(built.outputDir, 'metadata.json'), 'utf8'));
+    assert.equal(catalogMetadata.status, 'published');
     const design = await readFile(path.join(built.outputDir, 'DESIGN.md'), 'utf8');
     assert.match(design, /provisional|revisable/);
     const source = await readFile(path.join(built.outputDir, 'source/instagram-source.json'), 'utf8');
