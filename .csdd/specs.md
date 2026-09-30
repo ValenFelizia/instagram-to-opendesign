@@ -36,6 +36,8 @@ The project investigates whether a public Instagram profile provides enough evid
 
 ## Interfaces and Contracts
 
+Result review preserves immutable first/subsequent outputs, complete brief/package snapshots, viewport artifacts and original feedback. Deterministic checks consume explicitly supplied rendered observations; screenshots alone retain uncertainty. Corrections remain request-specific with explicit/unknown causes. Matched comparison includes shared source bytes, prior knowledge and all supplied preparation/review/edit effort; it does not generate an aesthetic score or infer utility. Rich packages remain gated by observed missing context. Source: GitHub #21/#22 and user direction, 2026-09-30.
+
 Explicit delivery targets a supplied absolute OpenDesign data directory and verified installation version, validates current package/selected-brief context and hashes, and atomically installs a minimally described published user catalog entry plus a portable handoff and starter instruction. Promotional-image and website-change requests specify target dimensions; authorized existing-site file hashes remain local context and require OpenDesign linked directory access before editing. Delivery never starts generation. Source: GitHub #20 and local OpenDesign 0.23.1 integration.
 
 Accessibility preflight evaluates declared solid-color usages with unrounded WCAG contrast thresholds, resolves token aliases and keeps unknown/photo backgrounds pending. Verifiable failures prevent brief execution; contextual alternatives, keyboard/focus/semantics, resize, reduced motion and artwork descriptions remain rendered acceptance tasks. It does not rewrite confirmed colors or certify accessibility. Source: GitHub #19.
