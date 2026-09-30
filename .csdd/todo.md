@@ -8,6 +8,7 @@
   - Owner: Valentin Felizia
   - Agent: Codex (P0 worktree)
   - Branch: `codex/design-brief`
+  - PR: https://github.com/ValenFelizia/instagram-to-opendesign/pull/26
   - Updated: 2026-09-30
   - Scope: validated local request, reusable explicit provider, human selection, portable brief and focused synthetic verification.
   - Landing: stacked on `codex/asset-preflight` / PR #25.
