@@ -10,8 +10,8 @@
   - Branch: `codex/result-review`
   - Updated: 2026-09-30
   - Scope: immutable revisions, observations/checks, original feedback, request-specific corrections, cumulative effort and matched-input protocol.
-  - Landing: stacked on #30.
-  - Verification: synthetic web/Story fixtures; real unfamiliar-brand utility and human acceptance remain pending. #22 gate remains closed for insufficient evaluation evidence.
+  - Landing: PR #34, stacked on #30.
+  - Verification: 40 tests and synthetic web/Story fixtures; real unfamiliar-brand utility and human acceptance remain pending. #22 gate remains closed for insufficient evaluation evidence.
 
 - [ ] GitHub #20 — Explicit OpenDesign handoff and generalized requests.
   - Owner: Valentin Felizia

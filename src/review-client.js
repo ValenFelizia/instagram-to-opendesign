@@ -9,12 +9,12 @@ export function reviewClient() {
   const text = data.language === 'es' ? {
     changed: 'Cambios pendientes de exportar: ', invalid: 'Revisá el nombre y las notas de las decisiones.',
     note: 'Explicá por qué aceptás o rechazás esta propuesta.', empty: 'Cambiá al menos una decisión antes de exportar.',
-    saved: 'Se descargó el JSON. Tu navegador elige la carpeta; importalo con el comando indicado. El perfil todavía no cambió.',
+    saved: 'Se solicitó la descarga JSON. Verificá el archivo en la carpeta elegida por tu navegador e importalo con el comando indicado. El perfil todavía no cambió.',
     badFile: 'El JSON no corresponde a este perfil o contiene decisiones inválidas.',
     loaded: 'Decisiones cargadas para revisar. Las que tienen evidencia distinta volvieron a pendiente; revisalas antes de exportar.',
   } : { changed: 'Changes pending export: ', invalid: 'Review the reviewer name and decision notes.',
     note: 'Explain why you accept or reject this proposal.', empty: 'Change at least one decision before export.',
-    saved: 'JSON downloaded. Your browser chooses its folder; import it using the command shown. Profile files have not changed.',
+    saved: 'JSON download requested. Check the file in your browser’s chosen folder and import it using the command shown. Profile files have not changed.',
     badFile: 'JSON belongs to another profile or contains invalid decisions.', loaded: 'Decisions loaded for review. Changed evidence returned to pending; review it before export.' };
   form.hidden = false;
   for (const item of data.items) {

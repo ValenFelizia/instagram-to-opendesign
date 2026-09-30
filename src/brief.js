@@ -185,6 +185,7 @@ export function briefMarkdown(brief) {
     `## Evidence and confirmation sources\n\n${brief.evidence.map((item) => `- ${item.id}: [source](${item.sourcePath}); ${quoted(item.summary)}.`).join('\n')}\n${brief.sources.map((item) => `- ${item.id}: [${item.reviewer}](${item.path}); reviewed ${item.reviewedAt}; ${item.stale ? 'changed — review required' : 'digest current'}.`).join('\n')}\n\n` +
     `## Acceptance criteria\n\n${brief.acceptanceCriteria.map((item) => `- [ ] ${item}`).join('\n')}\n\n` +
     `## Accessibility preflight\n\nSee [declared usage and manual acceptance tasks](ACCESSIBILITY.md) and [structured checks](accessibility.json). Status: ${brief.accessibility?.status ?? 'manual-review'}. Manual tasks must be reviewed in the rendered result; input readiness is not an accessibility certificate.\n\n` +
+    (['instagram-story', 'promotional-image'].includes(brief.kind) ? 'See [the supplied-copy artwork description](ARTWORK-DESCRIPTION.md). Review it against the final image before publishing; this candidate is not a description of an unseen render.\n\n' : '') +
     `## Pending review\n\n${brief.pending.map((item) => `- ${quoted(item)}`).join('\n') || 'No input blockers. Rendering and human acceptance remain required.'}\n\n` +
     `## Ideation record — do not execute unselected alternatives\n\n${brief.directions.map((item) => `- ${quoted(item.id)} ${quoted(item.label)} (${item.id === selected?.id ? 'selected' : 'unselected'}): ${item.layout}, ${item.hierarchy}, ${item.assetTreatment}; assets ${item.assetIds.join(', ')}; citations ${item.evidenceIds.join(', ')}. Proposal rationale: ${quoted(item.rationale)}. Limits: ${quoted(item.limits)}. Missing: ${quoted(item.missingInformation)}.`).join('\n')}\n`;
 }
@@ -261,6 +262,11 @@ export async function compileBrief(profileDir, { outputDir } = {}) {
     await writeFile(path.join(staged, 'BRIEF.md'), briefMarkdown(brief));
     await writeFile(path.join(staged, 'accessibility.json'), json(brief.accessibility));
     await writeFile(path.join(staged, 'ACCESSIBILITY.md'), accessibilityMarkdown(brief.accessibility));
+    if (['instagram-story', 'promotional-image'].includes(brief.kind)) await writeFile(path.join(staged, 'ARTWORK-DESCRIPTION.md'),
+      '# Descripción de la pieza — candidata para revisar\n\nTexto confirmado y alternativas suministradas. Revisar contra la imagen final; todavía no describe un diseño renderizado.\n\n' +
+      '## Texto de la pieza\n\n' + brief.request.copy.map((item) => `${item.text}\n`).join('\n') +
+      '\n## Imágenes informativas\n\n' + brief.assets.filter((asset) => asset.use.alt.usage === 'informative').map((asset) => `- ${asset.id}: ${asset.use.alt.text}`).join('\n') +
+      (brief.request.action.type === 'native-sticker' ? `\n\n## Acción pendiente en Instagram\n\nSticker nativo: ${brief.request.action.label}. Destino confirmado: ${brief.request.action.url}. La persona responsable debe agregarlo y revisar su ubicación en el editor; el arte no incluye un enlace funcional.\n` : '\n'));
   });
   return { outputDir: target, brief };
 }
