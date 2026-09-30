@@ -8,6 +8,7 @@ import { buildDirectoryAtomically } from './atomic.js';
 import { validateColorCandidates } from './colors.js';
 import { decisionsMarkdown, loadDecisions } from './decisions.js';
 import { buildAssetCatalog } from './asset-catalog.js';
+import { digest, fileDigests, json as stableJson } from './local.js';
 
 const BASE_TOKENS = new URL('../examples/example-studio/tokens.css', import.meta.url);
 const ANALYSIS_SCHEMA = new URL('../schemas/brand-analysis.schema.json', import.meta.url);
@@ -181,7 +182,7 @@ async function createMoodboard(images, root) {
     .composite(composites).webp({ quality: 82 }).toFile(path.join(root, 'assets', 'moodboard.webp'));
 }
 
-async function validateBuiltPackage(root, slug) {
+export async function validateBuiltPackage(root, slug) {
   const manifest = JSON.parse(await readFile(path.join(root, 'manifest.json'), 'utf8'));
   if (manifest.schemaVersion !== 'od-design-system-project/v1' || manifest.id !== slug ||
       manifest.files?.design !== 'DESIGN.md' || manifest.files?.tokens !== 'tokens.css' ||
@@ -216,14 +217,18 @@ async function validateBuiltPackage(root, slug) {
   if ((design.match(/^## /gm) ?? []).length < 7) throw new Error('DESIGN.md needs seven substantive sections.');
 }
 
-export async function compilePackage(prepared, analysis, colorProposals, { outputRoot = 'brand-output' } = {}) {
+export function packageContextHash(analysis, colorProposals, decisions, catalog, channel) {
+  return digest(stableJson({ analysis, colorProposals: { schemaVersion: colorProposals.schemaVersion,
+    inputHash: colorProposals.inputHash, candidates: colorProposals.candidates }, decisions: decisions.document, catalog, channel }));
+}
+export async function compilePackage(prepared, analysis, colorProposals, { outputRoot = 'brand-output', channel = 'website' } = {}) {
   await validateAnalysis(analysis, prepared);
   if (JSON.stringify(analysis.evidence) !== JSON.stringify(prepared.evidence)) {
     throw new Error('Analysis evidence is stale; re-run the analyzer before packaging.');
   }
   const graphics = prepared.images.filter((item) => item.review.classification === 'brand-graphic').slice(0, 4);
   validateColorCandidates(colorProposals.candidates, graphics);
-  const decisions = await loadDecisions(prepared, analysis);
+  const decisions = await loadDecisions(prepared, analysis, { channel });
   const assets = await buildAssetCatalog(prepared, analysis, { write: false });
   const blockedColors = decisions.decisions.some((item) => (item.stale || item.action === 'reject') &&
     analysis.inferences.find((inference) => inference.id === item.inferenceId)?.topic.startsWith('color.'));
@@ -307,6 +312,8 @@ export async function compilePackage(prepared, analysis, colorProposals, { outpu
         `${item.confidence ?? 'sin confianza'} · ${item.evidenceIds.join(', ') || 'sin evidencia'}`), '',
     ].join('\n'));
     await createMoodboard(prepared.images, root);
+    await write(root, 'source/package-context.json', json({ schemaVersion: 'package-context/v1', channel,
+      inputHash: packageContextHash(analysis, colorProposals, decisions, assets.catalog, channel), files: await fileDigests(root) }));
     await validateBuiltPackage(root, slug);
   });
   return { outputDir, slug, tokens };

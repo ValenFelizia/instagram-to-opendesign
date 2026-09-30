@@ -26,7 +26,9 @@
     "kind": {
       "enum": [
         "web-hero",
-        "instagram-story"
+        "instagram-story",
+        "promotional-image",
+        "website-change"
       ]
     },
     "objective": {
@@ -214,6 +216,53 @@
         "pairs",
         "motion"
       ]
+    },
+    "target": {
+      "required": [
+        "width",
+        "height"
+      ],
+      "type": "object",
+      "properties": {
+        "width": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 16384
+        },
+        "height": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 16384
+        }
+      },
+      "additionalProperties": false
+    },
+    "existingSite": {
+      "required": [
+        "root",
+        "files",
+        "sourceId"
+      ],
+      "type": "object",
+      "properties": {
+        "sourceId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "files": {
+          "minItems": 1,
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "type": "array"
+        },
+        "root": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "additionalProperties": false
     }
   },
   "$defs": {

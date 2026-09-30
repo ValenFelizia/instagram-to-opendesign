@@ -6,14 +6,14 @@ import { emptyRequest, validateRequest, suggestDirections, importDirections, com
 import { writeJsonAtomically } from '../src/atomic.js';
 import { readOptionalJson } from '../src/local.js';
 
-const usage = 'Usage: pnpm brand:brief data/<username> [--init web-hero|instagram-story | --suggest [--force] | --import file.json | --compile [--out directory]]';
+const usage = 'Usage: pnpm brand:brief data/<username> [--init web-hero|instagram-story|promotional-image|website-change [--width N --height N] | --suggest [--force] | --import file.json | --compile [--out directory]]';
 const [profileDir, mode = '--compile', ...args] = process.argv.slice(2);
 if (!profileDir || ['--help', '-h'].includes(profileDir)) { console.log(usage); process.exit(profileDir ? 0 : 1); }
 try {
-  if (mode === '--init' && args.length === 1) {
+  if (mode === '--init' && (args.length === 1 || args.length === 5 && args[1] === '--width' && args[3] === '--height')) {
     const prepared = await prepareAnalysis(profileDir), file = path.join(prepared.root, 'design-request.json');
     if (await readOptionalJson(file)) throw new Error('Request already exists; initialization never overwrites it.');
-    const request = emptyRequest(prepared.source.profile.username, args[0]);
+    const request = emptyRequest(prepared.source.profile.username, args[0], args.length === 5 ? { width: Number(args[2]), height: Number(args[4]) } : undefined);
     validateRequest(request, prepared.source.profile.username);
     await writeJsonAtomically(file, request); console.log(file);
   } else if (mode === '--suggest' && (!args.length || args.length === 1 && args[0] === '--force')) {

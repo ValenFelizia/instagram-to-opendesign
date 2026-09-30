@@ -4,6 +4,15 @@
 
 ## Ready to Land
 
+- [ ] GitHub #20 — Explicit OpenDesign handoff and generalized requests.
+  - Owner: Valentin Felizia
+  - Agent: Codex (P0 worktree)
+  - Branch: `codex/opendesign-handoff`
+  - Updated: 2026-09-30
+  - Scope: safe atomic installation, current input/hash gates, exact starter instruction, promotional/site requests and authorized code fingerprints.
+  - Landing: stacked on #29.
+  - Verification: synthetic published catalog selection and project creation on isolated OpenDesign 0.23.1; no generation. Real Felisa hero and agent context consumption remain pending/deferred.
+
 - [ ] GitHub #19 — Declared-use accessibility preflight.
   - Owner: Valentin Felizia
   - Agent: Codex (P0 worktree)
@@ -35,8 +44,6 @@
 
 ## Pending
 
-- [ ] GitHub #20 — Explicit OpenDesign delivery and existing-site context.
-  - Owner: Valentin Felizia
 - [ ] GitHub #21 — Preserve results, requirements, corrections and uncertainty.
   - Owner: Valentin Felizia
 

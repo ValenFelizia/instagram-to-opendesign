@@ -36,6 +36,8 @@ The project investigates whether a public Instagram profile provides enough evid
 
 ## Interfaces and Contracts
 
+Explicit delivery targets a supplied absolute OpenDesign data directory and verified installation version, validates current package/selected-brief context and hashes, and atomically installs a minimally described published user catalog entry plus a portable handoff and starter instruction. Promotional-image and website-change requests specify target dimensions; authorized existing-site file hashes remain local context and require OpenDesign linked directory access before editing. Delivery never starts generation. Source: GitHub #20 and local OpenDesign 0.23.1 integration.
+
 Accessibility preflight evaluates declared solid-color usages with unrounded WCAG contrast thresholds, resolves token aliases and keeps unknown/photo backgrounds pending. Verifiable failures prevent brief execution; contextual alternatives, keyboard/focus/semantics, resize, reduced motion and artwork descriptions remain rendered acceptance tasks. It does not rewrite confirmed colors or certify accessibility. Source: GitHub #19.
 
 The report reviews inference proposals through local labeled controls and exports a scoped `brand-review/v1` download. Explicit CLI import validates profile, evidence fingerprints and decision revisions, preserving confirmed rules and unrelated rows. No browser storage or network calls are used. Optional website/social rule scopes keep channel authority distinct. Source: GitHub #18 and user review, 2026-09-30.
