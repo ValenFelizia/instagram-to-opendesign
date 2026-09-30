@@ -4,6 +4,7 @@ Thanks for your interest. Start with a focused GitHub issue or discussion before
 
 ## Ground rules
 
+- Write repository documentation, issues and pull request titles/descriptions in English. Generated reports default to Spanish for brand-owner review and support English with `--lang en`. Original evidence may retain the profile's language.
 - Keep contributions compatible with OpenDesign's current package format. Record the source and revision used to verify a compatibility claim.
 - Preserve evidence and confidence for brand inferences. Avoid presenting unverified visual observations as rules.
 - Do not commit access tokens, private profile data, third-party images without redistribution rights, or generated brand packages containing such material.
