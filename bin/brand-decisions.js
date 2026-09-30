@@ -7,7 +7,7 @@ import { emptyDecisions, loadDecisions, validateDecisionDocument } from '../src/
 import { digest, profileFile, readOptionalJson } from '../src/local.js';
 import { importReviewFile } from '../src/review.js';
 
-const usage = 'Usage: pnpm brand:decisions data/<username> [--init | --check | --source manual/file.md --reviewer "Name" --summary "Purpose"]';
+const usage = 'Usage: pnpm brand:decisions data/<username> [--init | --check | --import review.json | --source manual/file.md --reviewer "Name" --summary "Purpose"]';
 const [profileDir, mode = '--check', ...args] = process.argv.slice(2);
 if (!profileDir || ['--help', '-h'].includes(profileDir)) { console.log(usage); process.exit(profileDir ? 0 : 1); }
 try {
