@@ -1,0 +1,26 @@
+{
+  "$schema":"https://json-schema.org/draft/2020-12/schema",
+  "type":"object","additionalProperties":false,
+  "required":["schemaVersion","username","kind","objective","audience","sourceId","copy","action","assets","constraints","selectedDirectionId"],
+  "properties":{
+    "schemaVersion":{"const":"design-request/v1"},"username":{"type":"string","minLength":1},
+    "kind":{"enum":["web-hero","instagram-story"]},"objective":{"type":"string"},"audience":{"type":"string"},
+    "sourceId":{"type":["string","null"]},
+    "copy":{"type":"array","items":{"type":"object","additionalProperties":false,"required":["id","text"],
+      "properties":{"id":{"type":"string","pattern":"^[A-Za-z0-9-]+$"},"text":{"type":"string","minLength":1}}}},
+    "action":{"type":"object","additionalProperties":false,"required":["type","label","url","reservedSpace"],
+      "properties":{"type":{"enum":["none","link","native-sticker"]},"label":{"type":["string","null"]},"url":{"type":["string","null"]},
+        "reservedSpace":{"anyOf":[{"type":"null"},{"$ref":"#/$defs/box"}]}}},
+    "assets":{"type":"array","items":{"type":"object","additionalProperties":false,
+      "required":["id","fit","alt","cropReviewed","lowResolutionAccepted"],
+      "properties":{"id":{"type":"string","minLength":1},"fit":{"enum":["contain","cover"]},
+        "cropReviewed":{"type":"boolean"},"lowResolutionAccepted":{"type":"boolean"},
+        "alt":{"type":"object","additionalProperties":false,"required":["usage","text"],
+          "properties":{"usage":{"enum":["unknown","informative","decorative"]},"text":{"type":"string"}}}}}},
+    "constraints":{"type":"array","items":{"type":"string","minLength":1}},
+    "selectedDirectionId":{"type":["string","null"]}
+  },
+  "$defs":{"box":{"type":"object","additionalProperties":false,"required":["x","y","width","height"],
+    "properties":{"x":{"type":"number","minimum":0,"maximum":1},"y":{"type":"number","minimum":0,"maximum":1},
+      "width":{"type":"number","exclusiveMinimum":0,"maximum":1},"height":{"type":"number","exclusiveMinimum":0,"maximum":1}}}}
+}
