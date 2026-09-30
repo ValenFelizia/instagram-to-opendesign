@@ -1,5 +1,16 @@
 # Decisions
 
+## DEC-008 — Standalone HTML for reviewing the draft
+
+- Status: accepted for the first report
+- Date: 2026-09-29
+- Updated: 2026-09-30
+- Context: JSON and the OpenDesign package expose sources but do not give the brand owner an accessible overview. The user wants English project documentation and an optional English report while retaining Spanish for Fer's review.
+- Decision: generate local HTML from validated analysis with embedded reviewed own thumbnails, internal evidence links, review status and provisional colors. Default to Spanish; `--lang en` translates existing prose with one structured text-only request and a fingerprinted local cache. Keep original source text inspectable and preserve IDs, confidence, status, nulls and hex values. The browser loads no external resources or scripts.
+- Rationale: reports can be opened, reviewed and printed without a server; both languages are reproducible from the local snapshot. Translation avoids rerunning visual analysis just to change language.
+- Consequence: HTML embeds reduced copies of profile images and text, stays under Git-ignored `data/` and requires permission for redistribution. Spanish regeneration has no provider cost; uncached English translation requires `OPENAI_API_KEY` and may incur a charge. Invalid translations preserve previous output. Real Felisa output stays outside the public repository.
+- Evidence: synthetic tests for references, escaping, collaborator exclusion, translation caching and output preservation; local desktop and mobile renders with Felisa.
+
 ## DEC-007 — Keep the importer local after the Felisa trial
 
 - Status: accepted for VAL-93

@@ -9,9 +9,10 @@
   - Agent: Codex
   - Branch: `codex/val-93-validation`
   - PR: https://github.com/ValenFelizia/instagram-to-opendesign/pull/12
+  - Updated: 2026-09-30
   - Scope: hero/Story comparison in OpenDesign, package installation fix and documented conclusion.
   - Landing: PR #12 into `main`, pending human review.
-  - Verification: 15 tests; synthetic fixture selectable in OpenDesign `0.23.1`; preferred manual Story saved locally under Git-ignored `data/`. The package showed no clear visual advantage; do not expand to MCP.
+  - Verification: 22 tests pass after merging current `main`; synthetic fixture selectable in OpenDesign `0.23.1`; preferred manual Story saved locally under Git-ignored `data/`. The package showed no clear visual advantage; do not expand to MCP.
 
 ## Blocked
 
@@ -22,6 +23,13 @@
 ## Recently Completed
 
 Retention: 5
+
+- [x] GitHub #13 — Brand report and English project prose.
+  - Owner: Valentin Felizia
+  - Agent: Codex
+  - Scope: released
+  - Landed: `main` @ `c46e960` (PR #14)
+  - Verification: 22 tests; real English Felisa translation and key-free cache reuse; both languages rendered at 1440 px and 390 px with all images loaded, no horizontal overflow, no external requests and no missing evidence anchors.
 
 - [x] GitHub #5 / VAL-92 — Compile OpenDesign packages and an end-to-end CLI.
   - Owner: Valentin Felizia
@@ -50,10 +58,3 @@ Retention: 5
   - Scope: released
   - Landed: `main` @ `55447f5` (PR #7)
   - Verification: Apify returned 15 public `@felisa_fr` posts (3 with another primary author), 93 images and 10 videos; valid `instagram-source/v1`. Real data remains under Git-ignored `data/`.
-
-- [x] VAL-88 — Output contract and synthetic static package for OpenDesign.
-  - Owner: Valentin Felizia
-  - Agent: Codex
-  - Scope: released
-  - Landed: `main` @ `6129683`
-  - Verification: OpenDesign manifest parser at `1b47e60`, all 56 shared tokens, analysis schema, evidence references and remote files checked. A running-instance test was left for subsequent integration validation.

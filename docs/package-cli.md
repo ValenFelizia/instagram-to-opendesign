@@ -12,6 +12,8 @@ On first use, the command ingests public posts and creates `data/<username>/evid
 
 The output is `brand-output/<slug>/` (for `@felisa_fr`, `brand-output/felisa-fr/`). Both `brand-output/` and `data/` are ignored by Git. The package contains `manifest.json`, `metadata.json`, `DESIGN.md`, all 56 OpenDesign slots in `tokens.css`, a rebased `brand-analysis.json`, selected own images, `assets/moodboard.webp`, and `source/` with captions and evidence. The source export includes only own posts and selected local media paths; it omits expiring CDN URLs, raw provider payloads, collaborators, and credentials. The original normalized ingestion remains in ignored `data/`.
 
+The same command also writes a standalone Spanish [brand report](brand-report.md) to `data/<username>/brand-report.html` for human review. To regenerate Spanish HTML without provider calls, run `pnpm brand:report data/<username>`. Both commands support `--lang en`, which writes `brand-report.en.html` and uses one text-only translation request when the local English cache is not current. This report option does not change the analysis or the OpenDesign package language.
+
 The color proposal makes one additional `gpt-6-luna` Responses API call with at most four reviewed, profile-owned **brand graphics**. It cites their evidence IDs and returns approximate hex candidates. If no brand graphic exists, the compiler uses neutral functional defaults without that call. It checks candidate references and foreground contrast. Fonts, spacing, components, and most semantic tokens are functional defaults, not recovered brand facts. `DESIGN.md` and `source/evidence.md` state this uncertainty; no model output becomes `verified`.
 
 ## Loading into OpenDesign

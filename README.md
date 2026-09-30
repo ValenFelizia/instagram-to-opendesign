@@ -2,7 +2,7 @@
 
 An early open source experiment to turn evidence from a public Instagram profile into a traceable brand package that OpenDesign can use.
 
-**Status:** Ingestion, reviewable evidence, multimodal analysis, and the local OpenDesign package compiler are implemented. The first Felisa trial found no clear design advantage over a manual prompt, so deeper integration is deferred. The generated identity remains provisional. See the [validation results](docs/mvp-validation.md), [package CLI guide](docs/package-cli.md), [OpenDesign output contract](docs/output-contract.md), [synthetic package](examples/example-studio/), [ingestion guide](docs/ingestion.md), [evidence guide](docs/evidence-processor.md), and [analysis guide](docs/brand-analyzer.md).
+**Status:** Ingestion, reviewable evidence, multimodal analysis, local OpenDesign compilation, and a human-readable HTML report are implemented. The first Felisa trial found no clear design advantage over a manual prompt, so deeper integration is deferred. The generated identity remains provisional. See the [validation results](docs/mvp-validation.md), [package CLI guide](docs/package-cli.md), [brand report guide](docs/brand-report.md), [OpenDesign output contract](docs/output-contract.md), [synthetic package](examples/example-studio/), [ingestion guide](docs/ingestion.md), [evidence guide](docs/evidence-processor.md), and [analysis guide](docs/brand-analyzer.md).
 
 ## Goal
 
@@ -19,7 +19,9 @@ Product context originated in the [Linear project](https://linear.app/valenf/pro
 
 ## Development
 
-Node 20+ and `pnpm install` run the project. The package compiler uses Sharp to create a local WebP moodboard. See the guides above and [CONTRIBUTING.md](CONTRIBUTING.md).
+Node 20+ and `pnpm install` run the project. The package compiler uses Sharp to create a local WebP moodboard; the report generator uses it for portable thumbnails. See the guides above and [CONTRIBUTING.md](CONTRIBUTING.md).
+
+Project documentation, issues and pull requests use English. Brand reports default to Spanish and support `--lang en`; see the [report guide](docs/brand-report.md) for translation credentials, caching and costs.
 
 ## License
 
