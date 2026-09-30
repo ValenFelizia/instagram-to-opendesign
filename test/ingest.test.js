@@ -44,8 +44,13 @@ test('ingests media locally and preserves earlier output on download failure', a
     assert.equal((await stat(path.join(outputDir, saved.posts[0].media[0].assetPath))).size, 15);
     await mkdir(path.join(outputDir, 'evidence'));
     await writeFile(path.join(outputDir, 'evidence', 'review.json'), '{"profile/avatar":{"classification":"brand-graphic"}}');
+    await mkdir(path.join(outputDir, 'manual'));
+    await writeFile(path.join(outputDir, 'manual/brand.md'), 'Owner-approved source');
+    await writeFile(path.join(outputDir, 'brand-decisions.json'), '{"synthetic":"decision snapshot"}');
     await ingest('example.studio', options);
     assert.match(await readFile(path.join(outputDir, 'evidence', 'review.json'), 'utf8'), /brand-graphic/);
+    assert.equal(await readFile(path.join(outputDir, 'manual/brand.md'), 'utf8'), 'Owner-approved source');
+    assert.match(await readFile(path.join(outputDir, 'brand-decisions.json'), 'utf8'), /decision snapshot/);
     const stable = await readFile(path.join(outputDir, 'instagram-source.json'), 'utf8');
     await assert.rejects(() => ingest('example.studio', {
       ...options, fetchImpl: async () => new Response('error', { status: 404 }),

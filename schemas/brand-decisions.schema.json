@@ -1,0 +1,60 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Human brand decisions",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schemaVersion", "username", "sources", "rules", "inferenceDecisions", "assetSelections"],
+  "properties": {
+    "schemaVersion": {"const": "brand-decisions/v1"},
+    "username": {"type": "string", "pattern": "^[A-Za-z0-9._]+$"},
+    "sources": {"type": "array", "items": {"$ref": "#/$defs/source"}},
+    "rules": {"type": "array", "items": {"$ref": "#/$defs/rule"}},
+    "inferenceDecisions": {"type": "array", "items": {"$ref": "#/$defs/decision"}},
+    "assetSelections": {"type": "array", "items": {"$ref": "#/$defs/selection"}}
+  },
+  "$defs": {
+    "id": {"type": "string", "pattern": "^[A-Za-z0-9-]+$"},
+    "text": {"type": "string", "minLength": 1},
+    "hash": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+    "source": {
+      "type": "object", "additionalProperties": false,
+      "required": ["id", "path", "sha256", "summary", "reviewer", "reviewedAt"],
+      "properties": {
+        "id": {"$ref": "#/$defs/id"},
+        "path": {"type": "string", "pattern": "^(manual|assets|evidence|source)/[A-Za-z0-9._/-]+\\.(md|txt|json|css|png|jpg|jpeg|webp)$"},
+        "sha256": {"$ref": "#/$defs/hash"},
+        "summary": {"$ref": "#/$defs/text"}, "reviewer": {"$ref": "#/$defs/text"},
+        "reviewedAt": {"type": "string", "format": "date-time"}
+      }
+    },
+    "rule": {
+      "type": "object", "additionalProperties": false,
+      "required": ["id", "kind", "target", "value", "sourceId"],
+      "properties": {
+        "id": {"$ref": "#/$defs/id"},
+        "kind": {"enum": ["token", "font", "copy", "logo", "constraint"]},
+        "target": {"$ref": "#/$defs/text"}, "value": {"$ref": "#/$defs/text"},
+        "sourceId": {"$ref": "#/$defs/id"}
+      }
+    },
+    "decision": {
+      "type": "object", "additionalProperties": false,
+      "required": ["inferenceId", "fingerprint", "action"],
+      "properties": {
+        "inferenceId": {"$ref": "#/$defs/id"}, "fingerprint": {"$ref": "#/$defs/hash"},
+        "action": {"enum": ["accept-proposal", "reject", "pending"]},
+        "reviewer": {"$ref": "#/$defs/text"}, "reviewedAt": {"type": "string", "format": "date-time"},
+        "note": {"$ref": "#/$defs/text"}
+      },
+      "allOf": [{"if": {"properties": {"action": {"enum": ["accept-proposal", "reject"]}}}, "then": {"required": ["reviewer", "reviewedAt", "note"]}}]
+    },
+    "selection": {
+      "type": "object", "additionalProperties": false,
+      "required": ["evidenceId", "role", "action", "sourceId"],
+      "properties": {
+        "evidenceId": {"$ref": "#/$defs/id"}, "role": {"$ref": "#/$defs/text"},
+        "action": {"enum": ["primary", "include", "exclude"]}, "sourceId": {"$ref": "#/$defs/id"}
+      }
+    }
+  }
+}

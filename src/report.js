@@ -7,6 +7,7 @@ import { colorInputFingerprint, validateColorCandidates } from './colors.js';
 import { ANALYSIS_TOPICS } from './providers/openai.js';
 import { reportCopy } from './report-copy.js';
 import { translateReport } from './report-translation.js';
+import { decisionsHtml, loadDecisions } from './decisions.js';
 const escapeHtml = (value) => String(value ?? '').replace(/[&<>"']/g, (character) =>
   ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[character]);
 const id = (value) => `evidence-${value}`;
@@ -119,19 +120,28 @@ export async function buildBrandReport(profileDir, { outputPath, language = 'es'
       analysis.subject.profileUrl !== prepared.source.source.profileUrl) {
     throw new Error('Analysis evidence does not match the current profile. Reanalyze before generating a report.');
   }
+  const decisions = await loadDecisions(prepared, analysis);
   const colors = await loadColors(prepared, analysis);
   const translated = language === 'en'
     ? await translateReport(prepared, analysis, colors, { token, fetchImpl, provider: translationProvider })
     : null;
   const thumbs = new Map(await Promise.all(prepared.images.map(async (image) =>
     [image.evidenceId, await thumbnail(image.absolutePath)])));
-  const html = render({ prepared, analysis: translated?.analysis ?? analysis, colors: translated?.colors ?? colors,
+  const displayed = structuredClone(translated?.analysis ?? analysis);
+  for (const decision of decisions.decisions) {
+    if (decision.stale || decision.action === 'reject') {
+      Object.assign(displayed.inferences.find((item) => item.id === decision.inferenceId), {
+        value: null, status: 'needs-review', confidence: null,
+        rationale: language === 'en' ? 'Human decision requires review or rejected this proposal.' : 'La decisión humana requiere revisión o rechazó esta propuesta.' });
+    }
+  }
+  const html = render({ prepared, analysis: displayed, colors: translated?.colors ?? colors,
     thumbs, language, biography: translated?.biography ?? prepared.source.profile.biography,
-    originalEvidence: analysis.evidence });
+    originalEvidence: analysis.evidence }).replace('</main>', `${decisionsHtml(decisions, language)}</main>`);
   const filename = language === 'es' ? 'brand-report.html' : 'brand-report.en.html';
   const destination = path.resolve(outputPath || path.join(prepared.root, filename));
   await replaceFile(destination, html);
   return { outputPath: destination, language, translationReused: translated?.reused ?? null,
     translationUsage: translated?.usage ?? null, images: prepared.images.length,
-    captions: prepared.captions.length, inferred: analysis.inferences.filter((item) => item.status === 'inferred').length };
+    captions: prepared.captions.length, inferred: decisions.effectiveAnalysis.inferences.filter((item) => item.status === 'inferred').length };
 }

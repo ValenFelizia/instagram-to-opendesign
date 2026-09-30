@@ -4,6 +4,16 @@
 
 ## Ready to Land
 
+- [ ] GitHub #15 — Verified decisions and brand conflicts.
+  - Owner: Valentin Felizia
+  - Agent: Codex (P0 worktree)
+  - Branch: `codex/brand-decisions`
+  - PR: https://github.com/ValenFelizia/instagram-to-opendesign/pull/23
+  - Updated: 2026-09-30
+  - Scope: decision contract, compiler and read-only report provenance, focused English documentation.
+  - Landing: draft PR to `codex/brand-report`, then `main` after PR #14. Translation from `78a813f` reconciled.
+  - Verification: synthetic confirmed-rule tests and provider-free local Felisa rebuild. Real owner confirmation remains a review step.
+
 - [ ] GitHub #13 — Brand report and English project prose.
   - Owner: Valentin Felizia
   - Agent: Codex
