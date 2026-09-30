@@ -19,9 +19,17 @@ export function collectRenderObservations() {
   };
   const background = (element) => {
     let result = null;
+    const textBox = rect(element);
+    for (const image of document.querySelectorAll('img, svg, video, canvas')) {
+      const box = rect(image);
+      if (visible(image) && textBox.x < box.x + box.width && textBox.x + textBox.width > box.x &&
+          textBox.y < box.y + box.height && textBox.y + textBox.height > box.y) return null;
+    }
     for (let node = element; node; node = node.parentElement) {
       const style = getComputedStyle(node);
-      if (style.backgroundImage !== 'none') return null;
+      if (style.backgroundImage !== 'none' || Number(style.opacity) !== 1 || style.filter !== 'none' ||
+          style.mixBlendMode !== 'normal' || style.backdropFilter && style.backdropFilter !== 'none' ||
+          style.transform !== 'none' || style.zoom && !['1', 'normal'].includes(style.zoom)) return null;
       if (!result && style.backgroundColor !== 'rgba(0, 0, 0, 0)') {
         result = hex(style.backgroundColor); if (!result) return null;
       }
@@ -30,8 +38,9 @@ export function collectRenderObservations() {
   };
   const copy = [...document.querySelectorAll('[data-copy-id]')].map((node) => {
     const style = getComputedStyle(node);
+    const mixedInk = [...node.querySelectorAll('*')].some((child) => visible(child) && getComputedStyle(child).color !== style.color);
     return { id: node.getAttribute('data-copy-id'), text: node.innerText, visible: visible(node), rect: rect(node),
-      foreground: hex(style.color), background: background(node), fontSize: parseFloat(style.fontSize), fontWeight: parseInt(style.fontWeight) || 400 };
+      foreground: mixedInk ? null : hex(style.color), background: background(node), fontSize: parseFloat(style.fontSize), fontWeight: parseInt(style.fontWeight) || 400 };
   });
   const assets = [...document.querySelectorAll('img[data-asset-id]')].map((node) => ({
     id: node.getAttribute('data-asset-id'), src: node.getAttribute('src'), visible: visible(node), rect: rect(node),
