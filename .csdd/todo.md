@@ -4,6 +4,15 @@
 
 ## Ready to Land
 
+- [ ] GitHub #16 — Asset inventory and design preflight.
+  - Owner: Valentin Felizia
+  - Agent: Codex (P0 worktree)
+  - Branch: `codex/asset-preflight`
+  - Updated: 2026-09-30
+  - Scope: local asset review, measured properties, permission provenance, compiler export and focused fixtures.
+  - Landing: stacked on `codex/brand-decisions` / PR #23.
+  - Verification: 28 tests, including actual alpha pixels, supplied originals, crops, permissions and preservation on failure; real Felisa original/capture comparison. Human permissions remain pending.
+
 - [ ] GitHub #15 — Verified decisions and brand conflicts.
   - Owner: Valentin Felizia
   - Agent: Codex (P0 worktree)

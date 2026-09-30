@@ -23,6 +23,8 @@ The project investigates whether a public Instagram profile provides enough evid
 
 ## Interfaces and Contracts
 
+An optional `asset-review.json` records originals, captures, derivatives, roles, permissions and composition candidates. `brand:assets` measures file dimensions and actual transparency, proposes non-mutating crops for hero or Story slots, and writes `asset-catalog.json`. Unknown permissions or unresolved overlays prevent reusable export; originals can be supplied under `manual/`. The compiler retains reference evidence separately from confirmed reusable assets. Source: GitHub #16 and the approved P0 plan.
+
 An optional `brand-decisions.json` stores verified local rules and source/reviewer provenance separately from model analysis. Confirmed rules override inference; proposal acceptance does not verify a fact. Source/candidate fingerprints require renewed review after changes. Invalid decisions preserve prior outputs; manual documents and decisions survive refresh. The package and report expose origins and source comparisons. Source: GitHub #15 and the approved P0 plan.
 
 Ingestion produces `instagram-source.json` and local assets in a Git-ignored directory. The JSON retains public profile metadata, links, recent posts, captions, source URLs, file paths, primary authors and provider provenance. Collaborative posts are retained even when their primary author differs from the requested profile. The provider interface is isolated from normalization so the service can be replaced. Source: VAL-89 / GitHub #2 and live validation with `@felisa_fr`.
