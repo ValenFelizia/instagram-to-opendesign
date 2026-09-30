@@ -36,6 +36,8 @@ The project investigates whether a public Instagram profile provides enough evid
 
 ## Interfaces and Contracts
 
+Accessibility preflight evaluates declared solid-color usages with unrounded WCAG contrast thresholds, resolves token aliases and keeps unknown/photo backgrounds pending. Verifiable failures prevent brief execution; contextual alternatives, keyboard/focus/semantics, resize, reduced motion and artwork descriptions remain rendered acceptance tasks. It does not rewrite confirmed colors or certify accessibility. Source: GitHub #19.
+
 The report reviews inference proposals through local labeled controls and exports a scoped `brand-review/v1` download. Explicit CLI import validates profile, evidence fingerprints and decision revisions, preserving confirmed rules and unrelated rows. No browser storage or network calls are used. Optional website/social rule scopes keep channel authority distinct. Source: GitHub #18 and user review, 2026-09-30.
 
 A validated `design-request.json` selects hero or static Story, source-confirmed copy, action, constraints and approved assets. Explicit creative generation returns 2–3 structurally distinct proposals through a reusable provider/cache; local human imports are also supported. A selected direction produces portable `BRIEF.md` and `design-brief.json` outside the OpenDesign manifest. Missing approval, crop/alt/slot review or selection keeps the brief pending. Changes invalidate cached context; local compilation never calls providers. Source: GitHub #17 and the approved P0 plan.

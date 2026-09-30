@@ -5,6 +5,7 @@ import { prepareAnalysis, validateAnalysis } from './analyze.js';
 import { buildAssetCatalog } from './asset-catalog.js';
 import { buildDirectoryAtomically, writeJsonAtomically } from './atomic.js';
 import { loadDecisions } from './decisions.js';
+import { accessibilityPreflight, accessibilityMarkdown, validateAccessibilityPlan } from './accessibility.js';
 import { digest, json, profileFile, readOptionalJson } from './local.js';
 import { DIRECTIONS_MODEL, DIRECTIONS_SCHEMA, requestCreativeDirections } from './providers/openai-directions.js';
 
@@ -22,6 +23,7 @@ export function emptyRequest(username, kind = 'web-hero') {
 export function validateRequest(request, username) {
   if (!validateRequestSchema(request)) throw new Error(`Invalid design request: ${ajv.errorsText(validateRequestSchema.errors)}`);
   if (request.username !== username) throw new Error('Design request belongs to another profile.');
+  if (request.accessibility) validateAccessibilityPlan(request.accessibility);
   unique(request.copy, (item) => item.id, 'copy ID'); unique(request.assets, (item) => item.id, 'request asset');
   const action = request.action, box = action.reservedSpace;
   if (box && (box.x + box.width > 1 || box.y + box.height > 1)) throw new Error('Reserved sticker space escapes the canvas.');
@@ -161,6 +163,7 @@ export function briefMarkdown(brief) {
     `## Brand observations (not verified rules)\n\n${brief.observations.map((item) => `- ${item.id}: ${quoted(item.value)}; ${item.status}; confidence ${item.confidence}; citations ${item.evidenceIds.join(', ') || 'none'}.`).join('\n')}\n\n` +
     `## Evidence and confirmation sources\n\n${brief.evidence.map((item) => `- ${item.id}: [source](${item.sourcePath}); ${quoted(item.summary)}.`).join('\n')}\n${brief.sources.map((item) => `- ${item.id}: [${item.reviewer}](${item.path}); reviewed ${item.reviewedAt}; ${item.stale ? 'changed — review required' : 'digest current'}.`).join('\n')}\n\n` +
     `## Acceptance criteria\n\n${brief.acceptanceCriteria.map((item) => `- [ ] ${item}`).join('\n')}\n\n` +
+    `## Accessibility preflight\n\nSee [declared usage and manual acceptance tasks](ACCESSIBILITY.md) and [structured checks](accessibility.json). Status: ${brief.accessibility?.status ?? 'manual-review'}. Manual tasks must be reviewed in the rendered result; input readiness is not an accessibility certificate.\n\n` +
     `## Pending review\n\n${brief.pending.map((item) => `- ${quoted(item)}`).join('\n') || 'No input blockers. Rendering and human acceptance remain required.'}\n\n` +
     `## Ideation record — do not execute unselected alternatives\n\n${brief.directions.map((item) => `- ${quoted(item.id)} ${quoted(item.label)} (${item.id === selected?.id ? 'selected' : 'unselected'}): ${item.layout}, ${item.hierarchy}, ${item.assetTreatment}; assets ${item.assetIds.join(', ')}; citations ${item.evidenceIds.join(', ')}. Proposal rationale: ${quoted(item.rationale)}. Limits: ${quoted(item.limits)}. Missing: ${quoted(item.missingInformation)}.`).join('\n')}\n`;
 }
@@ -177,9 +180,11 @@ export async function compileBrief(profileDir, { outputDir } = {}) {
   if (selected) pending.push(...selected.missingInformation);
   if (selected?.hierarchy === 'brand-first' && !state.request.copy.some((item) => item.id === 'brand')) pending.push('brand-first direction requires confirmed brand copy.');
   const assets = selected ? state.selected.filter((entry) => selected.assetIds.includes(entry.id)) : state.selected;
+  const accessibility = accessibilityPreflight({ tokens: state.decisions.tokenOverrides, plan: state.request.accessibility, request: state.request, assets });
+  pending.push(...accessibility.checks.filter((check) => check.status === 'fail').map((check) => `Accessibility failure ${check.id}: ${check.instruction}`));
   const brief = { schemaVersion: 'design-brief/v1', inputHash: state.inputHash, kind: state.request.kind,
     status: pending.length ? 'needs-review' : 'ready-for-execution', request: state.request,
-    selectedDirection: selected, directions: cached.directions, pending,
+    selectedDirection: selected, directions: cached.directions, pending, accessibility,
     observations: state.decisions.effectiveAnalysis.inferences,
     verifiedRules: state.decisions.activeRules, brandConflicts: state.decisions.conflicts,
     sources: state.decisions.sources.map(({ absolutePath, ...source }) => ({ ...source, path: `sources/${source.id}${path.extname(source.path)}` })),
@@ -229,6 +234,8 @@ export async function compileBrief(profileDir, { outputDir } = {}) {
     }
     await writeFile(path.join(staged, 'design-brief.json'), json(brief));
     await writeFile(path.join(staged, 'BRIEF.md'), briefMarkdown(brief));
+    await writeFile(path.join(staged, 'accessibility.json'), json(accessibility));
+    await writeFile(path.join(staged, 'ACCESSIBILITY.md'), accessibilityMarkdown(accessibility));
   });
   return { outputDir: target, brief };
 }

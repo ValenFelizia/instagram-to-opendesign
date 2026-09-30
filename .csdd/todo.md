@@ -4,6 +4,15 @@
 
 ## Ready to Land
 
+- [ ] GitHub #19 — Declared-use accessibility preflight.
+  - Owner: Valentin Felizia
+  - Agent: Codex (P0 worktree)
+  - Branch: `codex/accessibility-preflight`
+  - Updated: 2026-09-30
+  - Scope: local checks, Spanish/English report, brief blockers and portable manual acceptance tasks.
+  - Landing: stacked on #28.
+  - Verification: 36 tests; alias cycles, missing/photo backgrounds, near-threshold failures and brief gates. Rendered accessibility remains a human acceptance step.
+
 - [ ] GitHub #18 — Accessible report review export/import.
   - Owner: Valentin Felizia
   - Agent: Codex (P0 worktree)
@@ -26,8 +35,6 @@
 
 ## Pending
 
-- [ ] GitHub #19 — Brief/token accessibility preflight.
-  - Owner: Valentin Felizia
 - [ ] GitHub #20 — Explicit OpenDesign delivery and existing-site context.
   - Owner: Valentin Felizia
 - [ ] GitHub #21 — Preserve results, requirements, corrections and uncertainty.

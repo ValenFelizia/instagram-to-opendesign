@@ -16,7 +16,8 @@
     "brand:decisions": "node bin/brand-decisions.js",
     "brand:assets": "node bin/brand-assets.js",
     "brand:brief": "node bin/brand-brief.js",
-    "test": "node --test test/*.test.js"
+    "test": "node --test test/*.test.js",
+    "brand:accessibility": "node bin/brand-accessibility.js"
   },
   "license": "MIT",
   "dependencies": {
