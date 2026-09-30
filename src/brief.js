@@ -55,7 +55,7 @@ export async function prepareBrief(profileDir) {
   if (JSON.stringify(analysis.evidence) !== JSON.stringify(prepared.evidence)) throw new Error('Analysis evidence is stale; re-analyze before briefing.');
   const request = JSON.parse(await readFile(path.join(prepared.root, 'design-request.json'), 'utf8'));
   validateRequest(request, prepared.source.profile.username);
-  const decisions = await loadDecisions(prepared, analysis);
+  const decisions = await loadDecisions(prepared, analysis, { channel: request.kind === 'instagram-story' ? 'social' : 'website' });
   const { catalog, entries } = await buildAssetCatalog(prepared, analysis, { kind: request.kind, write: false });
   const selected = request.assets.map((use) => {
     const asset = entries.find((entry) => entry.id === use.id);

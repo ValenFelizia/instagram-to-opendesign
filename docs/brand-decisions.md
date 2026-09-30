@@ -27,3 +27,11 @@ The compiler applies current human token/font rules, derives a readable accent f
 `DESIGN.md` distinguishes effective guidance from historical inference, cites both sources when they differ, and lists every token's origin. `source/token-origins.json` records confirmed rules, approximate visual candidates and functional defaults. Referenced source files and a rebased decision snapshot are included in `source/`; the original `brand-analysis.json` is not rewritten. The HTML adds a read-only decision/provenance section; interactive review is #18.
 
 Missing decisions preserve the existing workflow. Invalid schema, unsafe values, unknown references or missing files fail before replacing a valid package/report. Refresh preserves `brand-decisions.json` and `manual/`; edited decisions do not trigger another model analysis. Real data remains Git-ignored, and source documents containing confidential information or material without permission must not be redistributed.
+
+## Review from the report
+
+The Spanish/English report includes native labeled review controls, source links and previous/stale decisions. Opening it changes no files or browser storage and makes no external requests. Change a decision, identify the reviewer and explain acceptance/rejection, then download the JSON. The browser chooses the download folder. Import explicitly with `pnpm brand:decisions data/<username> --import <downloaded-file.json>`, then rebuild the package/report. No routine inference review requires manual JSON editing.
+
+Only edited inference rows are merged; rules, sources, assets and unrelated decisions are preserved. An outdated decision snapshot or changed cited bytes rejects import before any write. Loading an older review into a fresh report returns changed-evidence decisions to pending. Acceptance keeps the model's original inference status; source-confirmed brand rules still require reviewed documents.
+
+Rules optionally use `scope: website|social|all` (omitted means all). Website compilation/report uses website rules; static Story briefs use social rules. A channel-specific token overrides an all-channel token, while all scopes remain in the provenance snapshot. This allows an existing website palette to remain authoritative when social graphics deliberately change. Do not treat a channel's rule as a universal rebrand.

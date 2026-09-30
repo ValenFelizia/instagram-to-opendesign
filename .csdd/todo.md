@@ -4,6 +4,15 @@
 
 ## Ready to Land
 
+- [ ] GitHub #18 — Accessible report review export/import.
+  - Owner: Valentin Felizia
+  - Agent: Codex (P0 worktree)
+  - Branch: `codex/report-review`
+  - Updated: 2026-09-30
+  - Scope: report controls, scoped decision import, channel-specific approved rules and tests/docs.
+  - Landing: stacked on P0 integration PR #27.
+  - Verification: 34 tests; browser confirms labeled controls, focus on invalid notes, live error text and no overflow at its default viewport. Full 390/1440 px, download and screen-reader review remain required; browser download event timed out.
+
 - [ ] Integrate approved P0 #15–17 into main.
   - Owner: Valentin Felizia
   - Agent: Codex (P0 worktree)
@@ -17,8 +26,6 @@
 
 ## Pending
 
-- [ ] GitHub #18 — Accessible report review export/import.
-  - Owner: Valentin Felizia
 - [ ] GitHub #19 — Brief/token accessibility preflight.
   - Owner: Valentin Felizia
 - [ ] GitHub #20 — Explicit OpenDesign delivery and existing-site context.

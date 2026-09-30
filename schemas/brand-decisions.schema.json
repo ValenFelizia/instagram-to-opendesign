@@ -35,6 +35,7 @@
         "kind": {"enum": ["token", "font", "copy", "logo", "constraint"]},
         "target": {"$ref": "#/$defs/text"}, "value": {"$ref": "#/$defs/text"},
         "sourceId": {"$ref": "#/$defs/id"}
+        ,"scope": {"enum": ["all", "website", "social"]}
       }
     },
     "decision": {

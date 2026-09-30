@@ -36,6 +36,8 @@ The project investigates whether a public Instagram profile provides enough evid
 
 ## Interfaces and Contracts
 
+The report reviews inference proposals through local labeled controls and exports a scoped `brand-review/v1` download. Explicit CLI import validates profile, evidence fingerprints and decision revisions, preserving confirmed rules and unrelated rows. No browser storage or network calls are used. Optional website/social rule scopes keep channel authority distinct. Source: GitHub #18 and user review, 2026-09-30.
+
 A validated `design-request.json` selects hero or static Story, source-confirmed copy, action, constraints and approved assets. Explicit creative generation returns 2–3 structurally distinct proposals through a reusable provider/cache; local human imports are also supported. A selected direction produces portable `BRIEF.md` and `design-brief.json` outside the OpenDesign manifest. Missing approval, crop/alt/slot review or selection keeps the brief pending. Changes invalidate cached context; local compilation never calls providers. Source: GitHub #17 and the approved P0 plan.
 
 An optional `asset-review.json` records originals, captures, derivatives, roles, permissions and composition candidates. `brand:assets` measures file dimensions and actual transparency, proposes non-mutating crops for hero or Story slots, and writes `asset-catalog.json`. Unknown permissions or unresolved overlays prevent reusable export; originals can be supplied under `manual/`. The compiler retains reference evidence separately from confirmed reusable assets. Source: GitHub #16 and the approved P0 plan.
