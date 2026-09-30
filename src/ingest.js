@@ -28,6 +28,8 @@ export async function ingest(usernameInput, { outputRoot = 'data', postLimit = 2
       ['analysis-state.json', 'analysis-state.json'],
       ['brand-decisions.json', 'brand-decisions.json'],
       ['asset-review.json', 'asset-review.json'],
+      ['design-request.json', 'design-request.json'],
+      ['creative-directions.json', 'creative-directions.json'],
     ]) {
       try {
         const content = await readFile(path.join(finalDir, previous));
@@ -35,8 +37,10 @@ export async function ingest(usernameInput, { outputRoot = 'data', postLimit = 2
         await writeFile(path.join(temporaryDir, next), content);
       } catch (error) { if (error.code !== 'ENOENT') throw error; }
     }
-    try { await cp(path.join(finalDir, 'manual'), path.join(temporaryDir, 'manual'), { recursive: true }); }
-    catch (error) { if (error.code !== 'ENOENT') throw error; }
+    for (const directory of ['manual', 'brief']) {
+      try { await cp(path.join(finalDir, directory), path.join(temporaryDir, directory), { recursive: true }); }
+      catch (error) { if (error.code !== 'ENOENT') throw error; }
+    }
     let hadPrevious = false;
     try {
       await rename(finalDir, backupDir);

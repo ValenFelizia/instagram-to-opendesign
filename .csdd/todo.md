@@ -4,10 +4,20 @@
 
 ## Ready to Land
 
+- [ ] GitHub #17 — Executable hero/Story brief and creative directions.
+  - Owner: Valentin Felizia
+  - Agent: Codex (P0 worktree)
+  - Branch: `codex/design-brief`
+  - Updated: 2026-09-30
+  - Scope: validated local request, reusable explicit provider, human selection, portable brief and focused synthetic verification.
+  - Landing: stacked on `codex/asset-preflight` / PR #25.
+  - Verification: 33 tests; mocked structured API, exact copy, both target templates, cache reuse/staleness, selection, conflicts, rights and rollback. Synthetic bundles inspected locally; human render acceptance and real brand request remain pending.
+
 - [ ] GitHub #16 — Asset inventory and design preflight.
   - Owner: Valentin Felizia
   - Agent: Codex (P0 worktree)
   - Branch: `codex/asset-preflight`
+  - PR: https://github.com/ValenFelizia/instagram-to-opendesign/pull/25
   - Updated: 2026-09-30
   - Scope: local asset review, measured properties, permission provenance, compiler export and focused fixtures.
   - Landing: stacked on `codex/brand-decisions` / PR #23.
