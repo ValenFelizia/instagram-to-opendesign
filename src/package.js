@@ -7,6 +7,7 @@ import { validateAnalysis } from './analyze.js';
 import { buildDirectoryAtomically } from './atomic.js';
 import { validateColorCandidates } from './colors.js';
 import { decisionsMarkdown, loadDecisions } from './decisions.js';
+import { buildAssetCatalog } from './asset-catalog.js';
 
 const BASE_TOKENS = new URL('../examples/example-studio/tokens.css', import.meta.url);
 const ANALYSIS_SCHEMA = new URL('../schemas/brand-analysis.schema.json', import.meta.url);
@@ -144,7 +145,7 @@ Revisar contraste de cada combinación final, foco visible y navegación por tec
 
 ## Procedencia y límites
 
-El paquete contiene sólo imágenes seleccionadas, revisadas y propias del perfil. Las publicaciones colaborativas y las imágenes sin revisar quedan fuera. Los IDs de evidencia se conservan en \`brand-analysis.json\`; sus rutas apuntan a archivos de este paquete. El material real es para uso local y no se publica con el repositorio OSS.
+Las imágenes de \`source/images/\` y el moodboard son referencias de análisis; no autorizan reutilización. Usar en diseños sólo los assets marcados \`readyForDesign\` en \`source/asset-catalog.json\`, exportados a \`assets/reusable/\`. La autoría del perfil no establece permiso. Los IDs de evidencia se conservan en \`brand-analysis.json\`; sus rutas apuntan a archivos de este paquete. El material real no se publica con el repositorio OSS.
 `;
 }
 
@@ -223,6 +224,7 @@ export async function compilePackage(prepared, analysis, colorProposals, { outpu
   const graphics = prepared.images.filter((item) => item.review.classification === 'brand-graphic').slice(0, 4);
   validateColorCandidates(colorProposals.candidates, graphics);
   const decisions = await loadDecisions(prepared, analysis);
+  const assets = await buildAssetCatalog(prepared, analysis, { write: false });
   const blockedColors = decisions.decisions.some((item) => (item.stale || item.action === 'reject') &&
     analysis.inferences.find((inference) => inference.id === item.inferenceId)?.topic.startsWith('color.'));
   const candidates = blockedColors ? {
@@ -233,16 +235,22 @@ export async function compilePackage(prepared, analysis, colorProposals, { outpu
   const outputDir = path.resolve(outputRoot, slug);
   const tokens = await renderTokens(candidates, decisions.tokenOverrides);
   await buildDirectoryAtomically(outputDir, async (root) => {
-    for (const relative of ['assets/logo', 'assets/posts', 'source/captions']) {
+    for (const relative of ['assets/reusable', 'source/images', 'source/captions']) {
       await mkdir(path.join(root, relative), { recursive: true });
     }
     const imageTargets = new Map();
     for (const image of prepared.images) {
-      const relative = image.imageId === 'profile/avatar'
-        ? `assets/logo/avatar${path.extname(image.assetPath).toLowerCase()}`
-        : `assets/posts/${image.evidenceId}${path.extname(image.assetPath).toLowerCase()}`;
+      const reusable = assets.entries.find((entry) => entry.id === image.evidenceId)?.readyForDesign;
+      const relative = `${reusable ? 'assets/reusable' : 'source/images'}/${image.evidenceId}${path.extname(image.assetPath).toLowerCase()}`;
       imageTargets.set(image.evidenceId, relative);
       await copyFile(image.absolutePath, path.join(root, relative));
+    }
+    const assetExport = structuredClone(assets.catalog);
+    for (const entry of assets.entries) {
+      const target = imageTargets.get(entry.id) ?? `${entry.readyForDesign ? 'assets/reusable' : 'source/images'}/${entry.id}${path.extname(entry.path).toLowerCase()}`;
+      if (!imageTargets.has(entry.id)) await copyFile(entry.absolutePath, path.join(root, target));
+      const exported = assetExport.entries.find((item) => item.id === entry.id);
+      exported.path = target;
     }
     const captionTargets = new Map();
     for (const caption of prepared.captions) {
@@ -273,10 +281,15 @@ export async function compilePackage(prepared, analysis, colorProposals, { outpu
     }
     await write(root, 'DESIGN.md', designMarkdown({ ...packagedAnalysis,
       inferences: decisions.effectiveAnalysis.inferences }, tokens, candidates) + '\n' +
-      decisionsMarkdown({ ...decisions, sources: decisionExport?.sources ?? [] }, tokens.origins));
+      decisionsMarkdown({ ...decisions, sources: decisionExport?.sources ?? [] }, tokens.origins) +
+      '\n## Reusable assets and composition review\n\n' + assetExport.entries.map((entry) =>
+        `- ${entry.id}: [${entry.role}](${entry.path}); ${entry.primary ? 'primary; ' : ''}` +
+        `${entry.readyForDesign ? 'design use confirmed' : 'reference only: ' + entry.blockers.join('; ')}. ` +
+        `Crop and alt text remain candidates for the actual composition.`).join('\n') + '\n');
     await write(root, 'tokens.css', tokens.css);
     await write(root, 'brand-analysis.json', json(packagedAnalysis));
     await write(root, 'source/token-origins.json', json(tokens.origins));
+    await write(root, 'source/asset-catalog.json', json(assetExport));
     if (decisionExport) await write(root, 'source/brand-decisions.json', json(decisionExport));
     await write(root, 'source/instagram-source.json', json(source));
     await write(root, 'source/color-proposals.json', json({

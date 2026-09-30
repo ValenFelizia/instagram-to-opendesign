@@ -14,6 +14,7 @@
     "brand:compile": "node bin/compile-brand.js",
     "brand:report": "node bin/brand-report.js",
     "brand:decisions": "node bin/brand-decisions.js",
+    "brand:assets": "node bin/brand-assets.js",
     "test": "node --test test/*.test.js"
   },
   "license": "MIT",

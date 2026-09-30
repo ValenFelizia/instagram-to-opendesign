@@ -27,6 +27,7 @@ export async function ingest(usernameInput, { outputRoot = 'data', postLimit = 2
       ['color-proposals.json', 'color-proposals.json'],
       ['analysis-state.json', 'analysis-state.json'],
       ['brand-decisions.json', 'brand-decisions.json'],
+      ['asset-review.json', 'asset-review.json'],
     ]) {
       try {
         const content = await readFile(path.join(finalDir, previous));
