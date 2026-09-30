@@ -4,13 +4,14 @@
 
 ## Ready to Land
 
-- [ ] GitHub #6 / VAL-93 — Validar el MVP con Felisa frente al intento manual.
+- [ ] GitHub #6 / VAL-93 — Validate the Felisa MVP against a manual baseline.
   - Owner: Valentin Felizia
   - Agent: Codex
   - Branch: `codex/val-93-validation`
   - PR: https://github.com/ValenFelizia/instagram-to-opendesign/pull/12
-  - Scope: comparación hero y Story en OpenDesign, corrección de instalación del paquete y decisión documentada.
-  - Verification: 15 pruebas; fixture sintético seleccionable en OpenDesign `0.23.1`; Story preferida por la dueña guardada localmente en `data/` e ignorada por Git. El paquete no mostró ventaja visual clara; no avanzar a MCP.
+  - Scope: hero/Story comparison in OpenDesign, package installation fix and documented conclusion.
+  - Landing: PR #12 into `main`, pending human review.
+  - Verification: 15 tests; synthetic fixture selectable in OpenDesign `0.23.1`; preferred manual Story saved locally under Git-ignored `data/`. The package showed no clear visual advantage; do not expand to MCP.
 
 ## Blocked
 
@@ -22,38 +23,37 @@
 
 Retention: 5
 
-- [x] GitHub #5 / VAL-92 — Compilar paquete OpenDesign y CLI de punta a punta.
+- [x] GitHub #5 / VAL-92 — Compile OpenDesign packages and an end-to-end CLI.
   - Owner: Valentin Felizia
   - Agent: Codex
   - Scope: released
-  - Updated: 2026-09-28
   - Landed: `main` @ `655cc87` (PR #11)
-  - Verification: 15 pruebas; paquete real de `@felisa_fr` cargado por el catálogo de OpenDesign en daemon aislado, con incertidumbre conservada.
+  - Verification: 15 tests; a real `@felisa_fr` package loaded in an isolated OpenDesign `0.23.1` catalog with uncertainty retained. A second run reused paid stages. Real data and credentials remain Git-ignored.
 
-- [x] GitHub #4 / VAL-91 — Brand Analyzer multimodal con confianza y evidencia.
+- [x] GitHub #4 / VAL-91 — Multimodal Brand Analyzer with confidence and evidence.
   - Owner: Valentin Felizia
   - Agent: Codex
   - Scope: released
   - Landed: `main` @ `90f453f` (PR #10)
-  - Verification: 11 pruebas y ejecución real con `@felisa_fr`: 10 inferencias trazables, color y tipografía respaldados por el avatar, UI `needs-review`; datos reales locales e ignorados por Git.
+  - Verification: 11 tests and a live `@felisa_fr` run with 10 traceable inferences; color and typography supported by the avatar, UI `needs-review`. Real data stays local and Git-ignored.
 
-- [x] GitHub #3 / VAL-90 — Evidence Processor y contact sheet visual.
+- [x] GitHub #3 / VAL-90 — Evidence Processor and visual contact sheet.
   - Owner: Valentin Felizia
   - Agent: Codex
   - Scope: released
   - Landed: `main` @ `3f538ba` (PR #8)
-  - Verification: bundle real para `@felisa_fr` con 93 imágenes indexadas, 24 representantes revisados de 15 posts y 15 captions; 69 imágenes quedan sin revisión. La evidencia local está en `data/<username>/evidence/`; el paquete de #5 la ubicará en `source/`. Pasan 5 pruebas locales.
+  - Verification: real `@felisa_fr` bundle with 93 indexed images, 24 reviewed representatives across 15 posts and 15 captions; 69 remain unreviewed. Local evidence is under `data/<username>/evidence/`; #5 places it in `source/`. Five tests pass.
 
-- [x] GitHub #2 / VAL-89 — Ingesta de perfil público con Apify y fuente normalizada reproducible.
+- [x] GitHub #2 / VAL-89 — Public profile ingestion through Apify and a reproducible normalized source.
   - Owner: Valentin Felizia
   - Agent: Codex
   - Scope: released
   - Landed: `main` @ `55447f5` (PR #7)
-  - Verification: Apify devolvió 15 posts públicos de `@felisa_fr` (3 con otro autor principal), 93 imágenes y 10 videos descargados; esquema `instagram-source/v1` válido. Los datos reales quedan sólo en `data/` ignorado por Git.
+  - Verification: Apify returned 15 public `@felisa_fr` posts (3 with another primary author), 93 images and 10 videos; valid `instagram-source/v1`. Real data remains under Git-ignored `data/`.
 
-- [x] VAL-88 — Contrato de salida y paquete estático sintético para OpenDesign.
+- [x] VAL-88 — Output contract and synthetic static package for OpenDesign.
   - Owner: Valentin Felizia
   - Agent: Codex
   - Scope: released
   - Landed: `main` @ `6129683`
-  - Verification: parser de manifiesto de OpenDesign `1b47e60`, 56/56 tokens, schema de análisis, referencias de evidencia y archivos remotos comprobados. La prueba en una instancia de OpenDesign queda para una validación de integración posterior.
+  - Verification: OpenDesign manifest parser at `1b47e60`, all 56 shared tokens, analysis schema, evidence references and remote files checked. A running-instance test was left for subsequent integration validation.
