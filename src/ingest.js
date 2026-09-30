@@ -1,4 +1,4 @@
-import { mkdir, readFile, rename, rm, writeFile } from 'node:fs/promises';
+import { cp, mkdir, readFile, rename, rm, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { ApifyInstagramProvider } from './providers/apify.js';
 import { cleanUsername, normalizeSource } from './normalize.js';
@@ -26,6 +26,7 @@ export async function ingest(usernameInput, { outputRoot = 'data', postLimit = 2
       ['brand-analysis.json', 'brand-analysis.json'],
       ['color-proposals.json', 'color-proposals.json'],
       ['analysis-state.json', 'analysis-state.json'],
+      ['brand-decisions.json', 'brand-decisions.json'],
     ]) {
       try {
         const content = await readFile(path.join(finalDir, previous));
@@ -33,6 +34,8 @@ export async function ingest(usernameInput, { outputRoot = 'data', postLimit = 2
         await writeFile(path.join(temporaryDir, next), content);
       } catch (error) { if (error.code !== 'ENOENT') throw error; }
     }
+    try { await cp(path.join(finalDir, 'manual'), path.join(temporaryDir, 'manual'), { recursive: true }); }
+    catch (error) { if (error.code !== 'ENOENT') throw error; }
     let hadPrevious = false;
     try {
       await rename(finalDir, backupDir);

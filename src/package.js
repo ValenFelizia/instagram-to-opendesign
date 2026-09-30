@@ -6,6 +6,7 @@ import sharp from 'sharp';
 import { validateAnalysis } from './analyze.js';
 import { buildDirectoryAtomically } from './atomic.js';
 import { validateColorCandidates } from './colors.js';
+import { decisionsMarkdown, loadDecisions } from './decisions.js';
 
 const BASE_TOKENS = new URL('../examples/example-studio/tokens.css', import.meta.url);
 const ANALYSIS_SCHEMA = new URL('../schemas/brand-analysis.schema.json', import.meta.url);
@@ -35,7 +36,7 @@ function accessibleInk(background) {
   return contrastRatio(background, '#ffffff') >= contrastRatio(background, '#171717') ? '#ffffff' : '#171717';
 }
 
-export async function renderTokens(candidates) {
+export async function renderTokens(candidates, overrides = {}) {
   const original = await readFile(BASE_TOKENS, 'utf8');
   const accent = candidates.primary.hex?.toLowerCase() ?? '#333333';
   const warm = candidates.secondary.hex?.toLowerCase() ?? '#f4f3ee';
@@ -46,6 +47,17 @@ export async function renderTokens(candidates) {
     ['font-display', 'Arial, system-ui, sans-serif'],
     ['font-body', 'Arial, system-ui, sans-serif'],
   ]);
+  for (const [name, value] of Object.entries(overrides)) changes.set(name, value);
+  const resolveColor = (name, seen = new Set()) => {
+    if (seen.has(name)) throw new Error(`Circular color alias: ${name}`);
+    seen.add(name);
+    const value = changes.get(name);
+    const alias = /^var\(--([a-z0-9-]+)\)$/.exec(value ?? '');
+    return alias ? resolveColor(alias[1], seen) : value;
+  };
+  const effectiveAccent = resolveColor('accent');
+  if (!/^#[a-f0-9]{6}$/i.test(effectiveAccent)) throw new Error('Accent must resolve to a six-digit hex color.');
+  if (!overrides['accent-on']) changes.set('accent-on', accessibleInk(effectiveAccent));
   const names = new Set();
   const css = original.replace(/^\/\* Synthetic fixture[^\n]*\n/, '')
     .replace(/(--([a-z0-9-]+):\s*)([^;]+)(;)/g, (whole, prefix, name, value, end) => {
@@ -55,9 +67,16 @@ export async function renderTokens(candidates) {
   if (names.size !== 56 || [...changes.keys()].some((name) => !names.has(name))) {
     throw new Error('The pinned OpenDesign token template no longer has its expected 56 slots.');
   }
-  if (contrastRatio(accent, accessibleInk(accent)) < 4.5) throw new Error('Accent foreground contrast is too low.');
-  return { css: `/* Provisional tokens; review brand identity before adoption. */\n${css}`,
-    accent, warm, accentOn: accessibleInk(accent) };
+  const ink = resolveColor('accent-on');
+  if (!/^#[a-f0-9]{6}$/i.test(ink) || contrastRatio(effectiveAccent, ink) < 4.5) {
+    throw new Error('Approved accent/foreground contrast is too low; review the confirmed pair.');
+  }
+  const origins = [...names].map((name) => ({ name,
+    origin: overrides[name] ? 'confirmed human rule' : (name === 'accent' && candidates.primary.hex ||
+      name === 'surface-warm' && candidates.secondary.hex) ? 'approximate visual inference' : 'functional default' }));
+  return { css: `/* See source/token-origins.json for confirmed, inferred and default values. */\n${css}`,
+    accent: effectiveAccent, warm: changes.get('surface-warm'), accentOn: ink,
+    fontDisplay: changes.get('font-display'), fontBody: changes.get('font-body'), origins };
 }
 
 function paragraph(inference) {
@@ -93,7 +112,7 @@ Los tokens provisionales usan \`--accent: ${tokens.accent}\` y \`--surface-warm:
 
 ${paragraph(topics.get('typography.style'))}
 
-La UI usa Arial con alternativas de sistema para texto y títulos. No se identificó ni licenció una fuente exacta del logotipo.
+La UI usa \`${safeText(tokens.fontBody)}\` para cuerpo y \`${safeText(tokens.fontDisplay)}\` para títulos. Sin una regla humana confirmada, son fuentes funcionales provisionales. No se identificó ni licenció automáticamente una fuente del logotipo.
 
 ## Fotografía y materialidad
 
@@ -203,9 +222,16 @@ export async function compilePackage(prepared, analysis, colorProposals, { outpu
   }
   const graphics = prepared.images.filter((item) => item.review.classification === 'brand-graphic').slice(0, 4);
   validateColorCandidates(colorProposals.candidates, graphics);
+  const decisions = await loadDecisions(prepared, analysis);
+  const blockedColors = decisions.decisions.some((item) => (item.stale || item.action === 'reject') &&
+    analysis.inferences.find((inference) => inference.id === item.inferenceId)?.topic.startsWith('color.'));
+  const candidates = blockedColors ? {
+    primary: { hex: null, evidenceIds: [], rationale: 'Color proposal requires human review.' },
+    secondary: { hex: null, evidenceIds: [], rationale: 'Color proposal requires human review.' },
+  } : colorProposals.candidates;
   const slug = packageSlug(prepared.source.profile.username);
   const outputDir = path.resolve(outputRoot, slug);
-  const tokens = await renderTokens(colorProposals.candidates);
+  const tokens = await renderTokens(candidates, decisions.tokenOverrides);
   await buildDirectoryAtomically(outputDir, async (root) => {
     for (const relative of ['assets/logo', 'assets/posts', 'source/captions']) {
       await mkdir(path.join(root, relative), { recursive: true });
@@ -238,9 +264,20 @@ export async function compilePackage(prepared, analysis, colorProposals, { outpu
       files: { design: 'DESIGN.md', tokens: 'tokens.css' }, assetsDir: 'assets',
     };
     await write(root, 'manifest.json', json(manifest));
-    await write(root, 'DESIGN.md', designMarkdown(packagedAnalysis, tokens, colorProposals.candidates));
+    const decisionExport = structuredClone(decisions.document);
+    for (const source of decisions.sources) {
+      const target = `source/manual/${source.id}${path.extname(source.path)}`;
+      await mkdir(path.join(root, 'source/manual'), { recursive: true });
+      await copyFile(source.absolutePath, path.join(root, target));
+      decisionExport.sources.find((item) => item.id === source.id).path = target;
+    }
+    await write(root, 'DESIGN.md', designMarkdown({ ...packagedAnalysis,
+      inferences: decisions.effectiveAnalysis.inferences }, tokens, candidates) + '\n' +
+      decisionsMarkdown({ ...decisions, sources: decisionExport?.sources ?? [] }, tokens.origins));
     await write(root, 'tokens.css', tokens.css);
     await write(root, 'brand-analysis.json', json(packagedAnalysis));
+    await write(root, 'source/token-origins.json', json(tokens.origins));
+    if (decisionExport) await write(root, 'source/brand-decisions.json', json(decisionExport));
     await write(root, 'source/instagram-source.json', json(source));
     await write(root, 'source/color-proposals.json', json({
       schemaVersion: colorProposals.schemaVersion, inputHash: colorProposals.inputHash,

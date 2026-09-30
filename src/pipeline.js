@@ -8,6 +8,8 @@ import { processEvidence } from './evidence.js';
 import { ingest } from './ingest.js';
 import { cleanUsername } from './normalize.js';
 import { compilePackage } from './package.js';
+import { loadDecisions } from './decisions.js';
+import { readOptionalJson } from './local.js';
 
 const isOwn = (owner, username) => typeof owner === 'string' &&
   owner.replace(/^@/, '').toLowerCase() === username.toLowerCase();
@@ -82,6 +84,8 @@ export async function runPipeline(usernameInput, {
   const checkpoint = await reviewCheckpoint(profileDir);
   if (checkpoint.pending.length) return { status: 'review-required', username, ingested, ...checkpoint };
   const prepared = await prepareAnalysis(profileDir);
+  const previousAnalysis = await readOptionalJson(path.join(prepared.root, 'brand-analysis.json'));
+  if (previousAnalysis) await loadDecisions(prepared, previousAnalysis);
   const inputHash = await analysisFingerprint(prepared);
   let analysis = await reusableAnalysis(prepared, inputHash, { force: reanalyze });
   let analyzed = false;
