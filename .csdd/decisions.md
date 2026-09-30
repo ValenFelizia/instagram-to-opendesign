@@ -1,61 +1,61 @@
 # Decisions
 
-## DEC-006 — Informe HTML autónomo para revisar el borrador
+## DEC-008 — Standalone HTML for reviewing the draft
 
 - Status: accepted for the first report
 - Date: 2026-09-29
-- Context: los JSON y el paquete OpenDesign permiten auditar fuentes pero no ofrecen una lectura accesible a la dueña de una marca antes de usar el paquete.
-- Decision: generar un HTML local de una página a partir del análisis validado, con miniaturas propias revisadas incorporadas, enlaces internos a evidencia, estados y colores candidatos claramente provisionales. El navegador no carga scripts ni recursos externos.
-- Rationale: se puede abrir, revisar y exportar a PDF sin servidor ni credenciales; el mismo archivo sigue siendo reproducible desde el snapshot local.
-- Consequence: el HTML contiene copias reducidas de imágenes y textos del perfil; permanece en `data/` ignorado por Git y requiere permiso para redistribución. La salida real de Felisa no entra al repo público.
-- Evidence: pruebas sintéticas de referencias, escape HTML, exclusión de colaboraciones y conservación del archivo previo; render local de Felisa en escritorio y móvil.
+- Updated: 2026-09-30
+- Context: JSON and the OpenDesign package expose sources but do not give the brand owner an accessible overview. The user wants English project documentation and an optional English report while retaining Spanish for Fer's review.
+- Decision: generate local HTML from validated analysis with embedded reviewed own thumbnails, internal evidence links, review status and provisional colors. Default to Spanish; `--lang en` translates existing prose with one structured text-only request and a fingerprinted local cache. Keep original source text inspectable and preserve IDs, confidence, status, nulls and hex values. The browser loads no external resources or scripts.
+- Rationale: reports can be opened, reviewed and printed without a server; both languages are reproducible from the local snapshot. Translation avoids rerunning visual analysis just to change language.
+- Consequence: HTML embeds reduced copies of profile images and text, stays under Git-ignored `data/` and requires permission for redistribution. Spanish regeneration has no provider cost; uncached English translation requires `OPENAI_API_KEY` and may incur a charge. Invalid translations preserve previous output. Real Felisa output stays outside the public repository.
+- Evidence: synthetic tests for references, escaping, collaborator exclusion, translation caching and output preservation; local desktop and mobile renders with Felisa.
 
-## DEC-005 — Compilar paquete mínimo sin reimportación normalizadora
+## DEC-005 — Compile a minimal package without normalization by reimport
 
 - Status: accepted for VAL-92
 - Date: 2026-09-28
-- Context: el análisis describe la identidad sin hexadecimales ni fuentes exactas, y OpenDesign requiere `tokens.css`. En la prueba real, `od design-systems import-local` reconstruyó `DESIGN.md` desde el directorio como proyecto crudo y perdió las advertencias de incertidumbre.
-- Decision: generar colores candidatos con una llamada adicional limitada a gráficos propios revisados, completar los 56 tokens con valores funcionales provisionales y conservar la procedencia en `brand-analysis.json` y `source/`. Mantener el perfil mínimo sin `sourceFiles`. Para cargar el paquete precompilado en OpenDesign, instalar su carpeta en el catálogo de sistemas de usuario; no usar `import-local` como prueba de preservación del paquete.
-- Rationale: mantiene visibles el análisis y sus límites en el `DESIGN.md` que lee el agente, sin inventar reglas verificadas ni asumir los requisitos del perfil rich.
-- Consequence: los valores CSS requieren revisión de marca, la instalación local es distinta del importador de proyectos crudos y los datos reales permanecen fuera del repo público. La utilidad del paquete frente a una baseline se mide en VAL-93.
-- Evidence: ejecución aislada de `od design-systems import-local` y `od design-systems show user:felisa-fr` con el paquete generado; [guía OpenDesign](https://github.com/nexu-io/open-design/blob/main/docs/design-systems.md).
+- Context: analysis describes identity without exact hex colors or font names, while OpenDesign requires `tokens.css`. In the live trial, `od design-systems import-local` rebuilt `DESIGN.md` as a raw project and lost uncertainty notices.
+- Decision: propose colors with an extra request limited to reviewed own graphics, fill all 56 tokens with provisional functional values and retain provenance in `brand-analysis.json` and `source/`. Keep the minimum profile without `sourceFiles`. Install the precompiled folder into the user catalog rather than using `import-local` to test preservation.
+- Rationale: authored `DESIGN.md` keeps analysis and limits visible without inventing verified rules or assuming rich-profile requirements.
+- Consequence: CSS values require brand review; local installation differs from raw-project import, and real data stays outside the public repository. VAL-93 measures utility against a baseline.
+- Evidence: isolated `od design-systems import-local` and `od design-systems show user:felisa-fr` runs; [OpenDesign guide](https://github.com/nexu-io/open-design/blob/main/docs/design-systems.md).
 
-## DEC-004 — Primer Brand Analyzer mediante visión con revisión posterior
+## DEC-004 — Initial vision-based Brand Analyzer with subsequent review
 
 - Status: accepted for VAL-91
 - Date: 2026-09-28
-- Context: la evidencia revisada de VAL-90 permite probar inferencias de marca para un perfil real, pero no confirma decisiones de la dueña de la marca.
-- Decision: usar `gpt-6-luna` con razonamiento `high` mediante Responses API para un borrador de diez temas; enviar sólo imágenes y captions propios revisados. Validar esquema y referencias localmente, conservar incertidumbre y no producir estados `verified` automáticamente.
-- Rationale: permite evaluar un analizador multimodal reproducible con costo acotado por una sola solicitud y un máximo de 24 imágenes, manteniendo el control de inferencias en el repositorio.
-- Consequence: la ejecución real requiere `OPENAI_API_KEY` y puede generar costo; una persona debe revisar las propuestas antes de compilar el paquete OpenDesign. Los datos reales y el JSON generado permanecen ignorados por Git.
-- Evidence: [modelo](https://developers.openai.com/api/docs/models/gpt-6-luna), [imágenes como entrada](https://developers.openai.com/api/docs/guides/images-vision) y [salida estructurada](https://developers.openai.com/api/docs/guides/structured-outputs).
+- Context: VAL-90's reviewed evidence supports trying brand inferences but does not confirm the brand owner's decisions.
+- Decision: use `gpt-6-luna` with `high` reasoning through Responses API for a ten-topic draft; send only reviewed own images and captions. Validate schema and references locally, preserve uncertainty and never automatically produce `verified` status.
+- Rationale: one request and at most 24 images bound the cost of a reproducible analyzer while keeping inference checks in the repository.
+- Consequence: live runs require `OPENAI_API_KEY` and may incur a charge. A person reviews proposals before compiling the OpenDesign package. Real data and generated JSON stay Git-ignored.
+- Evidence: [model](https://developers.openai.com/api/docs/models/gpt-6-luna), [image inputs](https://developers.openai.com/api/docs/guides/images-vision) and [structured outputs](https://developers.openai.com/api/docs/guides/structured-outputs).
 
-## DEC-003 — Clasificación visual revisable en la primera validación
+## DEC-003 — Reviewable visual classification for the first validation
 
 - Status: accepted for the first profile
 - Date: 2026-09-26
-- Context: VAL-90 necesita distinguir piezas gráficas de fotos de producto antes de inferir identidad. La primera validación usa 15–25 publicaciones y aún no requiere procesamiento masivo.
-- Decision: generar un contact sheet e índice con etiquetas manuales `brand-graphic`, `product-photo` y `mixed`, además de rasgos visuales y grupos de composición revisables en `review.json`. Las imágenes sin revisión quedan fuera de señales confirmadas.
-- Rationale: una revisión humana de un perfil pequeño permite auditar la distinción entre identidad y color incidental sin introducir una API de visión en esta etapa.
-- Consequence: el procesador prepara y separa evidencia, pero completar la clasificación requiere revisión humana y no escala automáticamente a muchos perfiles. Una API de visión podrá sugerir etiquetas detrás de esta interfaz en una iteración posterior.
+- Context: VAL-90 must distinguish graphics from product photos before inferring identity. Initial validation uses 15–25 posts and does not require bulk processing yet.
+- Decision: generate a contact sheet and index with manual `brand-graphic`, `product-photo` and `mixed` labels, plus reviewable visual features and composition groups in `review.json`. Unreviewed images do not contribute confirmed signals.
+- Rationale: human review of a small profile audits identity versus incidental color without introducing a vision API at this stage.
+- Consequence: classification requires human review and does not automatically scale to many profiles. A vision API could later suggest labels behind the same interface.
 
-
-## DEC-002 — Ingesta mediante Apify detrás de una interfaz
-
-- Status: accepted
-- Date: 2026-09-26
-- Context: VAL-89 pide obtener datos públicos sin construir un scraper propio y evaluar Apify primero.
-- Decision: usar el Actor mantenido `apify/instagram-scraper` con dos ejecuciones (`details` y `posts`), encapsulado en `src/providers/apify.js`. El resto del pipeline consume un contrato normalizado, no el payload del Actor.
-- Rationale: el Actor documenta ambos tipos de resultado y la API de Apify permite ejecutar, esperar y leer el dataset. Se evita una dependencia npm para mantener el primer CLI ejecutable con Node 20+.
-- Consequence: la ingesta real requiere cuenta/token de Apify y puede incurrir en costo; el formato del Actor puede cambiar. Las pruebas sintéticas cubren el contrato local, pero se requiere una prueba real antes de declarar terminado VAL-89.
-- Evidence: [Actor de Instagram](https://apify.com/apify/instagram-scraper) y [API v2 de Apify](https://docs.apify.com/api/v2).
-
-## DEC-001 — Separar la inferencia del manifiesto de OpenDesign
+## DEC-002 — Apify ingestion behind an interface
 
 - Status: accepted
 - Date: 2026-09-26
-- Context: VAL-88 requiere conservar evidencia y confianza por inferencia, mientras que el manifiesto v1 de OpenDesign rechaza claves desconocidas y describe metadatos de importación del paquete.
-- Decision: mantener `brand-analysis.json` como artefacto propio del importador y usar el manifiesto de OpenDesign sin extensiones. El fixture mínimo conserva `source/evidence.md` sin declararlo mediante `sourceFiles`, porque esa declaración activa el guard del perfil rich y exige archivos adicionales.
-- Rationale: preserva compatibilidad con el consumidor actual sin perder trazabilidad en el paquete fuente. La evidencia podrá indexarse en OpenDesign cuando se implemente el perfil rich completo.
-- Consequence: OpenDesign no lee el análisis ni expone el archivo de evidencia no declarado en el primer fixture. El compilador posterior deberá trasladar sólo decisiones defendibles a `DESIGN.md` y `tokens.css`.
-- Evidence: [`manifest.schema.ts`](https://github.com/nexu-io/open-design/blob/1b47e60bd46641469fcd8b69c496c4e3a548bc28/design-systems/_schema/manifest.schema.ts) y [`check-design-system-package-quality.ts`](https://github.com/nexu-io/open-design/blob/1b47e60bd46641469fcd8b69c496c4e3a548bc28/scripts/check-design-system-package-quality.ts).
+- Context: VAL-89 calls for public data retrieval without a custom scraper and evaluates Apify first.
+- Decision: use the maintained `apify/instagram-scraper` Actor with two runs (`details` and `posts`), encapsulated in `src/providers/apify.js`. The pipeline consumes a normalized contract instead of the Actor payload.
+- Rationale: the Actor documents both result types, and Apify supports execution, waiting and dataset reads. Avoiding an npm client keeps the first CLI executable with Node 20+.
+- Consequence: live ingestion requires an Apify account/token and may incur charges. The Actor format can change. Synthetic tests cover the local contract; a live run is required before completing VAL-89.
+- Evidence: [Instagram Actor](https://apify.com/apify/instagram-scraper) and [API v2](https://docs.apify.com/api/v2).
+
+## DEC-001 — Keep inference separate from the OpenDesign manifest
+
+- Status: accepted
+- Date: 2026-09-26
+- Context: VAL-88 requires evidence and confidence per inference, while OpenDesign's manifest v1 rejects unknown keys and describes package import metadata.
+- Decision: keep `brand-analysis.json` importer-owned and leave the manifest unextended. The minimum fixture includes `source/evidence.md` without declaring `sourceFiles`, which activates the rich-profile guard and requires extra files.
+- Rationale: preserve compatibility and provenance. OpenDesign can index evidence when a complete rich profile is implemented.
+- Consequence: OpenDesign does not read the analysis or expose the undeclared evidence file in the first fixture. A later compiler transfers only defensible decisions into `DESIGN.md` and `tokens.css`.
+- Evidence: [`manifest.schema.ts`](https://github.com/nexu-io/open-design/blob/1b47e60bd46641469fcd8b69c496c4e3a548bc28/design-systems/_schema/manifest.schema.ts) and [`check-design-system-package-quality.ts`](https://github.com/nexu-io/open-design/blob/1b47e60bd46641469fcd8b69c496c4e3a548bc28/scripts/check-design-system-package-quality.ts).
