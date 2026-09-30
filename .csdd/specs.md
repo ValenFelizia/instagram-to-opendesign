@@ -9,7 +9,15 @@ The project investigates whether a public Instagram profile provides enough evid
 - OpenDesign is the first package consumer. Spike validation compares a piece generated with the package against an image-and-manual-prompt baseline. Source: the Linear project and user-defined scope.
 - Important identity inferences retain evidence and confidence. Brand identity must be distinguished from incidental aesthetics in photos or products. Source: the Linear project.
 - The package follows OpenDesign's current contract and retains inspectable assets and original sources. Source: the Linear project.
-- Repository documentation, CSDD state, issues and PR descriptions use English. Reports default to Spanish for the brand owner's review and support English as an explicit option. Source: the user's language preference, 2026-09-30.
+- Project-authored repository documentation, CSDD state, issue titles/bodies, PR titles/descriptions, review notes and project comments use English. Source: the user's language preference, 2026-09-30.
+
+## Language Policy
+
+- Use English for project documentation and collaboration artifacts, including new or edited GitHub issues and PRs. Follow this policy when generating these artifacts even when the request or conversation is in Spanish.
+- Reports default to Spanish for the brand owner's review and support English as an explicit option (`--lang en`). This policy does not change the default report language.
+- Preserve original source evidence, quotations and confirmed brand copy in their original language. Identify translations as translations; do not translate identifiers, paths or references.
+- Conversation with the user may follow the user's language. The public project artifact must still follow the English policy.
+- `AGENTS.md` exposes this policy to repository agents; `CONTRIBUTING.md` documents it for contributors. Source: the user's request to make the convention durable, 2026-09-30.
 
 ## Constraints
 
