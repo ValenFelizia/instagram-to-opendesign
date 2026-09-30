@@ -7,6 +7,7 @@ This document describes the **current OpenDesign target**, pinned to [`nexu-io/o
 ```text
 design-systems/<slug>/
 ├── manifest.json              required by the new package profile
+├── metadata.json              user-catalog selection state
 ├── DESIGN.md                  canonical agent prose
 ├── tokens.css                 canonical compiled CSS tokens
 ├── brand-analysis.json        importer-specific analysis; OpenDesign does not read it
@@ -18,6 +19,8 @@ design-systems/<slug>/
 ```
 
 The three required files and legacy `DESIGN.md` fallback are documented in [OpenDesign's authoring guide](https://github.com/nexu-io/open-design/blob/1b47e60bd46641469fcd8b69c496c4e3a548bc28/docs/design-systems.md). The static [synthetic example](../examples/example-studio/) exercises the new profile without requiring Instagram or claiming a real brand identity.
+
+When the package is copied into OpenDesign's **user** design-system catalog, `metadata.json` must set `{"status":"published"}` for the system to be selectable during project creation. This catalog state is local to OpenDesign and does not publish the package online or verify the inferred identity. Keep provisional claims labeled in `DESIGN.md` and the evidence files.
 
 ## `manifest.json`
 

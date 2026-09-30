@@ -11,6 +11,26 @@
 - Consequence: HTML embeds reduced copies of profile images and text, stays under Git-ignored `data/` and requires permission for redistribution. Spanish regeneration has no provider cost; uncached English translation requires `OPENAI_API_KEY` and may incur a charge. Invalid translations preserve previous output. Real Felisa output stays outside the public repository.
 - Evidence: synthetic tests for references, escaping, collaborator exclusion, translation caching and output preservation; local desktop and mobile renders with Felisa.
 
+## DEC-007 — Keep the importer local after the Felisa trial
+
+- Status: accepted for VAL-93
+- Date: 2026-09-28
+- Context: the first package-assisted hero preserved verified identity but repeated the collage and failed at 390 px. A second product-led hero worked on mobile, but the owner rejected it as conventional. Two Stories using identical prompts and assets produced similar solutions; the owner preferred the version without the package.
+- Decision: conclude that these trials showed no clear visual improvement or demonstrated effort reduction. Keep the importer local and reviewable; do not expand to MCP yet. Deliver the preferred manual Story locally after replacing the bag screenshot with the original photo of the same product.
+- Rationale: the storefront already supplies verified typography, color and copy, so the Instagram package adds context but little incremental value to a tightly defined brief. Owner preference and visual defects carry more weight than technical execution alone.
+- Consequence: the next hypothesis is to propose several composition directions and check assets before generation. The final Story still needs inspection in Instagram's editor with its native link sticker before publication. No real asset enters the OSS repository.
+- Evidence: protocol and results in `docs/mvp-validation.md`; real HTML, screenshots and notes under Git-ignored `data/felisa_fr/validation/`; owner feedback from the trial.
+
+## DEC-006 — Enable package selection in OpenDesign's local catalog
+
+- Status: accepted for VAL-93
+- Date: 2026-09-28
+- Context: `od design-systems show` could read the Felisa package, but a new project rejected `user:felisa-fr` with `DESIGN_SYSTEM_NOT_PUBLISHED`; a user folder without `metadata.json` is treated as `draft`.
+- Decision: the compiler writes `metadata.json` with `status: published` beside the manifest. This enables local project selection; identity inferences remain provisional and reviewable in `DESIGN.md` and the sources.
+- Rationale: a discoverable package that cannot be selected does not satisfy the workflow VAL-92 set out to validate. Catalog status does not alter the analysis or send the package to a public service.
+- Consequence: existing installations must be recompiled and the new file copied into the catalog. Felisa is tested in an isolated instance; real assets stay outside the repository.
+- Evidence: OpenDesign `0.23.1` in an isolated daemon; project creation failed without `metadata.json` and succeeded with `status: published`; a new project created with the public `user:example-studio` fixture; 15 importer tests.
+
 ## DEC-005 — Compile a minimal package without normalization by reimport
 
 - Status: accepted for VAL-92
