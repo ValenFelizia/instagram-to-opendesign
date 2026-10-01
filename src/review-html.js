@@ -1,6 +1,8 @@
 import { escapeHtml as e } from './local.js';
 import { reviewClient } from './review-client.js';
 import { createHash } from 'node:crypto';
+import { REPORT_COPY } from './report-copy.js';
+import { ANALYSIS_TOPICS } from './providers/openai.js';
 
 export function reviewHtml(snapshot, language) {
   const copy = language === 'es' ? { heading: 'Revisar y exportar decisiones', note: 'Aceptar una propuesta no verifica una regla de marca. Las reglas confirmadas se conservan al importar.',
@@ -11,7 +13,8 @@ export function reviewHtml(snapshot, language) {
     : { heading: 'Review and export decisions', note: 'Accepting a proposal does not verify a brand fact. Confirmed rules survive import.', name: 'Reviewer name', action: 'Decision', pending: 'Pending', accept: 'Accept as proposal', reject: 'Reject proposal', noteLabel: 'Review note', changed: 'Evidence changed: renew review.', unchanged: 'Current evidence', download: 'Download decision JSON', load: 'Load a review JSON for comparison', help: 'Your browser saves the download in the folder you choose. Then run:', noJs: 'The report remains readable without JavaScript; enable it to export decisions.', ready: 'Opening this file does not save changes.' };
   const rows = snapshot.items.map((item) => {
     const action = item.stale ? 'pending' : item.existing?.action ?? 'pending';
-    return `<fieldset><legend>${e(item.topic)}</legend><p>${e(item.value ?? copy.pending)}</p><p>${item.stale ? copy.changed : copy.unchanged} · ${e(item.id)}</p><p>${item.evidenceIds.map((id) => `<a href="#evidence-${e(id)}">${e(id)}</a>`).join(' · ')}</p><label for="review-${e(item.id)}-action">${copy.action}</label><select id="review-${e(item.id)}-action">${[['pending', copy.pending], ['accept-proposal', copy.accept], ['reject', copy.reject]].map(([value, label]) => `<option value="${value}"${value === action ? ' selected' : ''}>${label}</option>`).join('')}</select><label for="review-${e(item.id)}-note">${copy.noteLabel}</label><textarea id="review-${e(item.id)}-note" aria-describedby="review-${e(item.id)}-error">${e(item.existing?.note ?? '')}</textarea><p id="review-${e(item.id)}-error"></p></fieldset>`;
+    const topic = REPORT_COPY[language].topics[ANALYSIS_TOPICS.indexOf(item.topic)] ?? item.topic;
+    return `<fieldset><legend>${e(topic)}</legend><p>${e(item.value ?? copy.pending)}</p><p>${item.stale ? copy.changed : copy.unchanged} · ${e(item.id)}</p><p>${item.evidenceIds.map((id) => `<a href="#evidence-${e(id)}">${e(id)}</a>`).join(' · ')}</p><label for="review-${e(item.id)}-action">${copy.action}</label><select id="review-${e(item.id)}-action">${[['pending', copy.pending], ['accept-proposal', copy.accept], ['reject', copy.reject]].map(([value, label]) => `<option value="${value}"${value === action ? ' selected' : ''}>${label}</option>`).join('')}</select><label for="review-${e(item.id)}-note">${copy.noteLabel}</label><textarea id="review-${e(item.id)}-note" aria-describedby="review-${e(item.id)}-error">${e(item.existing?.note ?? '')}</textarea><p id="review-${e(item.id)}-error"></p></fieldset>`;
   }).join('');
   const script = `(${reviewClient.toString()})();`;
   const scriptHash = createHash('sha256').update(script).digest('base64');
