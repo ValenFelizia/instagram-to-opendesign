@@ -56,7 +56,8 @@ export function validateTokenRule(rule) {
   if (rule.kind === 'font' && !rule.target.startsWith('font-')) throw new Error('Font rules must target a font token.');
 }
 
-export async function loadDecisions(prepared, analysis) {
+export async function loadDecisions(prepared, analysis, { channel = 'website' } = {}) {
+  if (!['website', 'social'].includes(channel)) throw new Error('Unknown decision channel.');
   const document = await readOptionalJson(path.join(prepared.root, 'brand-decisions.json'));
   const result = { document, activeRules: [], staleRules: [], sources: [], decisions: [], conflicts: [],
     assetSelections: [], tokenOverrides: {}, effectiveAnalysis: structuredClone(analysis) };
@@ -65,7 +66,7 @@ export async function loadDecisions(prepared, analysis) {
   if (document.username.toLowerCase() !== prepared.source.profile.username.toLowerCase()) throw new Error('Brand decisions belong to another profile.');
   unique(document.sources, (item) => item.id, 'source');
   unique(document.rules, (item) => item.id, 'rule');
-  unique(document.rules, (item) => `${['token', 'font'].includes(item.kind) ? 'css' : item.kind}/${item.target}`, 'rule target');
+  unique(document.rules, (item) => `${item.scope ?? 'all'}/${['token', 'font'].includes(item.kind) ? 'css' : item.kind}/${item.target}`, 'rule target');
   unique(document.inferenceDecisions, (item) => item.inferenceId, 'inference decision');
   unique(document.assetSelections, (item) => `${item.evidenceId}/${item.role}`, 'asset selection');
   for (const source of document.sources) {
@@ -79,10 +80,11 @@ export async function loadDecisions(prepared, analysis) {
     return source;
   };
   const images = new Set(prepared.images.map((image) => image.evidenceId));
-  for (const rule of document.rules) {
+  for (const rule of [...document.rules].sort((a, b) => ((a.scope ?? 'all') === 'all' ? 0 : 1) - ((b.scope ?? 'all') === 'all' ? 0 : 1))) {
     const source = sourceFor(rule);
     if (['font', 'token'].includes(rule.kind)) validateTokenRule(rule);
     if (rule.kind === 'logo' && !images.has(rule.value)) throw new Error(`Unknown reviewed logo: ${rule.value}`);
+    if (rule.scope && rule.scope !== 'all' && rule.scope !== channel) continue;
     (source.stale ? result.staleRules : result.activeRules).push(rule);
     if (!source.stale && ['font', 'token'].includes(rule.kind)) result.tokenOverrides[rule.target] = rule.value;
   }

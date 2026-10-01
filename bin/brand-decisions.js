@@ -5,8 +5,9 @@ import { prepareAnalysis, validateAnalysis } from '../src/analyze.js';
 import { writeJsonAtomically } from '../src/atomic.js';
 import { emptyDecisions, loadDecisions, validateDecisionDocument } from '../src/decisions.js';
 import { digest, profileFile, readOptionalJson } from '../src/local.js';
+import { importReviewFile } from '../src/review.js';
 
-const usage = 'Usage: pnpm brand:decisions data/<username> [--init | --check | --source manual/file.md --reviewer "Name" --summary "Purpose"]';
+const usage = 'Usage: pnpm brand:decisions data/<username> [--init | --check | --import review.json | --source manual/file.md --reviewer "Name" --summary "Purpose"]';
 const [profileDir, mode = '--check', ...args] = process.argv.slice(2);
 if (!profileDir || ['--help', '-h'].includes(profileDir)) { console.log(usage); process.exit(profileDir ? 0 : 1); }
 try {
@@ -18,6 +19,8 @@ try {
     if (await readOptionalJson(target)) throw new Error('Decisions already exist; initialization never overwrites them.');
     await writeJsonAtomically(target, await emptyDecisions(prepared, analysis));
     console.log(target);
+  } else if (mode === '--import' && args.length === 1) {
+    console.log(JSON.stringify(await importReviewFile(prepared, analysis, args[0]), null, 2));
   } else if (mode === '--check' && !args.length) {
     const review = await loadDecisions(prepared, analysis);
     console.log(JSON.stringify({ confirmed: review.activeRules.length, staleRules: review.staleRules.map((rule) => rule.id),

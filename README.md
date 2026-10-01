@@ -2,7 +2,7 @@
 
 An early open source experiment to turn evidence from a public Instagram profile into a traceable brand package that OpenDesign can use.
 
-**Status:** Ingestion, reviewable evidence, multimodal analysis, local OpenDesign compilation, and a human-readable HTML report are implemented. The first Felisa trial found no clear design advantage over a manual prompt, so deeper integration is deferred. The generated identity remains provisional. See the [validation results](docs/mvp-validation.md), [package CLI guide](docs/package-cli.md), [brand report guide](docs/brand-report.md), [OpenDesign output contract](docs/output-contract.md), [synthetic package](examples/example-studio/), [ingestion guide](docs/ingestion.md), [evidence guide](docs/evidence-processor.md), and [analysis guide](docs/brand-analyzer.md).
+**Status:** Ingestion, reviewable evidence, multimodal analysis, local OpenDesign compilation, and a human-readable HTML report are implemented. This branch adds reviewed decisions, accessible preflight, explicit agent handoff and preserved result review; those changes still require PR review/landing. The first Felisa trial found no clear design advantage over a manual prompt and was confounded by substantial prior brand knowledge. General utility remains unmeasured. The generated identity remains provisional. See the [validation results](docs/mvp-validation.md), [package CLI guide](docs/package-cli.md), [brand report guide](docs/brand-report.md), [OpenDesign output contract](docs/output-contract.md), [synthetic package](examples/example-studio/), [ingestion guide](docs/ingestion.md), [evidence guide](docs/evidence-processor.md), and [analysis guide](docs/brand-analyzer.md).
 
 ## Goal
 
@@ -20,6 +20,8 @@ Product context originated in the [Linear project](https://linear.app/valenf/pro
 ## Development
 
 The first delivery improvements add [human brand decisions](docs/brand-decisions.md), [asset preflight](docs/asset-preflight.md) and an [executable hero/Story brief](docs/design-brief.md). These keep confirmed rules, evidence, creative proposals and pending reviews distinct. Design briefs require a human-selected direction; local compilation makes no paid calls.
+
+The next reviewable stage supports [declared-use accessibility checks](docs/accessibility-preflight.md), [explicit OpenDesign delivery and promotional/site-change requests](docs/opendesign-handoff.md), and [immutable result review plus matched evaluation](docs/result-review.md). Website/social rules retain separate authority. Felisa's current website palette stays in effect and its hero work is on standby; richer packages require observed missing context first.
 
 Node 20+ and `pnpm install` run the project. The package compiler uses Sharp to create a local WebP moodboard; the report generator uses it for portable thumbnails. See the guides above and [CONTRIBUTING.md](CONTRIBUTING.md).
 

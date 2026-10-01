@@ -8,6 +8,8 @@ import { ANALYSIS_TOPICS } from './providers/openai.js';
 import { reportCopy } from './report-copy.js';
 import { translateReport } from './report-translation.js';
 import { decisionsHtml, loadDecisions } from './decisions.js';
+import { reviewSnapshot } from './review.js';
+import { reviewHtml } from './review-html.js';
 const escapeHtml = (value) => String(value ?? '').replace(/[&<>"']/g, (character) =>
   ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[character]);
 const id = (value) => `evidence-${value}`;
@@ -121,6 +123,7 @@ export async function buildBrandReport(profileDir, { outputPath, language = 'es'
     throw new Error('Analysis evidence does not match the current profile. Reanalyze before generating a report.');
   }
   const decisions = await loadDecisions(prepared, analysis);
+  const interactive = reviewHtml(await reviewSnapshot(prepared, analysis), language);
   const colors = await loadColors(prepared, analysis);
   const translated = language === 'en'
     ? await translateReport(prepared, analysis, colors, { token, fetchImpl, provider: translationProvider })
@@ -137,7 +140,9 @@ export async function buildBrandReport(profileDir, { outputPath, language = 'es'
   }
   const html = render({ prepared, analysis: displayed, colors: translated?.colors ?? colors,
     thumbs, language, biography: translated?.biography ?? prepared.source.profile.biography,
-    originalEvidence: analysis.evidence }).replace('</main>', `${decisionsHtml(decisions, language)}</main>`);
+    originalEvidence: analysis.evidence }).replace('</main>', `${decisionsHtml(decisions, language)}${interactive.html}</main>`)
+    .replace("default-src 'none';", `default-src 'none'; script-src 'sha256-${interactive.scriptHash}';`)
+    .replace('</style>', '.review fieldset{min-width:0;border:1px solid var(--line);padding:20px;margin:20px 0}.review label{display:block;margin:12px 0 6px;font-weight:600}.review input,.review select,.review textarea,.review button{font:inherit;max-width:100%;padding:10px;border:1px solid var(--muted);border-radius:3px;background:#fff;color:var(--ink)}.review textarea{width:100%;min-height:90px}.review :focus-visible{outline:3px solid var(--focus);outline-offset:3px}.review pre{white-space:pre-wrap;overflow-wrap:anywhere}.review [hidden]{display:none}@media print{.review form{display:none}}\n</style>');
   const filename = language === 'es' ? 'brand-report.html' : 'brand-report.en.html';
   const destination = path.resolve(outputPath || path.join(prepared.root, filename));
   await replaceFile(destination, html);
