@@ -104,7 +104,7 @@ export async function runPipeline(usernameInput, {
     colorUsage: color.usage, ...compiled };
 }
 
-export async function compileExisting(profileDir, { outputRoot = 'brand-output' } = {}) {
+export async function compileExisting(profileDir, { outputRoot = 'brand-output', channel = 'website' } = {}) {
   const prepared = await prepareAnalysis(profileDir);
   const analysis = JSON.parse(await readFile(path.join(prepared.root, 'brand-analysis.json'), 'utf8'));
   const colors = JSON.parse(await readFile(path.join(prepared.root, 'color-proposals.json'), 'utf8'));
@@ -112,5 +112,5 @@ export async function compileExisting(profileDir, { outputRoot = 'brand-output' 
   if (colors.inputHash !== await colorInputFingerprint(analysis, graphics)) {
     throw new Error('Color proposals are stale; run brand:instagram before compiling.');
   }
-  return compilePackage(prepared, analysis, colors, { outputRoot });
+  return compilePackage(prepared, analysis, colors, { outputRoot, channel });
 }

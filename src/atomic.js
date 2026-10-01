@@ -30,3 +30,12 @@ export async function buildDirectoryAtomically(target, build) {
     await replaceStaged(target, staged, { recursive: true });
   } finally { await rm(staged, { recursive: true, force: true }); }
 }
+
+// Immutable result revisions never use the replacement/backup path.
+export async function createDirectoryAtomically(target, build) {
+  const staged = `${target}.partial-${randomUUID()}`;
+  await mkdir(path.dirname(target), { recursive: true });
+  await mkdir(staged);
+  try { await build(staged); await rename(staged, target); }
+  finally { await rm(staged, { recursive: true, force: true }); }
+}

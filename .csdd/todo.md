@@ -4,6 +4,24 @@
 
 ## Ready to Land
 
+- [ ] GitHub #21 — Preserve and review rendered results.
+  - Owner: Valentin Felizia
+  - Agent: Codex (P0 worktree)
+  - Branch: `codex/result-review`
+  - Updated: 2026-09-30
+  - Scope: immutable revisions, observations/checks, original feedback, request-specific corrections, cumulative effort and matched-input protocol.
+  - Landing: PR #34, stacked on #30.
+  - Verification: 40 tests and synthetic web/Story fixtures; real unfamiliar-brand utility and human acceptance remain pending. #22 gate remains closed for insufficient evaluation evidence.
+
+- [ ] GitHub #20 — Explicit OpenDesign handoff and generalized requests.
+  - Owner: Valentin Felizia
+  - Agent: Codex (P0 worktree)
+  - Branch: `codex/opendesign-handoff`
+  - Updated: 2026-09-30
+  - Scope: safe atomic installation, current input/hash gates, exact starter instruction, promotional/site requests and authorized code fingerprints.
+  - Landing: stacked on #29.
+  - Verification: synthetic published catalog selection and project creation on isolated OpenDesign 0.23.1; no generation. Real Felisa hero and agent context consumption remain pending/deferred.
+
 - [ ] GitHub #19 — Declared-use accessibility preflight.
   - Owner: Valentin Felizia
   - Agent: Codex (P0 worktree)
@@ -20,7 +38,7 @@
   - Updated: 2026-09-30
   - Scope: report controls, scoped decision import, channel-specific approved rules and tests/docs.
   - Landing: stacked on P0 integration PR #27.
-  - Verification: 34 tests; browser confirms labeled controls, focus on invalid notes, live error text and no overflow at its default viewport. Full 390/1440 px, download and screen-reader review remain required; browser download event timed out.
+  - Verification: 34 tests; browser confirms labels, invalid-note focus, live errors, keyboard focus and no overflow at 390/1440 px. Download initiation reached success UI, but a saved file was not verified because the download event timed out. Screen-reader review remains required.
 
 - [ ] Integrate approved P0 #15–17 into main.
   - Owner: Valentin Felizia
@@ -35,10 +53,6 @@
 
 ## Pending
 
-- [ ] GitHub #20 — Explicit OpenDesign delivery and existing-site context.
-  - Owner: Valentin Felizia
-- [ ] GitHub #21 — Preserve results, requirements, corrections and uncertainty.
-  - Owner: Valentin Felizia
 
 ## Deferred
 

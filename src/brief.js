@@ -14,16 +14,18 @@ const ajv = new Ajv2020({ allErrors: true, strictTypes: false });
 const validateRequestSchema = ajv.compile(requestSchema), validateDirectionsSchema = ajv.compile(DIRECTIONS_SCHEMA);
 const unique = (items, key, label) => { if (new Set(items.map(key)).size !== items.length) throw new Error(`Duplicate ${label}.`); };
 
-export function emptyRequest(username, kind = 'web-hero') {
+export function emptyRequest(username, kind = 'web-hero', target) {
   return { schemaVersion: 'design-request/v1', username, kind, objective: '', audience: '', sourceId: null,
     copy: [], action: { type: 'none', label: null, url: null, reservedSpace: null }, assets: [],
-    constraints: [], selectedDirectionId: null };
+    constraints: [], selectedDirectionId: null, ...(target ? { target } : {}) };
 }
 
 export function validateRequest(request, username) {
   if (!validateRequestSchema(request)) throw new Error(`Invalid design request: ${ajv.errorsText(validateRequestSchema.errors)}`);
   if (request.username !== username) throw new Error('Design request belongs to another profile.');
   if (request.accessibility) validateAccessibilityPlan(request.accessibility);
+  if (['promotional-image', 'website-change'].includes(request.kind) && !request.target) throw new Error('This request kind requires explicit target dimensions.');
+  if (request.existingSite && request.kind !== 'website-change') throw new Error('Existing-site code context applies only to website changes.');
   unique(request.copy, (item) => item.id, 'copy ID'); unique(request.assets, (item) => item.id, 'request asset');
   const action = request.action, box = action.reservedSpace;
   if (box && (box.x + box.width > 1 || box.y + box.height > 1)) throw new Error('Reserved sticker space escapes the canvas.');
@@ -34,7 +36,8 @@ export function validateRequest(request, username) {
     if (!['https:', 'http:'].includes(url.protocol)) throw new Error('Action destination must use HTTP(S).');
   }
   if (request.kind === 'instagram-story' && action.type === 'link') throw new Error('A static Story link must be reserved as a native sticker, not drawn as a functioning button.');
-  if (request.kind === 'web-hero' && (action.type === 'native-sticker' || box)) throw new Error('Native sticker space applies only to Stories.');
+  if (request.kind !== 'instagram-story' && (action.type === 'native-sticker' || box)) throw new Error('Native sticker space applies only to Stories.');
+  if (request.kind === 'promotional-image' && action.type === 'link') throw new Error('Promotional artwork cannot present a functioning web link. Confirm the publishing destination separately.');
   for (const asset of request.assets) if (asset.alt.usage === 'decorative' && asset.alt.text) throw new Error('Decorative asset must have empty alt text.');
 }
 
@@ -57,8 +60,9 @@ export async function prepareBrief(profileDir) {
   if (JSON.stringify(analysis.evidence) !== JSON.stringify(prepared.evidence)) throw new Error('Analysis evidence is stale; re-analyze before briefing.');
   const request = JSON.parse(await readFile(path.join(prepared.root, 'design-request.json'), 'utf8'));
   validateRequest(request, prepared.source.profile.username);
-  const decisions = await loadDecisions(prepared, analysis, { channel: request.kind === 'instagram-story' ? 'social' : 'website' });
-  const { catalog, entries } = await buildAssetCatalog(prepared, analysis, { kind: request.kind, write: false });
+  const channel = ['instagram-story', 'promotional-image'].includes(request.kind) ? 'social' : 'website';
+  const decisions = await loadDecisions(prepared, analysis, { channel });
+  const { catalog, entries } = await buildAssetCatalog(prepared, analysis, { kind: request.kind, ...(request.target ? { target: request.target } : {}), write: false });
   const selected = request.assets.map((use) => {
     const asset = entries.find((entry) => entry.id === use.id);
     if (!asset) throw new Error(`Unknown request asset: ${use.id}`);
@@ -85,18 +89,33 @@ export async function prepareBrief(profileDir) {
     if (entry.use.alt.usage === 'unknown' || entry.use.alt.usage === 'informative' && !entry.use.alt.text.trim()) blockers.push(`Review image alternative: ${entry.id}.`);
   }
   if (request.action.type === 'native-sticker' && !request.action.reservedSpace) blockers.push('Reserve native sticker space and review it in Instagram composer.');
-  const { selectedDirectionId, ...suggestionRequest } = request;
+  let codeContext = null;
+  if (request.existingSite) {
+    const source = decisions.sources.find((item) => item.id === request.existingSite.sourceId);
+    if (!source || source.stale) throw new Error('Existing-site access requires a current registered authorization source.');
+    const root = path.resolve(request.existingSite.root);
+    if (!path.isAbsolute(request.existingSite.root) || await realpath(root) !== root) throw new Error('Existing-site root must be an explicit canonical absolute directory.');
+    unique(request.existingSite.files, (item) => item, 'existing-site file');
+    const files = [];
+    for (const relative of request.existingSite.files) {
+      if (!/\.(?:js|jsx|ts|tsx|css|html|md|json)$/.test(relative) || relative.split(/[\\/]/).some((part) => part.startsWith('.'))) throw new Error('Select explicit non-secret source files for existing-site context.');
+      files.push({ path: relative, sha256: digest(await readFile(await profileFile(root, relative))) });
+    }
+    codeContext = { root, sourceId: source.id, files, access: 'Connect this local directory through OpenDesign linkedDirs before editing; code is not copied into the package.' };
+  }
+  const { selectedDirectionId, existingSite, ...suggestionRequest } = request;
   const context = { request: suggestionRequest,
     observations: decisions.effectiveAnalysis.inferences,
     verifiedRules: decisions.activeRules,
     evidence: prepared.evidence,
     assets: selected.map(({ absolutePath, ...entry }) => entry),
     brandConflicts: decisions.conflicts,
+    ...(codeContext ? { existingSite: { sourceId: codeContext.sourceId, files: codeContext.files, access: codeContext.access } } : {}),
   };
   // Only selection is excluded: approvals, byte hashes, evidence and fit changes invalidate paid cache.
   const inputHash = digest(json({ version: 'creative-context/v1', model: DIRECTIONS_MODEL, context,
-    sources: decisions.sources.map(({ absolutePath, ...source }) => source) }));
-  return { prepared, analysis, request, decisions, selected, catalog, context, inputHash, blockers };
+    sources: decisions.sources.map(({ absolutePath, ...source }) => source), codeContext }));
+  return { prepared, analysis, request, decisions, selected, catalog, context, inputHash, blockers, codeContext, channel };
 }
 
 export async function suggestDirections(profileDir, { provider = requestCreativeDirections, token, fetchImpl, force = false } = {}) {
@@ -148,6 +167,8 @@ export function briefMarkdown(brief) {
     : LAYOUT[selected?.layout];
   return `# Design brief — ${brief.kind}\n\nStatus: **${brief.status}**. ${selected ? `Selected direction: ${quoted(selected.id)}.` : 'No direction selected; do not execute.'}\n\n` +
     `## Request\n\nObjective: ${quoted(brief.request.objective)}\n\nAudience: ${quoted(brief.request.audience)}\n\n` +
+    `Target: ${brief.request.target ? `${brief.request.target.width} × ${brief.request.target.height}` : brief.kind === 'instagram-story' ? '1080 × 1920' : '1440 px desktop and 390 px mobile review'}.\n\n` +
+    (brief.codeContext ? `## Existing website code\n\nAuthorized local directory: ${quoted(brief.codeContext.root)}. Source: ${brief.codeContext.sourceId}. ${brief.codeContext.access}\n\n${brief.codeContext.files.map((file) => `- ${quoted(file.path)}: SHA-256 ${file.sha256}`).join('\n')}\n\n` : '') +
     `## Exact approved copy\n\n${brief.request.copy.map((item) => `- ${item.id}: ${quoted(item.text)}`).join('\n') || 'Pending.'}\n\n` +
     `Do not invent prices, stock, products, people, fonts or additional copy. Confirmation: ${brief.request.sourceId ?? 'pending'} in the source registry below.\n\n` +
     `## Execute only the selected direction\n\n${selected ? `${layout}\n\n${HIERARCHY[selected.hierarchy]}\n\n${TREATMENT[selected.assetTreatment]}` : 'Pending human selection.'}\n\n` +
@@ -164,11 +185,12 @@ export function briefMarkdown(brief) {
     `## Evidence and confirmation sources\n\n${brief.evidence.map((item) => `- ${item.id}: [source](${item.sourcePath}); ${quoted(item.summary)}.`).join('\n')}\n${brief.sources.map((item) => `- ${item.id}: [${item.reviewer}](${item.path}); reviewed ${item.reviewedAt}; ${item.stale ? 'changed — review required' : 'digest current'}.`).join('\n')}\n\n` +
     `## Acceptance criteria\n\n${brief.acceptanceCriteria.map((item) => `- [ ] ${item}`).join('\n')}\n\n` +
     `## Accessibility preflight\n\nSee [declared usage and manual acceptance tasks](ACCESSIBILITY.md) and [structured checks](accessibility.json). Status: ${brief.accessibility?.status ?? 'manual-review'}. Manual tasks must be reviewed in the rendered result; input readiness is not an accessibility certificate.\n\n` +
+    (['instagram-story', 'promotional-image'].includes(brief.kind) ? 'See [the supplied-copy artwork description](ARTWORK-DESCRIPTION.md). Review it against the final image before publishing; this candidate is not a description of an unseen render.\n\n' : '') +
     `## Pending review\n\n${brief.pending.map((item) => `- ${quoted(item)}`).join('\n') || 'No input blockers. Rendering and human acceptance remain required.'}\n\n` +
     `## Ideation record — do not execute unselected alternatives\n\n${brief.directions.map((item) => `- ${quoted(item.id)} ${quoted(item.label)} (${item.id === selected?.id ? 'selected' : 'unselected'}): ${item.layout}, ${item.hierarchy}, ${item.assetTreatment}; assets ${item.assetIds.join(', ')}; citations ${item.evidenceIds.join(', ')}. Proposal rationale: ${quoted(item.rationale)}. Limits: ${quoted(item.limits)}. Missing: ${quoted(item.missingInformation)}.`).join('\n')}\n`;
 }
 
-export async function compileBrief(profileDir, { outputDir } = {}) {
+export async function selectedBrief(profileDir) {
   const state = await prepareBrief(profileDir);
   const cached = await readOptionalJson(path.join(state.prepared.root, 'creative-directions.json'));
   if (!cached || cached.schemaVersion !== 'creative-directions/v1' || cached.inputHash !== state.inputHash) throw new Error('Creative directions are missing or stale; explicitly generate or import reviewed proposals.');
@@ -184,22 +206,27 @@ export async function compileBrief(profileDir, { outputDir } = {}) {
   pending.push(...accessibility.checks.filter((check) => check.status === 'fail').map((check) => `Accessibility failure ${check.id}: ${check.instruction}`));
   const brief = { schemaVersion: 'design-brief/v1', inputHash: state.inputHash, kind: state.request.kind,
     status: pending.length ? 'needs-review' : 'ready-for-execution', request: state.request,
-    selectedDirection: selected, directions: cached.directions, pending, accessibility,
+    selectedDirection: selected, directions: cached.directions, pending, accessibility, codeContext: state.codeContext,
     observations: state.decisions.effectiveAnalysis.inferences,
     verifiedRules: state.decisions.activeRules, brandConflicts: state.decisions.conflicts,
     sources: state.decisions.sources.map(({ absolutePath, ...source }) => ({ ...source, path: `sources/${source.id}${path.extname(source.path)}` })),
-    evidence: structuredClone(state.prepared.evidence),
+    evidence: state.prepared.evidence.map((item) => ({ ...item, sourcePath: `evidence/${item.id}${path.extname(item.sourcePath)}` })),
     assets: assets.map(({ absolutePath, ...entry }) => ({ ...entry, path: `assets/${entry.id}${path.extname(entry.path)}` })),
     acceptanceCriteria: [
       'Use the exact approved copy and selected direction; invent no brand facts or extra assets.',
-      ...(state.request.kind === 'web-hero' ? [
+      ...(['web-hero', 'website-change'].includes(state.request.kind) ? [
         'Render and review at 1440 px and 390 px wide: no overlap, clipped copy or horizontal overflow.',
         'Use semantic headings, meaningful image alternatives, keyboard access and visible focus for links.',
         'Check actual color contrast and reduced-motion behavior; tokens alone do not prove accessibility.',
-      ] : ['Render at 1080 × 1920; review copy legibility, image subject and reserved sticker space.',
+      ] : [`Render at ${state.request.target ? `${state.request.target.width} × ${state.request.target.height}` : '1080 × 1920'}; review copy legibility, image subject and any reserved sticker space.`,
         'Supply a text transcript/description with the exported Story; static artwork is not an accessible web control.']),
       'Review crop, source permissions, destination and composition with a person before publishing.',
     ] };
+  return { state, brief, assets };
+}
+
+export async function compileBrief(profileDir, { outputDir } = {}) {
+  const { state, brief, assets } = await selectedBrief(profileDir);
   const target = path.resolve(outputDir ?? path.join(state.prepared.root, 'brief', state.request.kind));
   const relative = path.relative(state.prepared.root, target);
   const ancestors = path.relative(target, state.prepared.root);
@@ -228,14 +255,18 @@ export async function compileBrief(profileDir, { outputDir } = {}) {
     for (const entry of assets) await copyFile(entry.absolutePath, path.join(staged, brief.assets.find((item) => item.id === entry.id).path));
     for (const source of state.decisions.sources) await copyFile(source.absolutePath, path.join(staged, brief.sources.find((item) => item.id === source.id).path));
     for (const evidence of brief.evidence) {
-      const source = await profileFile(state.prepared.root, evidence.sourcePath);
-      const destination = `evidence/${evidence.id}${path.extname(evidence.sourcePath)}`;
-      await copyFile(source, path.join(staged, destination)); evidence.sourcePath = destination;
+      const source = await profileFile(state.prepared.root, state.prepared.evidence.find((item) => item.id === evidence.id).sourcePath);
+      await copyFile(source, path.join(staged, evidence.sourcePath));
     }
     await writeFile(path.join(staged, 'design-brief.json'), json(brief));
     await writeFile(path.join(staged, 'BRIEF.md'), briefMarkdown(brief));
-    await writeFile(path.join(staged, 'accessibility.json'), json(accessibility));
-    await writeFile(path.join(staged, 'ACCESSIBILITY.md'), accessibilityMarkdown(accessibility));
+    await writeFile(path.join(staged, 'accessibility.json'), json(brief.accessibility));
+    await writeFile(path.join(staged, 'ACCESSIBILITY.md'), accessibilityMarkdown(brief.accessibility));
+    if (['instagram-story', 'promotional-image'].includes(brief.kind)) await writeFile(path.join(staged, 'ARTWORK-DESCRIPTION.md'),
+      '# Descripción de la pieza — candidata para revisar\n\nTexto confirmado y alternativas suministradas. Revisar contra la imagen final; todavía no describe un diseño renderizado.\n\n' +
+      '## Texto de la pieza\n\n' + brief.request.copy.map((item) => `${item.text}\n`).join('\n') +
+      '\n## Imágenes informativas\n\n' + brief.assets.filter((asset) => asset.use.alt.usage === 'informative').map((asset) => `- ${asset.id}: ${asset.use.alt.text}`).join('\n') +
+      (brief.request.action.type === 'native-sticker' ? `\n\n## Acción pendiente en Instagram\n\nSticker nativo: ${brief.request.action.label}. Destino confirmado: ${brief.request.action.url}. La persona responsable debe agregarlo y revisar su ubicación en el editor; el arte no incluye un enlace funcional.\n` : '\n'));
   });
   return { outputDir: target, brief };
 }
