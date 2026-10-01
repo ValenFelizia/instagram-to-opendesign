@@ -21,6 +21,9 @@ The project investigates whether a public Instagram profile provides enough evid
 
 ## Constraints
 
+- Preserve the current Felisa website palette despite the deliberate yellow Instagram logo background. Keep its hero work on standby pending a new approach and additional supplied photos. Source: user's review, 2026-09-30.
+- Optimize for a small number of effective reviews leading to useful agent context for promotional artwork and website changes, including explicit existing-site code context when available. Evaluate unfamiliar brands; Felisa's prior manual brand knowledge cannot demonstrate general utility. Source: user's direction, 2026-09-30.
+
 - The repository is public open source software. Source: the user's initial request.
 - Other design-system consumers are outside the initial scope. Source: the user's initial request.
 - Do not start with a custom Instagram scraper, MCP server, SaaS or continuous synchronization. Source: the Linear project.
@@ -32,6 +35,20 @@ The project investigates whether a public Instagram profile provides enough evid
 - Report translation changes prose only. Evidence IDs, citations, review status, confidence, null values and candidate hex colors remain unchanged. Original source text remains inspectable.
 
 ## Interfaces and Contracts
+
+Result review preserves immutable first/subsequent outputs, complete brief/package snapshots, viewport artifacts and original feedback. Deterministic checks consume explicitly supplied rendered observations; screenshots alone retain uncertainty. Corrections remain request-specific with explicit/unknown causes. Matched comparison includes shared source bytes, prior knowledge and all supplied preparation/review/edit effort; it does not generate an aesthetic score or infer utility. Rich packages remain gated by observed missing context. Source: GitHub #21/#22 and user direction, 2026-09-30.
+
+Explicit delivery targets a supplied absolute OpenDesign data directory and verified installation version, validates current package/selected-brief context and hashes, and atomically installs a minimally described published user catalog entry plus a portable handoff and starter instruction. Promotional-image and website-change requests specify target dimensions; authorized existing-site file hashes remain local context and require OpenDesign linked directory access before editing. Delivery never starts generation. Source: GitHub #20 and local OpenDesign 0.23.1 integration.
+
+Accessibility preflight evaluates declared solid-color usages with unrounded WCAG contrast thresholds, resolves token aliases and keeps unknown/photo backgrounds pending. Verifiable failures prevent brief execution; contextual alternatives, keyboard/focus/semantics, resize, reduced motion and artwork descriptions remain rendered acceptance tasks. It does not rewrite confirmed colors or certify accessibility. Source: GitHub #19.
+
+The report reviews inference proposals through local labeled controls and exports a scoped `brand-review/v1` download. Explicit CLI import validates profile, evidence fingerprints and decision revisions, preserving confirmed rules and unrelated rows. No browser storage or network calls are used. Optional website/social rule scopes keep channel authority distinct. Source: GitHub #18 and user review, 2026-09-30.
+
+A validated `design-request.json` selects hero or static Story, source-confirmed copy, action, constraints and approved assets. Explicit creative generation returns 2–3 structurally distinct proposals through a reusable provider/cache; local human imports are also supported. A selected direction produces portable `BRIEF.md` and `design-brief.json` outside the OpenDesign manifest. Missing approval, crop/alt/slot review or selection keeps the brief pending. Changes invalidate cached context; local compilation never calls providers. Source: GitHub #17 and the approved P0 plan.
+
+An optional `asset-review.json` records originals, captures, derivatives, roles, permissions and composition candidates. `brand:assets` measures file dimensions and actual transparency, proposes non-mutating crops for hero or Story slots, and writes `asset-catalog.json`. Unknown permissions or unresolved overlays prevent reusable export; originals can be supplied under `manual/`. The compiler retains reference evidence separately from confirmed reusable assets. Source: GitHub #16 and the approved P0 plan.
+
+An optional `brand-decisions.json` stores verified local rules and source/reviewer provenance separately from model analysis. Confirmed rules override inference; proposal acceptance does not verify a fact. Source/candidate fingerprints require renewed review after changes. Invalid decisions preserve prior outputs; manual documents and decisions survive refresh. The package and report expose origins and source comparisons. Source: GitHub #15 and the approved P0 plan.
 
 Ingestion produces `instagram-source.json` and local assets in a Git-ignored directory. The JSON retains public profile metadata, links, recent posts, captions, source URLs, file paths, primary authors and provider provenance. Collaborative posts are retained even when their primary author differs from the requested profile. The provider interface is isolated from normalization so the service can be replaced. Source: VAL-89 / GitHub #2 and live validation with `@felisa_fr`.
 

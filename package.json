@@ -13,7 +13,13 @@
     "brand:instagram": "node --env-file=.env.local bin/brand-instagram.js",
     "brand:compile": "node bin/compile-brand.js",
     "brand:report": "node bin/brand-report.js",
-    "test": "node --test test/analyze.test.js test/evidence.test.js test/ingest.test.js test/package.test.js test/report.test.js"
+    "brand:decisions": "node bin/brand-decisions.js",
+    "brand:assets": "node bin/brand-assets.js",
+    "brand:brief": "node bin/brand-brief.js",
+    "test": "node --test test/*.test.js",
+    "brand:accessibility": "node bin/brand-accessibility.js",
+    "brand:deliver": "node bin/brand-deliver.js",
+    "brand:result": "node bin/brand-result.js"
   },
   "license": "MIT",
   "dependencies": {

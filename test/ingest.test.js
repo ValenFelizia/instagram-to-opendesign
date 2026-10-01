@@ -44,8 +44,22 @@ test('ingests media locally and preserves earlier output on download failure', a
     assert.equal((await stat(path.join(outputDir, saved.posts[0].media[0].assetPath))).size, 15);
     await mkdir(path.join(outputDir, 'evidence'));
     await writeFile(path.join(outputDir, 'evidence', 'review.json'), '{"profile/avatar":{"classification":"brand-graphic"}}');
+    await mkdir(path.join(outputDir, 'manual'));
+    await writeFile(path.join(outputDir, 'manual/brand.md'), 'Owner-approved source');
+      await writeFile(path.join(outputDir, 'brand-decisions.json'), '{"synthetic":"decision snapshot"}');
+      for (const file of ['asset-review.json', 'design-request.json', 'creative-directions.json']) {
+        await writeFile(path.join(outputDir, file), '{"synthetic":"human workflow"}');
+      }
+      await mkdir(path.join(outputDir, 'brief/web-hero'), { recursive: true });
+      await writeFile(path.join(outputDir, 'brief/web-hero/BRIEF.md'), 'Previous brief, re-review after changes');
     await ingest('example.studio', options);
     assert.match(await readFile(path.join(outputDir, 'evidence', 'review.json'), 'utf8'), /brand-graphic/);
+    assert.equal(await readFile(path.join(outputDir, 'manual/brand.md'), 'utf8'), 'Owner-approved source');
+      assert.match(await readFile(path.join(outputDir, 'brand-decisions.json'), 'utf8'), /decision snapshot/);
+      for (const file of ['asset-review.json', 'design-request.json', 'creative-directions.json']) {
+        assert.match(await readFile(path.join(outputDir, file), 'utf8'), /human workflow/);
+      }
+      assert.match(await readFile(path.join(outputDir, 'brief/web-hero/BRIEF.md'), 'utf8'), /Previous brief/);
     const stable = await readFile(path.join(outputDir, 'instagram-source.json'), 'utf8');
     await assert.rejects(() => ingest('example.studio', {
       ...options, fetchImpl: async () => new Response('error', { status: 404 }),

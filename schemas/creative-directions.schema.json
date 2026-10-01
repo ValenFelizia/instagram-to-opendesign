@@ -1,0 +1,17 @@
+{
+  "type":"object","additionalProperties":false,"required":["directions"],
+  "properties":{"directions":{"type":"array","minItems":2,"maxItems":3,"items":{
+    "type":"object","additionalProperties":false,
+    "required":["id","label","layout","hierarchy","assetTreatment","assetIds","evidenceIds","rationale","limits","missingInformation"],
+    "properties":{
+      "id":{"type":"string","pattern":"^[A-Za-z0-9-]+$"},"label":{"type":"string","minLength":1},
+      "layout":{"enum":["split","editorial","framed"]},
+      "hierarchy":{"enum":["headline-first","image-first","brand-first"]},
+      "assetTreatment":{"enum":["single-contained","single-field","paired"]},
+      "assetIds":{"type":"array","minItems":1,"uniqueItems":true,"items":{"type":"string"}},
+      "evidenceIds":{"type":"array","minItems":1,"uniqueItems":true,"items":{"type":"string"}},
+      "rationale":{"type":"string","minLength":1},"limits":{"type":"array","minItems":1,"items":{"type":"string","minLength":1}},
+      "missingInformation":{"type":"array","items":{"type":"string","minLength":1}}
+    }
+  }}}
+}

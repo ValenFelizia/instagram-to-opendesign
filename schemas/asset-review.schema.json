@@ -1,0 +1,32 @@
+{
+  "$schema":"https://json-schema.org/draft/2020-12/schema",
+  "title":"Local asset review", "type":"object", "additionalProperties":false,
+  "required":["schemaVersion","username","entries"],
+  "properties":{
+    "schemaVersion":{"const":"asset-review/v1"}, "username":{"type":"string","minLength":1},
+    "entries":{"type":"array","items":{"$ref":"#/$defs/entry"}}
+  },
+  "$defs":{
+    "fraction":{"type":"number","minimum":0,"maximum":1},
+    "entry":{
+      "type":"object","additionalProperties":false,
+      "required":["id","path","sha256","origin","role","include","primary","permission","uiOverlay","alt","subjectBox"],
+      "properties":{
+        "id":{"type":"string","pattern":"^[A-Za-z0-9-]+$"},
+        "path":{"type":"string","pattern":"^(assets|manual)/[A-Za-z0-9._/-]+\\.(png|jpg|jpeg|webp)$"},
+        "sha256":{"type":"string","pattern":"^[a-f0-9]{64}$"},
+        "origin":{"enum":["unknown","original","screenshot","derivative"]},
+        "role":{"enum":["logo","product","portrait","texture","reference"]},
+        "include":{"type":"boolean"},"primary":{"type":"boolean"},
+        "permission":{"type":"object","additionalProperties":false,"required":["use"],
+          "properties":{"use":{"enum":["unknown","analysis-only","local-design","redistributable"]},"sourceId":{"type":"string","minLength":1}},
+          "allOf":[{"if":{"properties":{"use":{"enum":["local-design","redistributable"]}}},"then":{"required":["sourceId"]}}]},
+        "uiOverlay":{"type":["boolean","null"]},
+        "alt":{"type":"object","additionalProperties":false,"required":["text","usage"],
+          "properties":{"text":{"type":"string"},"usage":{"enum":["unknown","informative","decorative"]}}},
+        "subjectBox":{"anyOf":[{"type":"null"},{"type":"object","additionalProperties":false,"required":["x","y","width","height"],
+          "properties":{"x":{"$ref":"#/$defs/fraction"},"y":{"$ref":"#/$defs/fraction"},"width":{"type":"number","exclusiveMinimum":0,"maximum":1},"height":{"type":"number","exclusiveMinimum":0,"maximum":1}}}]}
+      }
+    }
+  }
+}

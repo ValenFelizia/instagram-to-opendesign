@@ -1,0 +1,32 @@
+{
+  "schemaVersion": "brand-decisions/v1",
+  "username": "example_studio",
+  "sources": [
+    {
+      "id": "S-OWNER",
+      "path": "manual/brand.md",
+      "sha256": "b9e6ca1d72e43e2352b34187e6a2ca7a86a717f8042ccd76518e66c00ad9e7e9",
+      "summary": "Synthetic owner confirmation",
+      "reviewer": "Synthetic owner",
+      "reviewedAt": "2026-01-02T00:00:00Z"
+    }
+  ],
+  "rules": [
+    {
+      "id": "R-ACCENT",
+      "kind": "token",
+      "target": "accent",
+      "value": "#315a46",
+      "sourceId": "S-OWNER"
+    },
+    {
+      "id": "R-FONT",
+      "kind": "font",
+      "target": "font-body",
+      "value": "Arial, sans-serif",
+      "sourceId": "S-OWNER"
+    }
+  ],
+  "inferenceDecisions": [],
+  "assetSelections": []
+}
