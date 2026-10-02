@@ -10,7 +10,7 @@
   - Branch: `codex/desktop-handoff`
   - Updated: 2026-10-02
   - Scope: delivery adapter/verification, CLI, regression tests and handoff documentation; preserve reviewed source bytes and explicit catalog/workspace boundaries.
-  - Landing: PR from `codex/desktop-handoff` into `main`, pending human review.
+  - Landing: PR #35 into `main`, pending human review.
   - Verification: 45 tests; isolated actual packaged 0.24.1 daemon trial and real approved Story delivery with all input files retained and active context readback. Selector review, recipient consumption and final artwork/composer remain pending; do not close #20.
   - Note: previous #20 implementation is reachable from main at `c7f7a7d`. The actual 0.24.1 desktop extraction changed fonts/color roles and omitted 17 reference files; the 0.23.1-only adapter rejects the packaged layout. Reclaimed execution after the user's request to fix this observed failure; human ownership is unchanged.
 

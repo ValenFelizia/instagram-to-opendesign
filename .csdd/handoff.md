@@ -2,7 +2,7 @@
 
 ## Desktop delivery correction, 2026-10-02
 
-The previous PR stack is reachable from main at `c7f7a7d`; the historical stacking instructions below are consumed and must not guide new branches or merge order. Current correction branch: `codex/desktop-handoff`, based on that main.
+The previous PR stack is reachable from main at `c7f7a7d`; the historical stacking instructions below are consumed and must not guide new branches or merge order. Current correction branch: `codex/desktop-handoff`, based on that main, proposed in PR #35.
 
 Actual OpenDesign 0.24.1 desktop extraction changed active identity context and omitted reference files. The corrected adapter now passes 45 tests and a synthetic trial against the actual packaged daemon runtime. A real approved local Felisa Story delivery is installed as `user:felisa-fr` in the intended personal workspace, with all 94 input files retained and 96 installed files including START/USAGE. Active DESIGN, tokens, usage and selected brief were read back through the daemon. Real data, workspace IDs and runtime outputs remain Git-ignored.
 
