@@ -22,13 +22,32 @@ pnpm brand:brief data/example_studio --compile
 pnpm brand:deliver data/example_studio --package brand-output/example-studio --brief data/example_studio/brief/promotional-image --od-data-dir C:/work/od-data --od-root C:/work/open-design
 ```
 
-Use an explicit absolute data directory used by the intended OpenDesign daemon. The verified installation layout is an OpenDesign 0.23.1 checkout/package root containing `apps/daemon/package.json`. Other versions or layouts fail with an actionable compatibility check rather than guessing their catalogs.
+Use an explicit absolute data directory used by the intended OpenDesign daemon. Supported contracts are the **0.23.1 source checkout** containing `apps/daemon/package.json` and the inspected **0.24.1 packaged desktop payload** containing `resources/app/package.json` and `resources/open-design-config.json`. The desktop's contracts dependency remains 0.23.1. Unknown versions, mismatched configuration or missing daemon entries fail before catalog mutation.
+
+## Packaged desktop delivery
+
+The desktop has a workspace/member binding in addition to its filesystem catalog. Supply the exact daemon origin, namespaced data directory, workspace ID and member ID for the intended personal workspace. Do not infer these from a globally installed version or a different running daemon. The local workspace-context endpoint verifies the supplied pair before registration.
+
+```powershell
+pnpm brand:deliver data/example_studio --package brand-output/example-studio --brief data/example_studio/brief/instagram-story --od-root C:/apps/OpenDesign/payload --od-data-dir C:/work/opendesign/namespaces/example/data --daemon-url http://127.0.0.1:58502 --workspace-id example-workspace --workspace-member-id example-member
+pnpm brand:deliver --verify C:/work/opendesign/namespaces/example/data/design-systems/example-studio --daemon-url http://127.0.0.1:58502 --workspace-id example-workspace --workspace-member-id example-member
+```
+
+The port above is illustrative; use the actual daemon's origin. `--od-data-dir` is its exact data directory, not a namespace base that should be expanded again. IDs must come from the intended workspace's verified context. If API authentication is needed, pass `OD_API_TOKEN` in the environment; never put it in a command flag or a delivery receipt.
+
+The adapter validates/stages all inputs first, then uses `POST /api/design-systems` to reserve the package slug with `artifactMode: agent-managed` and draft status. This route registers the personal workspace association without running the narrative extractor or generating a brand seed. It confirms that the returned reservation exists at the explicitly supplied destination before replacing it. An unexpected ID is refused. Published status is applied only when the complete reviewed bundle is installed.
+
+The administrative desktop metadata retains the workspace binding and agent-managed mode; its title/category come from the supplied manifest and its surface is `image` for social requests or `web` for website requests. This does not replace the request's precise format or verify provisional identity. `DESIGN.md`, `tokens.css`, selected assets, evidence and confirmation sources retain their bytes. Accessibility reports are recomputed. The original input inventories and the actual installed hashes are both recorded.
+
+`USAGE.md` is supplied by the inspected OpenDesign loader as selected-system usage context. It points to the exact selected brief, token origins and pending acceptance tasks. `START.md` remains the short starter instruction. The complete `handoff/` directory must be accessible to the recipient agent; context consumption still requires observing its response.
+
+After installation, the adapter verifies the personal catalog and reads back the active `DESIGN.md`, `tokens.css`, `USAGE.md`, `BRIEF.md` and typed brief through the daemon. A failed verification restores the previous filesystem entry. A failed first installation removes only its unchanged, identified draft reservation through the API; uncertain cleanup is reported for manual recovery rather than removing an unrelated resource. Team sharing and database edits are outside this adapter.
 
 ## Validation and output
 
 Delivery revalidates current evidence, source confirmations, permissions, selected direction, request channel, package file hashes, approved asset bytes and the actual token preflight. Input failures preserve an existing catalog entry. It rejects path overlap, redirected destinations, hidden files and symbolic links. Installation uses an atomic directory replacement. An existing directory is refused by default; `--replace` applies only to a marked importer delivery.
 
-The catalog keeps minimal `manifest.json`, `metadata.json` with `status: published`, and the original `DESIGN.md`/`tokens.css`. It does not use OpenDesign `import-local`, which can rewrite the design description. A `handoff/` directory includes the selected brief, exact copy, assets, evidence, confirmation sources and accessibility tasks. `START.md` contains the exact starter instruction and paths; `delivery.json` records inputs, hashes, tested version and pending context consumption.
+The catalog keeps minimal `manifest.json`, `metadata.json` with `status: published`, and the original `DESIGN.md`/`tokens.css`. It does not use OpenDesign `import-local` or desktop narrative extraction, which can rewrite the design description. A `handoff/` directory includes the selected brief, exact copy, assets, evidence, confirmation sources and accessibility tasks. `START.md` contains the exact starter instruction and paths; `delivery.json` records input and installed inventories, hashes, tested layout/version, desktop workspace association and pending context consumption. Verification detects missing, changed and unexpected files before consulting the catalog.
 
 ```powershell
 pnpm brand:deliver --verify C:/work/od-data/design-systems/example-studio --daemon-url http://127.0.0.1:7456
@@ -41,3 +60,11 @@ This read-only verification requires a running local daemon and checks catalog v
 A fresh isolated OpenDesign **0.23.1** daemon on loopback port 7497 accepted a synthetic promotional-image handoff. `GET /api/design-systems` returned published `user:example-studio`; `POST /api/projects` selected that ID with HTTP 200 and no prompt/generation. Package `DESIGN.md` bytes were preserved. The local fixture is not a brand endorsement or performance experiment. Agent context consumption, rendered quality and real unfamiliar-brand evaluation remain pending under #21. Real Felisa hero generation stays deferred until the user supplies the new approach/photos; no new request or asset permissions were invented.
 
 Source contract inspected locally: OpenDesign 0.23.1 `apps/daemon/src/routes/static-resource.ts`, `routes/project/index.ts`, `design-systems/index.ts` and `app-config.ts`.
+
+## Desktop regression evidence — 2026-10-02
+
+The real 0.24.1 source-intake UI copied 78 of 95 files from a reviewed local bundle. All copied files were unchanged, including the selected brief and original product photo, but 17 reference/evidence files were omitted. The extracted active system changed typography, color roles and channel, and used a category line as brand tone. Keeping original instructions under `context/local-code/` did not preserve their priority in the active system. Do not use this extraction flow as proof of faithful reviewed delivery.
+
+The corrected adapter passed an isolated synthetic trial using the actual packaged **0.24.1 daemon runtime**: workspace registration, published catalog visibility, active file readback and original DESIGN bytes. The approved local Felisa Story bundle then passed the same checks in the intended personal desktop workspace: 51 package input files plus 43 brief input files, 96 installed files including the two generated starter/usage documents, and no dropped references. Administrative metadata is adapted as described above. No generation was requested. Selector review by the user, observed recipient context consumption, final artwork/composer review and unfamiliar-brand utility remain pending; issue #20 stays open.
+
+Inspected desktop modules: packaged `design-systems/workspace-owned-create`, `design-systems/server-services`, `design-systems/index`, `routes/design-system`, `routes/static-resource`, and `app-config`, in `resources/app/prebundled/daemon/chunks/server-WTGXM3LB.mjs`. The fixture layout tests check the contract gates; the runtime trial separately checks the actual consumer.

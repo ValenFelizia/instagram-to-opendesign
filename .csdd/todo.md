@@ -4,6 +4,16 @@
 
 ## Ready to Land
 
+- [ ] GitHub #20 — Preserve reviewed context in packaged OpenDesign desktop delivery.
+  - Owner: Valentin Felizia
+  - Agent: Codex
+  - Branch: `codex/desktop-handoff`
+  - Updated: 2026-10-02
+  - Scope: delivery adapter/verification, CLI, regression tests and handoff documentation; preserve reviewed source bytes and explicit catalog/workspace boundaries.
+  - Landing: PR from `codex/desktop-handoff` into `main`, pending human review.
+  - Verification: 45 tests; isolated actual packaged 0.24.1 daemon trial and real approved Story delivery with all input files retained and active context readback. Selector review, recipient consumption and final artwork/composer remain pending; do not close #20.
+  - Note: previous #20 implementation is reachable from main at `c7f7a7d`. The actual 0.24.1 desktop extraction changed fonts/color roles and omitted 17 reference files; the 0.23.1-only adapter rejects the packaged layout. Reclaimed execution after the user's request to fix this observed failure; human ownership is unchanged.
+
 - [ ] GitHub #21 — Preserve and review rendered results.
   - Owner: Valentin Felizia
   - Agent: Codex (P0 worktree)
@@ -12,15 +22,6 @@
   - Scope: immutable revisions, observations/checks, original feedback, request-specific corrections, cumulative effort and matched-input protocol.
   - Landing: PR #34, stacked on #30.
   - Verification: 40 tests and synthetic web/Story fixtures; real unfamiliar-brand utility and human acceptance remain pending. #22 gate remains closed for insufficient evaluation evidence.
-
-- [ ] GitHub #20 — Explicit OpenDesign handoff and generalized requests.
-  - Owner: Valentin Felizia
-  - Agent: Codex (P0 worktree)
-  - Branch: `codex/opendesign-handoff`
-  - Updated: 2026-09-30
-  - Scope: safe atomic installation, current input/hash gates, exact starter instruction, promotional/site requests and authorized code fingerprints.
-  - Landing: stacked on #29.
-  - Verification: synthetic published catalog selection and project creation on isolated OpenDesign 0.23.1; no generation. Real Felisa hero and agent context consumption remain pending/deferred.
 
 - [ ] GitHub #19 — Declared-use accessibility preflight.
   - Owner: Valentin Felizia

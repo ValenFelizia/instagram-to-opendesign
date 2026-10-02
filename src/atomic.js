@@ -2,13 +2,19 @@ import { randomUUID } from 'node:crypto';
 import { mkdir, rename, rm, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 
-async function replaceStaged(target, staged, { recursive }) {
+async function replaceStaged(target, staged, { recursive, verify }) {
   const backup = `${target}.backup-${randomUUID()}`;
   let hadPrevious = false;
   try {
     try { await rename(target, backup); hadPrevious = true; }
     catch (error) { if (error.code !== 'ENOENT') throw error; }
-    try { await rename(staged, target); }
+    try {
+      await rename(staged, target);
+      if (verify) {
+        try { await verify(target); }
+        catch (error) { await rename(target, staged); throw error; }
+      }
+    }
     catch (error) { if (hadPrevious) await rename(backup, target); throw error; }
     if (hadPrevious) await rm(backup, { recursive, force: true });
   } finally { await rm(staged, { recursive, force: true }); }
@@ -21,13 +27,13 @@ export async function writeJsonAtomically(target, value) {
   await replaceStaged(target, staged, { recursive: false });
 }
 
-export async function buildDirectoryAtomically(target, build) {
+export async function buildDirectoryAtomically(target, build, { verify } = {}) {
   const staged = `${target}.partial-${randomUUID()}`;
   await mkdir(path.dirname(target), { recursive: true });
   await mkdir(staged);
   try {
     await build(staged);
-    await replaceStaged(target, staged, { recursive: true });
+    await replaceStaged(target, staged, { recursive: true, verify });
   } finally { await rm(staged, { recursive: true, force: true }); }
 }
 
