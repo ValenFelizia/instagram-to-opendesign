@@ -26,7 +26,7 @@ PR #36 is merged into main at `b394e9e3d1fd124fb7488aaa3f9f600472e58884`. The pr
 | #21 | Review harness is merged and local outputs/feedback preserved. A matched unfamiliar-brand run with equivalent model/settings/inputs, preparation/review effort and owner preference remains pending. Unknown causes and costs stay unknown. |
 | #32 | Test recipient portability and utility using the same canonical inputs after #31; no second production adapter yet. |
 | #33 | Product naming/positioning decision depends on #31. Keep existing repository, package and CLI names. |
-| #37 | First unfamiliar-brand intake exposed lost analyzer usage at the end-to-end CLI boundary. Preserve actual phase/provider accounting in future runs and import it without double counting; historic unknowns remain unknown. |
+| #37 | The end-to-end pipeline does not retain analyzer usage while returning color usage. Preserve actual phase/provider accounting and import it without double counting; historic unknowns remain unknown. |
 
 ## Story outcome and experiment stop
 
@@ -34,8 +34,8 @@ The first PNG preserved exact copy, original bytes/full framing, target dimensio
 
 No composer trial or publication was performed for these rejected outputs. The recipient's second-version technical claims and automatic 4/4 scorecard are not independent measurements or a visual-quality score. The actual model/runtime configuration was not independently captured. Prompt, reference preparation, defaults, model, orchestration and configuration remain possible causes; this run isolates none of them. Felisa familiarity and missing matched effort data prevent a general usefulness conclusion.
 
-## Subsequent user-authorized exploration and intake
+## Subsequent user-authorized exploration
 
 A new Felisa Story in a fresh chat used a permissive creative prompt and user-reported GPT 6 Astra. The user judged it substantially better. Model, prompt and chat changed together, so this is request-specific feedback with unknown cause, not a controlled model/prompt comparison or proof of importer utility. The user explicitly resumed hero exploration with real repository context. Its current website palette, Quicksand, supplied photos and storefront behavior remain authoritative; additional new photos and production changes are not implied.
 
-The next unfamiliar-operator business has no website. Its local intake contains 20 posts and 24 selected images; Codex visual observation labels, analysis, provisional colors and a first Spanish report are prepared. The user authorizes photo use in private tests, while identity/copy/asset approval and matched recipient settings remain pending. No real content is embedded here. A greenfield landing cannot count as the required existing-site-change scenario. No matched design run or utility verdict is claimed.
+Private evaluation case work stays local and Git-ignored, including identifiers, source content, assets, metadata, reports and outcomes. Public state records only generic protocol requirements. Matched runs require common approved inputs and recipient settings; a greenfield landing cannot satisfy an existing-site-change criterion. No general utility verdict is claimed.

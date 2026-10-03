@@ -5,10 +5,10 @@
 - [ ] GitHub #21 / VAL-100 — Prepare the next unfamiliar-brand comparison.
   - Owner: Valentin Felizia
   - Agent: Codex
-  - Branch: codex/svmuebles-evaluation
+  - Landing: PR #38, documentation reconciliation only; pending human review/merge.
   - Updated: 2026-10-03
-  - Scope: sanitized CSDD/checkpoint reconciliation and local Git-ignored intake, observation review, analysis/report and evaluation preparation; no storefront source changes.
-  - Note: the user supplied a furniture business without a website and authorized private photo tests. Twenty posts and 24 selected images were ingested/observed; first Spanish report/package generated. Exact request/copy, common inputs and recipient settings still require review before matched design runs. A greenfield landing does not satisfy the existing-site-change criterion. Preparation accounting gap is tracked in #37.
+  - Scope: generic CSDD/checkpoint reconciliation and evaluation protocol; all private case work remains local and Git-ignored. No storefront source changes.
+  - Note: matched runs require reviewed common inputs, exact request/copy, recipient settings and effort records. Private case identifiers, metadata and progress belong in local records. A greenfield landing does not satisfy an existing-site-change criterion. Generic provider accounting is tracked in #37.
 
 ## Ready to Land
 
@@ -40,7 +40,7 @@
 - [ ] GitHub #37 — Preserve provider usage and phase effort in end-to-end run records.
   - Owner: Valentin Felizia
   - Scope: no active implementation claim.
-  - Note: actual intake exposed lost analyzer usage while color usage is printed. Keep historical unknowns null; capture future actual usage/wall time and import effort events without double counting. Linked to VAL-100 and #21.
+  - Note: runPipeline does not retain analyzer usage while returning color usage. Keep historical unknowns null; capture actual usage/wall time and import effort events without double counting. Linked to VAL-100 and #21.
 
 ## Deferred
 
