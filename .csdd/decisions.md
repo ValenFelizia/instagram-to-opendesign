@@ -1,5 +1,15 @@
 # Decisions
 
+## DEC-010 — Prioritize a guided local product for creative-agent context
+
+- Status: accepted direction; roadmap/backlog reconciliation, not an app implementation
+- Date: 2026-10-03
+- Context: the user clarified that useful context for creative agents is the product purpose, independently of OpenDesign. Continuing vendor generation or treating formal comparisons as the only evidence would displace the requested onboarding and product improvements.
+- Decision: prioritize the first-use journey, selective review, planning a contained local workspace, reusable task-specific generic handoff and explicit spend/reuse information. Keep OpenDesign as an optional implemented adapter and current names for compatibility. Platform/framework selection follows journey review; hosted SaaS, MCP and broad vendor support remain outside this increment.
+- Rationale: practical acceptance and concrete friction can guide iteration without asserting measured savings or comparative superiority. Creativity needs room for proposals while facts, permissions and explicit approval remain authoritative.
+- Consequence: matched experiments remain optional research for specific comparative claims and budgets. Close #21's implemented review-feature scope without claiming matched utility; retain #15/#17/#19 manual checks. Reframe #32 as generic export, retain #37 accounting and lower #33 naming priority. VAL-104–VAL-107 define the next product scopes. Current CLI selected-brief gates are unchanged; app review states are planned work.
+- Evidence: user's explicit approval to reorder the backlog and update Linear; [product direction](https://linear.app/valenf/document/product-direction-and-guided-local-workflow-2026-10-03-7dede0439fcc). Private project evidence and outcomes remain local.
+
 ## DEC-009 — Separate canonical preparation from the OpenDesign adapter
 
 - Status: accepted; implemented in merged PR #36 (main @ b394e9e)
@@ -7,7 +17,7 @@
 - Context: #31 / VAL-101 defines a consumer-neutral boundary. Core decision validation currently derives permitted names from OpenDesign's 56-slot template, and existing-site instructions name its access mechanism. The authorized Story trial confirms readable transferred context but rejects creative outputs, without isolating a cause.
 - Decision: keep decisions, request, selected brief, source/asset hashes and acceptance tasks canonical before choosing a consumer. Put OpenDesign manifest, catalog status and token allowlist/materialization behind its package adapter; retain compatible CLI/module entry points. Reject unmapped names explicitly rather than silently discard or reinterpret a confirmed rule. Generic code access becomes a recipient-specific instruction only at delivery.
 - Rationale: a renderer's fixed slots must not decide which brand facts the core can retain. This allows a complete synthetic selected brief without an OpenDesign package or runtime while retaining the current adapter.
-- Consequence: #32 must validate actual second-recipient use and effort; the generic fixture is not a utility result. Do not rename repository/schema IDs automatically (#33) or add a rich profile without an observed gap (#22). New user-authorized creative exploration remains separate from matched utility evaluation.
+- Consequence: the generic fixture is not a utility result. DEC-010 updates #32 to generic task-specific export and makes additional recipient comparisons optional. Do not rename repository/schema IDs automatically (#33) or add a rich profile without an observed gap (#22). Creative exploration remains separate from matched utility evaluation.
 - Evidence: core boundary and rollback tests, existing package/delivery regression suite, synthetic portable fixture, and sanitized manual checkpoint in `docs/verification-checkpoint.md`.
 
 ## DEC-008 — Standalone HTML for reviewing the draft

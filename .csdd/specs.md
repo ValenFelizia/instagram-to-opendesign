@@ -2,13 +2,13 @@
 
 ## Project Summary
 
-The project prepares traceable creative-agent context from reviewed brand evidence, human decisions, assets and a selected request. Instagram is the first implemented source adapter and OpenDesign the first implemented consumer adapter. General utility remains experimental. Source: the original Linear project and GitHub #31 / VAL-101.
+The project prepares traceable, task-specific creative-agent context from reviewed brand evidence, human decisions and selected assets. Instagram is the first implemented source and OpenDesign an optional implemented destination. The next product increment prioritizes guided onboarding and a contained local workspace; those app features are not yet implemented. Quantified savings and general reliability remain unmeasured. Product goals and prioritization are canonical in Linear; implementation is tracked in GitHub. Source: the user's approved product direction, 2026-10-03; VAL-100 and `docs/product-roadmap.md`.
 
 ## Requirements
 
-- OpenDesign is the first package consumer. Spike validation compares a piece generated with the package against an image-and-manual-prompt baseline. Source: the Linear project and user-defined scope.
+- Context must remain useful before a recipient is chosen. OpenDesign is an optional adapter; additional vendor generation and a controlled benchmark are not prerequisites for product development. Comparative savings or superiority claims still require a matched experiment. Source: user's approved product direction, 2026-10-03.
 - Important identity inferences retain evidence and confidence. Brand identity must be distinguished from incidental aesthetics in photos or products. Source: the Linear project.
-- The package follows OpenDesign's current contract and retains inspectable assets and original sources. Source: the Linear project.
+- An explicitly selected OpenDesign export follows its tested contract and retains inspectable assets and original sources. Generic handoff requirements remain consumer-neutral. Source: DEC-009 and the user's approved product direction, 2026-10-03.
 - Project-authored repository documentation, CSDD state, issue titles/bodies, PR titles/descriptions, review notes and project comments use English. Source: the user's language preference, 2026-09-30.
 
 ## Language Policy
@@ -26,10 +26,18 @@ The project prepares traceable creative-agent context from reviewed brand eviden
 
 - The repository is public open source software. Source: the user's initial request.
 - User-designated private evaluation cases stay local and Git-ignored. Do not publish their identifiers, source content, assets, reports, paths, case metadata, feedback or results in repository files or GitHub discussion. Public documentation and fixtures describe generic protocols and software behavior only. Source: user's privacy direction, 2026-10-03.
-- Other design-system consumers are outside the initial scope. Source: the user's initial request.
-- Do not start with a custom Instagram scraper, MCP server, SaaS or continuous synchronization. Source: the Linear project.
+- Generic files/agent delivery is in the next product scope; additional vendor adapters and universal compatibility promises are not. Keep repository, package, CLI and schema names unchanged until a naming decision is recorded. Source: user's approved product direction, 2026-10-03; VAL-102/VAL-103.
+- Planning a contained local app is in scope. Choose between local web and desktop packaging after reviewing the journey and platform trade-offs; no framework is selected. A custom Instagram scraper, MCP server, hosted SaaS, account service and continuous synchronization remain outside this increment. Source: user's approved product direction, 2026-10-03; VAL-104/VAL-106.
 
-- Felisa validation compares the same piece and input files with and without a package when a reproducible baseline exists, records corrections and keeps real results outside Git. For Stories, Fer adds the native link sticker after reviewing the PNG; the artwork does not simulate a link button. Source: VAL-93 / GitHub #6 and the user's request.
+- Optional matched validation compares the same piece and input files with and without tool preparation when a reproducible baseline exists, records corrections and keeps real results outside Git. It is required for comparative claims, not for normal product iteration. For Stories, the person adds the native link sticker after reviewing the PNG; the artwork does not simulate a link button. Source: VAL-93 / GitHub #6 and the user's approved product direction, 2026-10-03.
+
+## Next Product Increment — Planned
+
+- Guided onboarding starts from a profile and objective, explains reused/local versus paid work, presents important uncertainties and leads to a task-specific handoff. Ask only for information that changes the next step; incomplete work can be saved and resumed. Source: VAL-104.
+- Progressive review separates required facts/permissions and explicit constraints from creative proposals. Exploratory copy, colors, typography and direction can stay provisional; exploration does not become a confirmed execution brief or publication approval. Current CLI readiness gates stay unchanged until a reviewed implementation updates them. Source: VAL-105.
+- A local workspace should keep report, evidence, decisions, originals and deliverables together, reuse canonical artifacts, surface stale inputs and recover from failures. No automatic publication, cloud synchronization or telemetry by default. Source: VAL-106.
+- Paid-action information must distinguish estimates with a basis, actual returned usage/billing and unknown values. Reuse valid results, avoid automatic paid retries, retain partial work and keep wall time separate from human effort. Durable accounting implementation remains #37. Source: VAL-107.
+- Accessibility is part of the journey design: native semantics, keyboard/focus behavior, clear labels and recoverable errors, readable status without color-only meaning and mobile/desktop adaptation. Existing rendered acceptance tasks remain open. Source: VAL-104/VAL-105/VAL-106.
 
 ## Invariants
 
