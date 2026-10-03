@@ -2,18 +2,15 @@
 
 ## In Progress
 
-## Ready to Land
-
-- [ ] GitHub #31 — Separate the consumer-neutral core from the OpenDesign adapter.
+- [ ] GitHub #21 / VAL-100 — Prepare the next unfamiliar-brand comparison.
   - Owner: Valentin Felizia
   - Agent: Codex
-  - Branch: codex/core-boundary
+  - Landing: PR #38, documentation reconciliation only; pending human review/merge.
   - Updated: 2026-10-03
-  - Scope: core token-rule validation and existing-site access instructions; explicit OpenDesign package/token adapter, compatible entry points, generic selected-brief fixture, boundary tests/docs and evidence-backed closure reconciliation.
-  - Note: based on main @ 6e7e8f1 (merged PR #35). Historical P0 claims are reconciled below against reachable implementation and manual evidence; human ownership and historical executors are preserved.
+  - Scope: generic CSDD/checkpoint reconciliation and evaluation protocol; all private case work remains local and Git-ignored. No storefront source changes.
+  - Note: matched runs require reviewed common inputs, exact request/copy, recipient settings and effort records. Private case identifiers, metadata and progress belong in local records. A greenfield landing does not satisfy an existing-site-change criterion. Generic provider accounting is tracked in #37.
 
-  - Landing: PR #36 into main, pending human review/merge.
-  - Verification: 47 local tests; complete public synthetic brief without an OpenDesign package; real local Felisa source/decision/DESIGN/token bytes and context hash preserved on separate compilation, without provider calls.
+## Ready to Land
 
 ## Blocked
 
@@ -25,39 +22,38 @@
   - Note: implementation from PR #23 is reachable from main. Real local rules confirm website colors and product copy; font behavior is tested synthetically but an actually supplied brand font has not been registered in the real decision contract.
 - [ ] GitHub #17 — Complete human brief/execution review.
   - Owner: Valentin Felizia
-  - Scope: no active source-code claim; human hero review follows the deferred scope below.
-  - Note: PR #26 implementation is reachable from main. The selected Story request was understood by the recipient, but both artwork versions were rejected; no utility claim. Do not restart stopped Story iteration or deferred hero generation.
+  - Scope: no active source-code claim; reviewed hero exploration in a separate design project.
+  - Note: the earlier Story outputs were rejected; a fresh chat with a permissive prompt and user-reported GPT 6 Astra received positive feedback. Prompt, model and chat changed together; cause/utility are unknown. The user explicitly resumed hero exploration with repository context and supplied assets. Preserve website palette, Quicksand, actual copy and storefront behavior; no production change or new-photo availability is implied.
 - [ ] GitHub #19 — Complete rendered/platform accessibility acceptance.
   - Owner: Valentin Felizia
   - Agent: Codex (P0 worktree)
   - Scope: no active source-code claim; implementation is merged from PR #29/#34.
   - Note: declared-use thresholds, aliases, uncertainty, blockers and manual tasks are implemented. Native composer overlap/sticker and final rendered accessibility remain pending for an accepted future piece; rejected artwork is not a publishing target.
-- [ ] GitHub #21 — Run a matched unfamiliar-brand evaluation.
-  - Owner: Valentin Felizia
-  - Agent: Codex (P0 worktree)
-  - Scope: no active source-code claim; review/evaluation implementation is merged from PR #34.
-  - Note: first outputs, original feedback and request-specific rejection are preserved locally. Transfer is verified; utility and effort reduction are not. The user supplied svmuebles.deco for the next comparison; establish reviewed inputs, rights, actual model/settings, iteration budget and effort records before execution.
 - [ ] GitHub #32 — Validate a second consumer-neutral handoff.
   - Owner: Valentin Felizia
-  - Depends on: #31
+  - Depends on: #31 (completed)
   - Note: reuse canonical artifacts and the matched request; do not introduce a second source of truth or promise untested vendor support.
 - [ ] GitHub #33 — Evaluate product positioning and naming.
   - Owner: Valentin Felizia
-  - Depends on: #31
+  - Depends on: #31 (completed)
   - Note: keep repository/package/CLI names until a concrete decision is recorded.
+- [ ] GitHub #37 — Preserve provider usage and phase effort in end-to-end run records.
+  - Owner: Valentin Felizia
+  - Scope: no active implementation claim.
+  - Note: runPipeline does not retain analyzer usage while returning color usage. Keep historical unknowns null; capture actual usage/wall time and import effort events without double counting. Linked to VAL-100 and #21.
 
 ## Deferred
-
-- [ ] Felisa hero redesign and generation.
-  - Owner: Valentin Felizia
-  - Reason: user is considering a new approach and needs additional supplied photos.
-  - Resume when: user confirms that approach and supplies the requested photos.
-  - Preserve the existing website palette; the Instagram background change does not authorize a website rebrand.
 
 ## Recently Completed
 
 Retention: 5
 
+- [x] GitHub #31 / VAL-101 — Separate canonical core from the OpenDesign adapter.
+  - Owner: Valentin Felizia
+  - Agent: Codex
+  - Scope: released
+  - Landed: main @ b394e9e (PR #36), verified 2026-10-03.
+  - Verification: 47 recorded local tests, public selected-brief fixture without a runtime/package, preserved real Felisa canonical bytes/hash; GitHub #31 and Linear VAL-101 are Done. Actual second-recipient utility remains #32.
 - [x] GitHub #22 — Conclude the rich-package gate without expanding the profile.
   - Owner: Valentin Felizia
   - Scope: released
@@ -79,9 +75,3 @@ Retention: 5
   - Scope: released
   - Landed: main @ c7f7a7d via PR #25/#27
   - Verification: technical/rights fixtures, human original-versus-capture/permission/contain/alternative review and original bytes retained in first rendered Story. Issue closed 2026-10-03; artwork acceptance remains separate.
-- [x] GitHub #6 / VAL-93 — Felisa MVP baseline validation.
-  - Owner: Valentin Felizia
-  - Agent: Codex
-  - Scope: released
-  - Landed: main @ 82c85c1 (PR #12)
-  - Verification: context preserved without clear visual gain. Prior familiarity confounds utility; do not generalize from this case.

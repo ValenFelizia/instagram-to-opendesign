@@ -2,12 +2,12 @@
 
 ## DEC-009 — Separate canonical preparation from the OpenDesign adapter
 
-- Status: accepted direction; implementation pending PR review
+- Status: accepted; implemented in merged PR #36 (main @ b394e9e)
 - Date: 2026-10-03
 - Context: #31 / VAL-101 defines a consumer-neutral boundary. Core decision validation currently derives permitted names from OpenDesign's 56-slot template, and existing-site instructions name its access mechanism. The authorized Story trial confirms readable transferred context but rejects creative outputs, without isolating a cause.
 - Decision: keep decisions, request, selected brief, source/asset hashes and acceptance tasks canonical before choosing a consumer. Put OpenDesign manifest, catalog status and token allowlist/materialization behind its package adapter; retain compatible CLI/module entry points. Reject unmapped names explicitly rather than silently discard or reinterpret a confirmed rule. Generic code access becomes a recipient-specific instruction only at delivery.
 - Rationale: a renderer's fixed slots must not decide which brand facts the core can retain. This allows a complete synthetic selected brief without an OpenDesign package or runtime while retaining the current adapter.
-- Consequence: #32 must validate actual second-recipient use and effort; the generic fixture is not a utility result. Do not rename repository/schema IDs automatically (#33), add a rich profile without an observed gap (#22), or resume the user-stopped Story/hero experiments.
+- Consequence: #32 must validate actual second-recipient use and effort; the generic fixture is not a utility result. Do not rename repository/schema IDs automatically (#33) or add a rich profile without an observed gap (#22). New user-authorized creative exploration remains separate from matched utility evaluation.
 - Evidence: core boundary and rollback tests, existing package/delivery regression suite, synthetic portable fixture, and sanitized manual checkpoint in `docs/verification-checkpoint.md`.
 
 ## DEC-008 — Standalone HTML for reviewing the draft

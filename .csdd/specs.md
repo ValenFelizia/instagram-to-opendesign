@@ -21,10 +21,11 @@ The project prepares traceable creative-agent context from reviewed brand eviden
 
 ## Constraints
 
-- Preserve the current Felisa website palette despite the deliberate yellow Instagram logo background. Keep its hero work on standby pending a new approach and additional supplied photos. Source: user's review, 2026-09-30.
+- Preserve the current Felisa website palette despite the deliberate yellow Instagram logo background. The user explicitly resumed hero exploration on 2026-10-03 using a permissive creative prompt, supplied photos and real repository context. Preserve website typography/copy/behavior and work in a separate prototype; missing additional photos and production changes are not implied. This supersedes the 2026-09-30 standby for that authorized exploration.
 - Optimize for a small number of effective reviews leading to useful agent context for promotional artwork and website changes, including explicit existing-site code context when available. Evaluate unfamiliar brands; Felisa's prior manual brand knowledge cannot demonstrate general utility. Source: user's direction, 2026-09-30.
 
 - The repository is public open source software. Source: the user's initial request.
+- User-designated private evaluation cases stay local and Git-ignored. Do not publish their identifiers, source content, assets, reports, paths, case metadata, feedback or results in repository files or GitHub discussion. Public documentation and fixtures describe generic protocols and software behavior only. Source: user's privacy direction, 2026-10-03.
 - Other design-system consumers are outside the initial scope. Source: the user's initial request.
 - Do not start with a custom Instagram scraper, MCP server, SaaS or continuous synchronization. Source: the Linear project.
 
