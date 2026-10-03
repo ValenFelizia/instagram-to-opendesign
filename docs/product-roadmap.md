@@ -6,6 +6,12 @@ Accepted direction, 2026-10-03. Product priorities are canonical in [Linear](htt
 
 Prepare useful, reviewable context for a concrete creative task without repeatedly reconstructing a business from scattered brand material. Instagram is the first implemented source. OpenDesign is an optional implemented adapter. Evidence, confidence, human decisions, selected originals and the request are useful before a recipient is selected.
 
+## Primary user
+
+The initial audience is a technical operator working with creative agents across brand projects: someone comfortable configuring APIs, inspecting evidence and moving files/context between tools. The user explicitly confirmed this audience on 2026-10-03.
+
+Prioritize a clear visual journey, reusable provider settings and access to advanced model options, local outputs and detailed evidence. A nontechnical owner may use an already-configured installation with assistance, but independent nontechnical onboarding is not the initial target. Keep labels, keyboard/focus behavior and recovery understandable for both.
+
 The intended journey is profile and objective → reused/local versus explicit paid intake → readable summary → important review → task-specific context → generic agent handoff or optional adapter → output and human feedback.
 
 ## Next work, in order

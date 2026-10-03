@@ -33,6 +33,8 @@ The project prepares traceable, task-specific creative-agent context from review
 
 ## Next Product Increment — Planned
 
+- The initial audience is a technical operator working with creative agents, comfortable configuring APIs, inspecting evidence and exporting context. Nontechnical owners may use an installation configured with help, but independent nontechnical onboarding is not the initial target. Keep settings/advanced controls accessible within a clear visual journey. Source: user's explicit audience clarification, 2026-10-03; VAL-104/VAL-106.
+
 - Guided onboarding starts from a profile and objective, explains reused/local versus paid work, presents important uncertainties and leads to a task-specific handoff. Ask only for information that changes the next step; incomplete work can be saved and resumed. Source: VAL-104.
 - Progressive review separates required facts/permissions and explicit constraints from creative proposals. Exploratory copy, colors, typography and direction can stay provisional; exploration does not become a confirmed execution brief or publication approval. Current CLI readiness gates stay unchanged until a reviewed implementation updates them. Source: VAL-105.
 - A local workspace should keep report, evidence, decisions, originals and deliverables together, reuse canonical artifacts, surface stale inputs and recover from failures. No automatic publication, cloud synchronization or telemetry by default. Source: VAL-106.
