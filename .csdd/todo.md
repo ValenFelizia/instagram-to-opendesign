@@ -4,14 +4,15 @@
 
 ## Ready to Land
 
-- [ ] GitHub #39 / VAL-100 — Reconcile the guided product workflow and backlog.
+- [ ] GitHub #37 — Preserve provider usage and phase effort.
   - Owner: Valentin Felizia
   - Agent: Codex
-  - Landing: PR #40, codex/product-workflow-roadmap into main; pending human review/merge.
-  - Verification: Linear project/document and VAL-100/102–107 read back; GitHub #21 closure and #32/#33 open states verified. Documentation-only diff, privacy scope and whitespace checked; no new runtime tests or render claimed.
+  - Scope: pipeline, provider observation hooks, local run records, result-review import, synthetic tests and accounting documentation.
+  - Landing: PR pending creation, codex/provider-accounting into main; human review/merge required.
+  - Verification: all 51 local synthetic tests passed; no live provider call.
   - Updated: 2026-10-03
-  - Scope: generic product roadmap, README, CSDD, checkpoint and result-review guidance; Linear product reconciliation and GitHub backlog updates. Private cases remain local and Git-ignored. No app or storefront implementation.
-  - Note: PR #38 is merged into main @ 34d7d77. The user prioritizes guided onboarding and a contained local workspace; optional matched evaluation and vendor generation are not product-development gates. Preserve pending provenance/render checks and unknown accounting. Keep naming unchanged.
+  - Note: branch codex/provider-accounting from main @ 96120d8. No live provider calls or private case exports.
+
 
 ## Blocked
 
@@ -38,10 +39,6 @@
   - Owner: Valentin Felizia
   - Depends on: #31 (completed)
   - Note: positioning is accepted under DEC-010. Naming is lower priority; keep repository/package/CLI/schema names until a concrete naming decision after journey/workspace design.
-- [ ] GitHub #37 — Preserve provider usage and phase effort in end-to-end run records.
-  - Owner: Valentin Felizia
-  - Scope: no active implementation claim.
-  - Note: runPipeline does not retain analyzer usage while returning color usage. Keep historical unknowns null; capture actual usage/wall time and import effort events without double counting. Linked to VAL-100/VAL-107; accounting is useful independently of optional comparisons.
 - [ ] VAL-104–VAL-107 — Design the guided local product increment.
   - Owner: Valentin Felizia
   - Scope: no active implementation claim; product planning is tracked in Linear.
@@ -52,6 +49,13 @@
 ## Recently Completed
 
 Retention: 5
+
+- [x] GitHub #39 / VAL-100 — Reconcile the guided product workflow and backlog.
+  - Owner: Valentin Felizia
+  - Agent: Codex
+  - Scope: released
+  - Landed: main @ 96120d8 (PR #40), verified 2026-10-03.
+  - Verification: merged documentation establishes the technical initial audience and guided local workflow; app implementation remains planned in VAL-104–VAL-107.
 
 - [x] GitHub #21 — Close the implemented result-review scope.
   - Owner: Valentin Felizia
@@ -76,9 +80,3 @@ Retention: 5
   - Scope: released
   - Landed: main @ 6e7e8f1 (PR #35, after PR #30)
   - Verification: 45 previously recorded local tests, actual packaged 0.24.1 runtime, complete local delivery, selector screenshot and concrete recipient readback. Issue closed 2026-10-03; final creative quality is separate.
-- [x] GitHub #18 — Accessible report review export/import.
-  - Owner: Valentin Felizia
-  - Agent: Codex (P0 worktree)
-  - Scope: released
-  - Landed: main @ c7f7a7d via PR #28/#34/#27
-  - Verification: saved JSON download/scoped import, keyboard/focus/errors, Narrator form/error, 390/1440px layout, local-only browser traffic and readable no-JavaScript content. Issue closed 2026-10-03; no full conformance claim.

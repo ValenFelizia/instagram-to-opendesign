@@ -10,6 +10,9 @@ import { cleanUsername } from './normalize.js';
 import { compilePackage } from './package.js';
 import { loadDecisions } from './decisions.js';
 import { readOptionalJson } from './local.js';
+import { createRunRecord, trackProvider } from './run-record.js';
+import { ANALYSIS_MODEL, requestBrandInferences } from './providers/openai.js';
+import { COLOR_MODEL, requestColorCandidates } from './providers/openai-colors.js';
 
 const isOwn = (owner, username) => typeof owner === 'string' &&
   owner.replace(/^@/, '').toLowerCase() === username.toLowerCase();
@@ -75,33 +78,60 @@ export async function runPipeline(usernameInput, {
   const username = cleanUsername(usernameInput);
   const profileDir = path.resolve(dataRoot, username);
   const sourcePath = path.join(profileDir, 'instagram-source.json');
-  let ingested = false;
-  if (refresh || !(await exists(sourcePath))) {
-    await ingestImpl(username, { outputRoot: dataRoot, postLimit, fetchImpl });
-    ingested = true;
+  const journal = await createRunRecord(profileDir, { refresh, reanalyze, postLimit });
+  try {
+    let ingested = false;
+    await journal.phase('ingestion', async ({ observe, phase }) => {
+      if (refresh || !(await exists(sourcePath))) {
+        phase.mode = 'unknown';
+        await ingestImpl(username, { outputRoot: dataRoot, postLimit, fetchImpl, onProviderEvent: observe });
+        ingested = true;
+      } else phase.mode = 'cache';
+    });
+    await journal.phase('evidence', () => processEvidenceImpl(profileDir));
+    const checkpoint = await reviewCheckpoint(profileDir);
+    if (checkpoint.pending.length) {
+      await journal.finish('review-required');
+      return { status: 'review-required', username, ingested, runRecordPath: journal.outputPath, ...checkpoint };
+    }
+    const prepared = await prepareAnalysis(profileDir);
+    const previousAnalysis = await readOptionalJson(path.join(prepared.root, 'brand-analysis.json'));
+    if (previousAnalysis) await loadDecisions(prepared, previousAnalysis);
+    const inputHash = await analysisFingerprint(prepared);
+    let analyzed = false, analysisUsage = null;
+    const analysis = await journal.phase('analysis', async ({ observe, phase }) => {
+      const cached = await reusableAnalysis(prepared, inputHash, { force: reanalyze });
+      if (cached) { phase.mode = 'cache'; return cached; }
+      const provider = trackProvider(analysisProvider ?? requestBrandInferences, {
+        observe, providerName: analysisProvider ? 'custom' : 'openai',
+        model: analysisProvider ? null : ANALYSIS_MODEL, maxOutputTokens: analysisProvider ? null : 16000,
+      });
+      const result = await analyzeBrand(prepared, { token, fetchImpl, provider });
+      analyzed = true; analysisUsage = result.usage ?? null;
+      await writeJsonAtomically(path.join(profileDir, 'analysis-state.json'),
+        { schemaVersion: 'analysis-state/v1', inputHash });
+      return result.analysis;
+    });
+    const color = await journal.phase('colors', async ({ observe, phase }) => {
+      const provider = trackProvider(colorProvider ?? requestColorCandidates, {
+        observe, providerName: colorProvider ? 'custom' : 'openai',
+        model: colorProvider ? null : COLOR_MODEL, maxOutputTokens: colorProvider ? null : 4000,
+      });
+      const result = await getColorProposals(prepared, analysis, {
+        force: reanalyze || analyzed, token, fetchImpl, provider,
+      });
+      if (result.reused) phase.mode = 'cache';
+      return result;
+    });
+    const compiled = await journal.phase('compilation', () => compilePackage(prepared, analysis, color, { outputRoot }));
+    await journal.finish('complete');
+    return { status: 'complete', username, ingested, analyzed, colorProposed: !color.reused,
+      analysisUsage, colorUsage: color.usage, runRecordPath: journal.outputPath, ...compiled };
+  } catch (error) {
+    await journal.finish('failed');
+    error.runRecordPath = journal.outputPath;
+    throw error;
   }
-  await processEvidenceImpl(profileDir);
-  const checkpoint = await reviewCheckpoint(profileDir);
-  if (checkpoint.pending.length) return { status: 'review-required', username, ingested, ...checkpoint };
-  const prepared = await prepareAnalysis(profileDir);
-  const previousAnalysis = await readOptionalJson(path.join(prepared.root, 'brand-analysis.json'));
-  if (previousAnalysis) await loadDecisions(prepared, previousAnalysis);
-  const inputHash = await analysisFingerprint(prepared);
-  let analysis = await reusableAnalysis(prepared, inputHash, { force: reanalyze });
-  let analyzed = false;
-  if (!analysis) {
-    const result = await analyzeBrand(prepared, { token, fetchImpl, provider: analysisProvider });
-    analysis = result.analysis;
-    analyzed = true;
-    await writeJsonAtomically(path.join(profileDir, 'analysis-state.json'),
-      { schemaVersion: 'analysis-state/v1', inputHash });
-  }
-  const color = await getColorProposals(prepared, analysis, {
-    force: reanalyze || analyzed, token, fetchImpl, provider: colorProvider,
-  });
-  const compiled = await compilePackage(prepared, analysis, color, { outputRoot });
-  return { status: 'complete', username, ingested, analyzed, colorProposed: !color.reused,
-    colorUsage: color.usage, ...compiled };
 }
 
 export async function compileExisting(profileDir, { outputRoot = 'brand-output', channel = 'website' } = {}) {

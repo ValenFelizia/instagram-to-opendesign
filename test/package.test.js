@@ -170,3 +170,49 @@ test('uses neutral candidates without a brand graphic or another API call', asyn
     assert.match(await readFile(path.join(built.outputDir, 'tokens.css'), 'utf8'), /--accent: #333333/);
   } finally { await rm(files.root, { recursive: true, force: true }); }
 });
+
+
+test('pipeline journals separate provider attempts, cache reuse and rejected analysis without losing prior output', async () => {
+  const files = await fixture();
+  try {
+    const reviewPath = path.join(files.profileDir, 'evidence/review.json');
+    const review = JSON.parse(await readFile(reviewPath, 'utf8'));
+    review['OWN/media-1'].classification = 'product-photo';
+    await writeFile(reviewPath, JSON.stringify(review));
+    const calls = { analysis: 0, colors: 0 }, base = providers(calls);
+    const options = { ...files, ...base,
+      analysisProvider: async (...args) => ({ ...(await base.analysisProvider(...args)), usage: { input_tokens: 120, output_tokens: 25 } }),
+      colorProvider: async (...args) => ({ ...(await base.colorProvider(...args)), usage: { input_tokens: 30, output_tokens: 5 } }),
+    };
+    const built = await runPipeline('example_studio', options);
+    const record = JSON.parse(await readFile(built.runRecordPath, 'utf8'));
+    assert.equal(record.status, 'complete');
+    const analysis = record.phases.find(p => p.name === 'analysis');
+    const colors = record.phases.find(p => p.name === 'colors');
+    assert.equal(analysis.attempts[0].usage.input_tokens, 120);
+    assert.equal(colors.attempts[0].usage.input_tokens, 30);
+    assert.equal(analysis.attempts[0].billing, null);
+    assert.equal(analysis.attempts[0].model, null); // An injected provider is not assumed to be OpenAI.
+    assert.ok(analysis.wallMs >= 0);
+    assert.equal(built.analysisUsage.output_tokens, 25);
+    const prior = await readFile(path.join(files.profileDir, 'brand-analysis.json'));
+    const reused = await runPipeline('example_studio', options);
+    const cached = JSON.parse(await readFile(reused.runRecordPath, 'utf8'));
+    for (const name of ['ingestion', 'analysis', 'colors']) {
+      assert.equal(cached.phases.find(p => p.name === name).mode, 'cache');
+      assert.deepEqual(cached.phases.find(p => p.name === name).attempts, []);
+    }
+    assert.equal(calls.analysis, 1); assert.equal(calls.colors, 1);
+    let failure;
+    try { await runPipeline('example_studio', { ...options, reanalyze: true,
+      analysisProvider: async () => ({ inferences: [], usage: { input_tokens: 77, output_tokens: 2 } }),
+    }); } catch (error) { failure = error; }
+    assert.ok(failure.runRecordPath);
+    const rejected = JSON.parse(await readFile(failure.runRecordPath, 'utf8'));
+    assert.equal(rejected.status, 'failed');
+    assert.equal(rejected.phases.at(-1).status, 'failed');
+    assert.equal(rejected.phases.at(-1).attempts[0].usage.input_tokens, 77);
+    assert.deepEqual(await readFile(path.join(files.profileDir, 'brand-analysis.json')), prior);
+    assert.deepEqual(JSON.parse(await readFile(built.runRecordPath, 'utf8')), record);
+  } finally { await rm(files.root, { recursive: true, force: true }); }
+});
