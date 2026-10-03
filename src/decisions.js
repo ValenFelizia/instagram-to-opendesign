@@ -7,8 +7,6 @@ import { digest, escapeHtml, profileFile, readOptionalJson } from './local.js';
 const schema = JSON.parse(await readFile(new URL('../schemas/brand-decisions.schema.json', import.meta.url), 'utf8'));
 const ajv = new Ajv2020({ allErrors: true }); addFormats(ajv);
 const validate = ajv.compile(schema);
-const template = await readFile(new URL('../examples/example-studio/tokens.css', import.meta.url), 'utf8');
-export const TOKEN_NAMES = new Set([...template.matchAll(/--([a-z0-9-]+):/g)].map((match) => match[1]));
 const sorted = (value) => Array.isArray(value) ? value.map(sorted) : value && typeof value === 'object'
   ? Object.fromEntries(Object.keys(value).sort().map((key) => [key, sorted(value[key])])) : value;
 
@@ -41,7 +39,7 @@ function unique(items, key, label) {
 }
 
 export function validateTokenRule(rule) {
-  if (!TOKEN_NAMES.has(rule.target)) throw new Error(`Unknown token: ${rule.target}`);
+  if (!/^[a-z][a-z0-9-]*$/.test(rule.target)) throw new Error(`Invalid token name: ${rule.target}`);
   if (/font-/.test(rule.target)) {
     if (!/^[A-Za-z0-9 ,"'_-]+$/.test(rule.value)) throw new Error('Invalid font stack.');
   } else if (!/^[#A-Za-z0-9(),.%'" _-]+$/.test(rule.value) || /(?:url|expression)\s*\(/i.test(rule.value)) {
@@ -51,7 +49,7 @@ export function validateTokenRule(rule) {
     throw new Error(`Unsupported token function: ${rule.target}`);
   }
   for (const ref of rule.value.matchAll(/var\(\s*--([a-z0-9-]+)/g)) {
-    if (!TOKEN_NAMES.has(ref[1])) throw new Error(`Unknown token alias: ${ref[1]}`);
+    if (!/^[a-z][a-z0-9-]*$/.test(ref[1])) throw new Error(`Invalid token alias: ${ref[1]}`);
   }
   if (rule.kind === 'font' && !rule.target.startsWith('font-')) throw new Error('Font rules must target a font token.');
 }

@@ -53,6 +53,7 @@ test('promotional and website requests use explicit dimensions and authorized lo
       assert.deepEqual(state.catalog.target, fixture.request.target);
       if (kind === 'website-change') {
         assert.equal(state.codeContext.files.length, 1); assert.ok(!JSON.stringify(state.context).includes(fixture.root));
+        assert.doesNotMatch(state.codeContext.access, /OpenDesign|linkedDirs/);
         await writeFile(path.join(fixture.root, 'manual/request.md'), 'changed');
         await assert.rejects(() => prepareBrief(fixture.root), /current registered authorization|permission source changed/);
       }

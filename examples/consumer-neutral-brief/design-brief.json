@@ -1,0 +1,404 @@
+{
+  "schemaVersion": "design-brief/v1",
+  "inputHash": "09f8ad49836cf4b600782079f824a162da688a767fa589c2cf24d08748d1cf18",
+  "kind": "instagram-story",
+  "status": "ready-for-execution",
+  "request": {
+    "schemaVersion": "design-request/v1",
+    "username": "example_studio",
+    "kind": "instagram-story",
+    "objective": "Introduce a synthetic handcrafted bag",
+    "audience": "People who value careful craft",
+    "sourceId": "S-REQUEST",
+    "copy": [
+      {
+        "id": "brand",
+        "text": "Example Studio"
+      },
+      {
+        "id": "headline",
+        "text": "Made carefully."
+      },
+      {
+        "id": "body",
+        "text": "A synthetic product for a test."
+      }
+    ],
+    "action": {
+      "type": "native-sticker",
+      "label": "Explore",
+      "url": "https://example.com/",
+      "reservedSpace": {
+        "x": 0.15,
+        "y": 0.82,
+        "width": 0.7,
+        "height": 0.08
+      }
+    },
+    "assets": [
+      {
+        "id": "E-IMG-2189F24AE9BF3848",
+        "fit": "contain",
+        "cropReviewed": false,
+        "lowResolutionAccepted": true,
+        "alt": {
+          "usage": "informative",
+          "text": "Synthetic logo"
+        }
+      },
+      {
+        "id": "E-IMG-A0A8AF237EC969A8",
+        "fit": "contain",
+        "cropReviewed": false,
+        "lowResolutionAccepted": true,
+        "alt": {
+          "usage": "informative",
+          "text": "Synthetic product image"
+        }
+      }
+    ],
+    "constraints": [
+      "Use only supplied copy and images."
+    ],
+    "selectedDirectionId": "D-1",
+    "accessibility": {
+      "motion": false,
+      "pairs": [
+        {
+          "id": "headline-ink",
+          "usage": "normal-text",
+          "foreground": "var(--craft-ink)",
+          "background": "var(--craft-paper)"
+        }
+      ]
+    }
+  },
+  "selectedDirection": {
+    "id": "D-1",
+    "label": "Product clarity",
+    "layout": "split",
+    "hierarchy": "headline-first",
+    "assetTreatment": "single-contained",
+    "assetIds": [
+      "E-IMG-A0A8AF237EC969A8"
+    ],
+    "evidenceIds": [
+      "E-IMG-A0A8AF237EC969A8"
+    ],
+    "rationale": "A product photo supports a focused product panel.",
+    "limits": [
+      "Unproven creative effectiveness."
+    ],
+    "missingInformation": []
+  },
+  "directions": [
+    {
+      "id": "D-1",
+      "label": "Product clarity",
+      "layout": "split",
+      "hierarchy": "headline-first",
+      "assetTreatment": "single-contained",
+      "assetIds": [
+        "E-IMG-A0A8AF237EC969A8"
+      ],
+      "evidenceIds": [
+        "E-IMG-A0A8AF237EC969A8"
+      ],
+      "rationale": "A product photo supports a focused product panel.",
+      "limits": [
+        "Unproven creative effectiveness."
+      ],
+      "missingInformation": []
+    },
+    {
+      "id": "D-2",
+      "label": "Image field",
+      "layout": "editorial",
+      "hierarchy": "image-first",
+      "assetTreatment": "single-field",
+      "assetIds": [
+        "E-IMG-A0A8AF237EC969A8"
+      ],
+      "evidenceIds": [
+        "E-IMG-A0A8AF237EC969A8"
+      ],
+      "rationale": "The same product supports a stronger visual opening.",
+      "limits": [
+        "Text stays separate from the photo."
+      ],
+      "missingInformation": []
+    },
+    {
+      "id": "D-3",
+      "label": "Mark and product",
+      "layout": "framed",
+      "hierarchy": "brand-first",
+      "assetTreatment": "paired",
+      "assetIds": [
+        "E-IMG-2189F24AE9BF3848",
+        "E-IMG-A0A8AF237EC969A8"
+      ],
+      "evidenceIds": [
+        "E-IMG-2189F24AE9BF3848",
+        "E-IMG-A0A8AF237EC969A8"
+      ],
+      "rationale": "The logo and product remain separate sources.",
+      "limits": [
+        "The logo does not establish a verified font."
+      ],
+      "missingInformation": []
+    }
+  ],
+  "pending": [],
+  "accessibility": {
+    "schemaVersion": "accessibility-preflight/v1",
+    "status": "manual-review",
+    "scope": "Declared color usage and input checks; no certification of the rendered design.",
+    "checks": [
+      {
+        "id": "headline-ink",
+        "status": "pass",
+        "instruction": "Declared solid-color pair meets its threshold; verify the declared use in the render.",
+        "usage": "normal-text",
+        "foreground": "#242424",
+        "background": "#ffffff",
+        "ratio": 15.522910417680388,
+        "threshold": 4.5,
+        "alternatives": []
+      },
+      {
+        "id": "alt-E-IMG-A0A8AF237EC969A8",
+        "status": "manual-review",
+        "instruction": "Check the image purpose in this composition; informative images need useful alternatives, decorative images empty alternatives. A filename or catalog description is not a contextual review."
+      },
+      {
+        "id": "description",
+        "status": "manual-review",
+        "instruction": "Supply an equivalent text description/transcript with the exported artwork; review reading order and small-screen legibility."
+      },
+      {
+        "id": "sticker",
+        "status": "manual-review",
+        "instruction": "Check the reserved sticker space, destination and copy in Instagram composer before publishing."
+      }
+    ]
+  },
+  "codeContext": null,
+  "observations": [
+    {
+      "id": "I-COLOR-PALETTE",
+      "topic": "color.palette",
+      "value": "Pink graphic",
+      "confidence": "medium",
+      "evidenceIds": [
+        "E-IMG-2189F24AE9BF3848"
+      ],
+      "rationale": "No evidence.",
+      "status": "inferred"
+    },
+    {
+      "id": "I-COLOR-ROLES",
+      "topic": "color.roles",
+      "value": null,
+      "confidence": null,
+      "evidenceIds": [],
+      "rationale": "No evidence.",
+      "status": "needs-review"
+    },
+    {
+      "id": "I-TYPOGRAPHY-STYLE",
+      "topic": "typography.style",
+      "value": null,
+      "confidence": null,
+      "evidenceIds": [],
+      "rationale": "No evidence.",
+      "status": "needs-review"
+    },
+    {
+      "id": "I-IMAGERY-DIRECTION",
+      "topic": "imagery.direction",
+      "value": null,
+      "confidence": null,
+      "evidenceIds": [],
+      "rationale": "No evidence.",
+      "status": "needs-review"
+    },
+    {
+      "id": "I-MATERIAL-TEXTURE",
+      "topic": "material.texture",
+      "value": null,
+      "confidence": null,
+      "evidenceIds": [],
+      "rationale": "No evidence.",
+      "status": "needs-review"
+    },
+    {
+      "id": "I-COMPOSITION-PATTERNS",
+      "topic": "composition.patterns",
+      "value": null,
+      "confidence": null,
+      "evidenceIds": [],
+      "rationale": "No evidence.",
+      "status": "needs-review"
+    },
+    {
+      "id": "I-VOICE-TONE",
+      "topic": "voice.tone",
+      "value": null,
+      "confidence": null,
+      "evidenceIds": [],
+      "rationale": "No evidence.",
+      "status": "needs-review"
+    },
+    {
+      "id": "I-COPY-CTA",
+      "topic": "copy.cta",
+      "value": null,
+      "confidence": null,
+      "evidenceIds": [],
+      "rationale": "No evidence.",
+      "status": "needs-review"
+    },
+    {
+      "id": "I-BRAND-PERSONALITY",
+      "topic": "brand.personality",
+      "value": null,
+      "confidence": null,
+      "evidenceIds": [],
+      "rationale": "No evidence.",
+      "status": "needs-review"
+    },
+    {
+      "id": "I-UI-GUIDANCE",
+      "topic": "ui.guidance",
+      "value": null,
+      "confidence": null,
+      "evidenceIds": [],
+      "rationale": "No evidence.",
+      "status": "needs-review"
+    }
+  ],
+  "verifiedRules": [
+    {
+      "id": "R-CRAFT-INK",
+      "kind": "token",
+      "target": "craft-ink",
+      "value": "#242424",
+      "sourceId": "S-REQUEST"
+    },
+    {
+      "id": "R-CRAFT-PAPER",
+      "kind": "token",
+      "target": "craft-paper",
+      "value": "#ffffff",
+      "sourceId": "S-REQUEST"
+    }
+  ],
+  "brandConflicts": [],
+  "sources": [
+    {
+      "id": "S-REQUEST",
+      "path": "sources/S-REQUEST.md",
+      "sha256": "8a8d1cce18fd41908d344d1d34bb91405ba5a836151af56404ea50b93bcfb87d",
+      "reviewer": "Synthetic owner",
+      "reviewedAt": "2026-01-02T00:00:00Z",
+      "summary": "Synthetic request and permission",
+      "stale": false
+    }
+  ],
+  "evidence": [
+    {
+      "id": "E-PROFILE",
+      "kind": "metadata",
+      "sourcePath": "evidence/E-PROFILE.json",
+      "summary": "Perfil @example_studio: Example Studio. Bio: A synthetic studio"
+    },
+    {
+      "id": "E-IMG-2189F24AE9BF3848",
+      "kind": "image",
+      "sourcePath": "evidence/E-IMG-2189F24AE9BF3848.png",
+      "summary": "profile/avatar; brand-graphic; Synthetic logo"
+    },
+    {
+      "id": "E-IMG-A0A8AF237EC969A8",
+      "kind": "image",
+      "sourcePath": "evidence/E-IMG-A0A8AF237EC969A8.jpg",
+      "summary": "OWN/media-1; product-photo; Synthetic product"
+    },
+    {
+      "id": "E-CAP-DBF32D5791CB570C",
+      "kind": "text",
+      "sourcePath": "evidence/E-CAP-DBF32D5791CB570C.md",
+      "summary": "Caption OWN: Made carefully."
+    }
+  ],
+  "assets": [
+    {
+      "id": "E-IMG-A0A8AF237EC969A8",
+      "path": "assets/E-IMG-A0A8AF237EC969A8.jpg",
+      "sha256": "ed4837c2dd01e6f8a52e1c9acb81b85d9c89b8cb547e5002518c4a45d09cd940",
+      "origin": "original",
+      "role": "product",
+      "include": true,
+      "primary": false,
+      "permission": {
+        "use": "local-design",
+        "sourceId": "S-REQUEST"
+      },
+      "uiOverlay": false,
+      "subjectBox": null,
+      "alt": {
+        "text": "Synthetic product",
+        "usage": "unknown"
+      },
+      "stale": false,
+      "readyForDesign": true,
+      "blockers": [],
+      "source": {
+        "type": "instagram",
+        "url": "https://www.instagram.com/p/OWN/",
+        "evidenceId": "E-IMG-A0A8AF237EC969A8"
+      },
+      "technical": {
+        "width": 80,
+        "height": 60,
+        "aspectRatio": 1.3333333333333333,
+        "format": "jpeg",
+        "hasAlphaChannel": false,
+        "hasTransparentPixels": false,
+        "bytes": 299
+      },
+      "crop": {
+        "x": 0.2890625,
+        "y": 0,
+        "width": 0.421875,
+        "height": 1,
+        "reviewRequired": true,
+        "cutsSubject": false,
+        "note": "Centered cover proposal only; original file is unchanged. Use contain if cropping is inappropriate."
+      },
+      "lowResolution": true,
+      "altSuggestion": {
+        "text": "Synthetic product",
+        "needsReview": true,
+        "note": "Decide informative/decorative usage for the actual composition; this text is a candidate."
+      },
+      "use": {
+        "id": "E-IMG-A0A8AF237EC969A8",
+        "fit": "contain",
+        "cropReviewed": false,
+        "lowResolutionAccepted": true,
+        "alt": {
+          "usage": "informative",
+          "text": "Synthetic product image"
+        }
+      }
+    }
+  ],
+  "acceptanceCriteria": [
+    "Use the exact approved copy and selected direction; invent no brand facts or extra assets.",
+    "Render at 1080 × 1920; review copy legibility, image subject and any reserved sticker space.",
+    "Supply a text transcript/description with the exported Story; static artwork is not an accessible web control.",
+    "Review crop, source permissions, destination and composition with a person before publishing."
+  ]
+}

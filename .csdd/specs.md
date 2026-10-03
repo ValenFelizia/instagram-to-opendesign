@@ -2,7 +2,7 @@
 
 ## Project Summary
 
-The project investigates whether a public Instagram profile provides enough evidence to generate a traceable initial brand identity useful to design agents, with OpenDesign as the first consumer. Source: the “Instagram → OpenDesign Brand Importer” project in Linear.
+The project prepares traceable creative-agent context from reviewed brand evidence, human decisions, assets and a selected request. Instagram is the first implemented source adapter and OpenDesign the first implemented consumer adapter. General utility remains experimental. Source: the original Linear project and GitHub #31 / VAL-101.
 
 ## Requirements
 
@@ -35,6 +35,8 @@ The project investigates whether a public Instagram profile provides enough evid
 - Report translation changes prose only. Evidence IDs, citations, review status, confidence, null values and candidate hex colors remain unchanged. Original source text remains inspectable.
 
 ## Interfaces and Contracts
+
+Canonical decisions and selected briefs do not require OpenDesign resource IDs, manifest fields, catalog status or token slots. Core token names/values retain safe validation without a consumer allowlist. OpenDesign package/token validation and materialization are adapter-owned; unmapped names/aliases produce explicit errors before output replacement, preserving core rules and previous valid packages. Existing-site access instructions are consumer-neutral until delivery supplies the chosen mechanism. Existing CLI/module entry points remain compatible. See `docs/core-and-adapters.md`. Source: GitHub #31.
 
 Result review preserves immutable first/subsequent outputs, complete brief/package snapshots, viewport artifacts and original feedback. Deterministic checks consume explicitly supplied rendered observations; screenshots alone retain uncertainty. Corrections remain request-specific with explicit/unknown causes. Matched comparison includes shared source bytes, prior knowledge and all supplied preparation/review/edit effort; it does not generate an aesthetic score or infer utility. Rich packages remain gated by observed missing context. Source: GitHub #21/#22 and user direction, 2026-09-30.
 

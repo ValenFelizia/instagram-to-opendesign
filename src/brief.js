@@ -101,7 +101,7 @@ export async function prepareBrief(profileDir) {
       if (!/\.(?:js|jsx|ts|tsx|css|html|md|json)$/.test(relative) || relative.split(/[\\/]/).some((part) => part.startsWith('.'))) throw new Error('Select explicit non-secret source files for existing-site context.');
       files.push({ path: relative, sha256: digest(await readFile(await profileFile(root, relative))) });
     }
-    codeContext = { root, sourceId: source.id, files, access: 'Connect this local directory through OpenDesign linkedDirs before editing; code is not copied into the package.' };
+    codeContext = { root, sourceId: source.id, files, access: 'Give the chosen agent explicit access to this authorized local directory before editing; code is not copied into the brief.' };
   }
   const { selectedDirectionId, existingSite, ...suggestionRequest } = request;
   const context = { request: suggestionRequest,
