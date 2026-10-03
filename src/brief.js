@@ -8,6 +8,7 @@ import { loadDecisions } from './decisions.js';
 import { accessibilityPreflight, accessibilityMarkdown, validateAccessibilityPlan } from './accessibility.js';
 import { digest, json, profileFile, readOptionalJson } from './local.js';
 import { DIRECTIONS_MODEL, DIRECTIONS_SCHEMA, requestCreativeDirections } from './providers/openai-directions.js';
+import { writeAgentHandoff } from './agent-handoff.js';
 
 const requestSchema = JSON.parse(await readFile(new URL('../schemas/design-request.schema.json', import.meta.url), 'utf8'));
 const ajv = new Ajv2020({ allErrors: true, strictTypes: false });
@@ -225,7 +226,7 @@ export async function selectedBrief(profileDir) {
   return { state, brief, assets };
 }
 
-export async function compileBrief(profileDir, { outputDir } = {}) {
+export async function compileBrief(profileDir, { outputDir, agentHandoff = false } = {}) {
   const { state, brief, assets } = await selectedBrief(profileDir);
   const target = path.resolve(outputDir ?? path.join(state.prepared.root, 'brief', state.request.kind));
   const relative = path.relative(state.prepared.root, target);
@@ -267,6 +268,9 @@ export async function compileBrief(profileDir, { outputDir } = {}) {
       '## Texto de la pieza\n\n' + brief.request.copy.map((item) => `${item.text}\n`).join('\n') +
       '\n## Imágenes informativas\n\n' + brief.assets.filter((asset) => asset.use.alt.usage === 'informative').map((asset) => `- ${asset.id}: ${asset.use.alt.text}`).join('\n') +
       (brief.request.action.type === 'native-sticker' ? `\n\n## Acción pendiente en Instagram\n\nSticker nativo: ${brief.request.action.label}. Destino confirmado: ${brief.request.action.url}. La persona responsable debe agregarlo y revisar su ubicación en el editor; el arte no incluye un enlace funcional.\n` : '\n'));
+    if (agentHandoff) await writeAgentHandoff(staged, brief);
   });
   return { outputDir: target, brief };
 }
+
+export const exportAgentHandoff = (profileDir, options = {}) => compileBrief(profileDir, { ...options, agentHandoff: true });

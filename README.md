@@ -10,7 +10,7 @@ Help people prepare context for a concrete creative task without reconstructing 
 
 ## Initial scope
 
-- **Consumer:** OpenDesign is an optional implemented adapter. Canonical selected briefs are prepared before consumer-specific packaging; generic task-specific export is tracked in #32.
+- **Consumer:** [Generic task-specific handoff](docs/generic-agent-handoff.md) exports canonical context with an entrypoint and byte-verified inventory. OpenDesign is an optional implemented adapter.
 - **Approach:** a standalone CLI or script, with a maintained Instagram extraction provider rather than a custom scraper.
 - **Stages:** extraction, evidence processing, analysis, and local OpenDesign package compilation are implemented. New profiles pause for image review before analysis.
 - **Planned product work:** guided onboarding, progressive review, local workspace/platform design and understandable paid-action information. No app framework is chosen or app UI implemented yet.

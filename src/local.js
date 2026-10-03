@@ -24,13 +24,13 @@ export async function readOptionalJson(file) {
   catch (error) { if (error.code === 'ENOENT') return null; throw error; }
 }
 
-export async function fileDigests(root, relative = '') {
+export async function fileDigests(root, relative = '', { excludePackageContext = true } = {}) {
   const result = {};
   for (const entry of await readdir(path.join(root, relative), { withFileTypes: true })) {
     const file = relative ? `${relative}/${entry.name}` : entry.name;
     if (entry.isSymbolicLink()) throw new Error('Package inventory rejects symbolic links.');
-    if (entry.isDirectory()) Object.assign(result, await fileDigests(root, file));
-    else if (entry.isFile() && file !== 'source/package-context.json') result[file] = digest(await readFile(await profileFile(root, file)));
+    if (entry.isDirectory()) Object.assign(result, await fileDigests(root, file, { excludePackageContext }));
+    else if (entry.isFile() && (!excludePackageContext || file !== 'source/package-context.json')) result[file] = digest(await readFile(await profileFile(root, file)));
   }
   return result;
 }
