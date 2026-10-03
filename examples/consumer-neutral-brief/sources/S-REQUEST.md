@@ -1,0 +1,1 @@
+Synthetic owner approves fixture assets for local design, request, audience, exact copy and action. This is not a real brand approval.

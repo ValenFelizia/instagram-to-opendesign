@@ -1,0 +1,33 @@
+{
+  "schemaVersion": "accessibility-preflight/v1",
+  "status": "manual-review",
+  "scope": "Declared color usage and input checks; no certification of the rendered design.",
+  "checks": [
+    {
+      "id": "headline-ink",
+      "status": "pass",
+      "instruction": "Declared solid-color pair meets its threshold; verify the declared use in the render.",
+      "usage": "normal-text",
+      "foreground": "#242424",
+      "background": "#ffffff",
+      "ratio": 15.522910417680388,
+      "threshold": 4.5,
+      "alternatives": []
+    },
+    {
+      "id": "alt-E-IMG-A0A8AF237EC969A8",
+      "status": "manual-review",
+      "instruction": "Check the image purpose in this composition; informative images need useful alternatives, decorative images empty alternatives. A filename or catalog description is not a contextual review."
+    },
+    {
+      "id": "description",
+      "status": "manual-review",
+      "instruction": "Supply an equivalent text description/transcript with the exported artwork; review reading order and small-screen legibility."
+    },
+    {
+      "id": "sticker",
+      "status": "manual-review",
+      "instruction": "Check the reserved sticker space, destination and copy in Instagram composer before publishing."
+    }
+  ]
+}

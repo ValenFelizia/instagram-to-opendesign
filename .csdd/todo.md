@@ -4,95 +4,84 @@
 
 ## Ready to Land
 
-- [ ] GitHub #20 — Preserve reviewed context in packaged OpenDesign desktop delivery.
+- [ ] GitHub #31 — Separate the consumer-neutral core from the OpenDesign adapter.
   - Owner: Valentin Felizia
   - Agent: Codex
-  - Branch: `codex/desktop-handoff`
-  - Updated: 2026-10-02
-  - Scope: delivery adapter/verification, CLI, regression tests and handoff documentation; preserve reviewed source bytes and explicit catalog/workspace boundaries.
-  - Landing: PR #35 into `main`, pending human review.
-  - Verification: 45 tests; isolated actual packaged 0.24.1 daemon trial and real approved Story delivery with all input files retained and active context readback. Selector review, recipient consumption and final artwork/composer remain pending; do not close #20.
-  - Note: previous #20 implementation is reachable from main at `c7f7a7d`. The actual 0.24.1 desktop extraction changed fonts/color roles and omitted 17 reference files; the 0.23.1-only adapter rejects the packaged layout. Reclaimed execution after the user's request to fix this observed failure; human ownership is unchanged.
+  - Branch: codex/core-boundary
+  - Updated: 2026-10-03
+  - Scope: core token-rule validation and existing-site access instructions; explicit OpenDesign package/token adapter, compatible entry points, generic selected-brief fixture, boundary tests/docs and evidence-backed closure reconciliation.
+  - Note: based on main @ 6e7e8f1 (merged PR #35). Historical P0 claims are reconciled below against reachable implementation and manual evidence; human ownership and historical executors are preserved.
 
-- [ ] GitHub #21 — Preserve and review rendered results.
-  - Owner: Valentin Felizia
-  - Agent: Codex (P0 worktree)
-  - Branch: `codex/result-review`
-  - Updated: 2026-09-30
-  - Scope: immutable revisions, observations/checks, original feedback, request-specific corrections, cumulative effort and matched-input protocol.
-  - Landing: PR #34, stacked on #30.
-  - Verification: 40 tests and synthetic web/Story fixtures; real unfamiliar-brand utility and human acceptance remain pending. #22 gate remains closed for insufficient evaluation evidence.
-
-- [ ] GitHub #19 — Declared-use accessibility preflight.
-  - Owner: Valentin Felizia
-  - Agent: Codex (P0 worktree)
-  - Branch: `codex/accessibility-preflight`
-  - Updated: 2026-09-30
-  - Scope: local checks, Spanish/English report, brief blockers and portable manual acceptance tasks.
-  - Landing: stacked on #28.
-  - Verification: 36 tests; alias cycles, missing/photo backgrounds, near-threshold failures and brief gates. Rendered accessibility remains a human acceptance step.
-
-- [ ] GitHub #18 — Accessible report review export/import.
-  - Owner: Valentin Felizia
-  - Agent: Codex (P0 worktree)
-  - Branch: `codex/report-review`
-  - Updated: 2026-09-30
-  - Scope: report controls, scoped decision import, channel-specific approved rules and tests/docs.
-  - Landing: stacked on P0 integration PR #27.
-  - Verification: 34 tests; browser confirms labels, invalid-note focus, live errors, keyboard focus and no overflow at 390/1440 px. Download initiation reached success UI, but a saved file was not verified because the download event timed out. Screen-reader review remains required.
-
-- [ ] Integrate approved P0 #15–17 into main.
-  - Owner: Valentin Felizia
-  - Agent: Codex (P0 worktree)
-  - Branch: `codex/p0-integration`
-  - Updated: 2026-09-30
-  - Scope: integration and CSDD reconciliation; retain PR #12 metadata and the language policy.
-  - Landing: PR to main. PRs #23/#25/#26 merged into stacked bases, not main.
-  - Verification: combined P0/main suite. Human accepted the report; real request/asset permissions and generalizability remain distinct review steps.
+  - Landing: PR #36 into main, pending human review/merge.
+  - Verification: 47 local tests; complete public synthetic brief without an OpenDesign package; real local Felisa source/decision/DESIGN/token bytes and context hash preserved on separate compilation, without provider calls.
 
 ## Blocked
 
 ## Pending
 
+- [ ] GitHub #15 — Complete real-brand font-source verification.
+  - Owner: Valentin Felizia
+  - Scope: no active source-code claim; remaining manual provenance verification.
+  - Note: implementation from PR #23 is reachable from main. Real local rules confirm website colors and product copy; font behavior is tested synthetically but an actually supplied brand font has not been registered in the real decision contract.
+- [ ] GitHub #17 — Complete human brief/execution review.
+  - Owner: Valentin Felizia
+  - Scope: no active source-code claim; human hero review follows the deferred scope below.
+  - Note: PR #26 implementation is reachable from main. The selected Story request was understood by the recipient, but both artwork versions were rejected; no utility claim. Do not restart stopped Story iteration or deferred hero generation.
+- [ ] GitHub #19 — Complete rendered/platform accessibility acceptance.
+  - Owner: Valentin Felizia
+  - Agent: Codex (P0 worktree)
+  - Scope: no active source-code claim; implementation is merged from PR #29/#34.
+  - Note: declared-use thresholds, aliases, uncertainty, blockers and manual tasks are implemented. Native composer overlap/sticker and final rendered accessibility remain pending for an accepted future piece; rejected artwork is not a publishing target.
+- [ ] GitHub #21 — Run a matched unfamiliar-brand evaluation.
+  - Owner: Valentin Felizia
+  - Agent: Codex (P0 worktree)
+  - Scope: no active source-code claim; review/evaluation implementation is merged from PR #34.
+  - Note: first outputs, original feedback and request-specific rejection are preserved locally. Transfer is verified; utility and effort reduction are not. The user supplied svmuebles.deco for the next comparison; establish reviewed inputs, rights, actual model/settings, iteration budget and effort records before execution.
+- [ ] GitHub #32 — Validate a second consumer-neutral handoff.
+  - Owner: Valentin Felizia
+  - Depends on: #31
+  - Note: reuse canonical artifacts and the matched request; do not introduce a second source of truth or promise untested vendor support.
+- [ ] GitHub #33 — Evaluate product positioning and naming.
+  - Owner: Valentin Felizia
+  - Depends on: #31
+  - Note: keep repository/package/CLI names until a concrete decision is recorded.
 
 ## Deferred
 
 - [ ] Felisa hero redesign and generation.
   - Owner: Valentin Felizia
-  - Resume when: user confirms the new approach and supplies additional photos requested from Fer.
-  - Preserve the existing landing palette; the deliberate Instagram logo-background change does not authorize a website rebrand.
-- [ ] GitHub #22 — Rich-package experiment.
-  - Owner: Valentin Felizia
-  - Resume when: #20/#21 evaluation identifies missing agent context that the minimum package and selected brief cannot deliver.
+  - Reason: user is considering a new approach and needs additional supplied photos.
+  - Resume when: user confirms that approach and supplies the requested photos.
+  - Preserve the existing website palette; the Instagram background change does not authorize a website rebrand.
 
 ## Recently Completed
 
 Retention: 5
 
+- [x] GitHub #22 — Conclude the rich-package gate without expanding the profile.
+  - Owner: Valentin Felizia
+  - Scope: released
+  - Verification: issue closed 2026-10-03 under its explicit no-expansion condition. Recipient readback showed no inaccessible-context gap; creative rejection does not justify rich fixtures. No rich implementation/comparison or superiority claim.
+- [x] GitHub #20 — Preserve reviewed context in packaged OpenDesign delivery.
+  - Owner: Valentin Felizia
+  - Agent: Codex
+  - Scope: released
+  - Landed: main @ 6e7e8f1 (PR #35, after PR #30)
+  - Verification: 45 previously recorded local tests, actual packaged 0.24.1 runtime, complete local delivery, selector screenshot and concrete recipient readback. Issue closed 2026-10-03; final creative quality is separate.
+- [x] GitHub #18 — Accessible report review export/import.
+  - Owner: Valentin Felizia
+  - Agent: Codex (P0 worktree)
+  - Scope: released
+  - Landed: main @ c7f7a7d via PR #28/#34/#27
+  - Verification: saved JSON download/scoped import, keyboard/focus/errors, Narrator form/error, 390/1440px layout, local-only browser traffic and readable no-JavaScript content. Issue closed 2026-10-03; no full conformance claim.
+- [x] GitHub #16 — Prepare and review original assets.
+  - Owner: Valentin Felizia
+  - Scope: released
+  - Landed: main @ c7f7a7d via PR #25/#27
+  - Verification: technical/rights fixtures, human original-versus-capture/permission/contain/alternative review and original bytes retained in first rendered Story. Issue closed 2026-10-03; artwork acceptance remains separate.
 - [x] GitHub #6 / VAL-93 — Felisa MVP baseline validation.
   - Owner: Valentin Felizia
   - Agent: Codex
   - Scope: released
-  - Landed: main @ `82c85c1` (PR #12)
-  - Verification: local selection; context preserved without clear visual gain. Prior brand familiarity confounds utility; do not generalize from this case.
-- [x] GitHub #13 — Bilingual report and English collaboration prose.
-  - Owner: Valentin Felizia
-  - Agent: Codex
-  - Scope: released
-  - Landed: main @ `c46e960` (PR #14)
-  - Verification: 22 tests, Spanish/English local 1440/390 px renders.
-- [x] GitHub #5 / VAL-92 — Package compiler and end-to-end CLI.
-  - Owner: Valentin Felizia
-  - Scope: released
-  - Landed: main @ `655cc87` (PR #11)
-  - Verification: 15 tests, isolated catalog and provider-cache reuse.
-- [x] GitHub #4 / VAL-91 — Multimodal analyzer with evidence.
-  - Owner: Valentin Felizia
-  - Scope: released
-  - Landed: main @ `90f453f` (PR #10)
-  - Verification: 11 tests, ten traceable inferences.
-- [x] GitHub #3 / VAL-90 — Evidence and contact sheet.
-  - Owner: Valentin Felizia
-  - Scope: released
-  - Landed: main @ `3f538ba` (PR #8)
-  - Verification: five tests, reviewed selection and collaborator attribution.
+  - Landed: main @ 82c85c1 (PR #12)
+  - Verification: context preserved without clear visual gain. Prior familiarity confounds utility; do not generalize from this case.

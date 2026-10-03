@@ -2,7 +2,7 @@
 
 An early open source experiment to turn evidence from a public Instagram profile into a traceable brand package that OpenDesign can use.
 
-**Status:** Ingestion, reviewable evidence, multimodal analysis, local OpenDesign compilation, and a human-readable HTML report are implemented. This branch adds reviewed decisions, accessible preflight, explicit agent handoff and preserved result review; those changes still require PR review/landing. The first Felisa trial found no clear design advantage over a manual prompt and was confounded by substantial prior brand knowledge. General utility remains unmeasured. The generated identity remains provisional. See the [validation results](docs/mvp-validation.md), [package CLI guide](docs/package-cli.md), [brand report guide](docs/brand-report.md), [OpenDesign output contract](docs/output-contract.md), [synthetic package](examples/example-studio/), [ingestion guide](docs/ingestion.md), [evidence guide](docs/evidence-processor.md), and [analysis guide](docs/brand-analyzer.md).
+**Status:** Implemented stages include ingestion, evidence, analysis, reviewed decisions, asset preparation, HTML review, accessibility preflight, brief compilation, OpenDesign delivery and result review. Canonical preparation is separate from OpenDesign package/token requirements; landing state is tracked in `.csdd/todo.md`. Local checks and recipient context readback passed; the two subsequent Felisa Story versions were rejected for creative quality. General utility and reduced friction remain unmeasured. The generated identity remains provisional. See the [verification checkpoint](docs/verification-checkpoint.md), [core/adapter boundary](docs/core-and-adapters.md), [validation results](docs/mvp-validation.md), [package CLI guide](docs/package-cli.md), [brand report guide](docs/brand-report.md), [OpenDesign output contract](docs/output-contract.md), [synthetic package](examples/example-studio/), [ingestion guide](docs/ingestion.md), [evidence guide](docs/evidence-processor.md), and [analysis guide](docs/brand-analyzer.md).
 
 ## Goal
 
@@ -10,7 +10,7 @@ Test whether an Instagram profile can provide useful evidence for an initial bra
 
 ## Initial scope
 
-- **Consumer:** OpenDesign only.
+- **Consumer:** OpenDesign is the first implemented reference adapter. Canonical selected briefs are prepared before consumer-specific packaging; a second-consumer experiment is tracked in #32.
 - **Approach:** a standalone CLI or script, with a maintained Instagram extraction provider rather than a custom scraper.
 - **Stages:** extraction, evidence processing, analysis, and local OpenDesign package compilation are implemented. New profiles pause for image review before analysis.
 - **Excluded initially:** a SaaS UI, continuous synchronization, a productized MCP server, other social networks, and adapters for other design systems.
