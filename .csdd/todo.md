@@ -2,15 +2,16 @@
 
 ## In Progress
 
-- [ ] GitHub #21 / VAL-100 — Prepare the next unfamiliar-brand comparison.
+## Ready to Land
+
+- [ ] GitHub #39 / VAL-100 — Reconcile the guided product workflow and backlog.
   - Owner: Valentin Felizia
   - Agent: Codex
-  - Landing: PR #38, documentation reconciliation only; pending human review/merge.
+  - Landing: PR #40, codex/product-workflow-roadmap into main; pending human review/merge.
+  - Verification: Linear project/document and VAL-100/102–107 read back; GitHub #21 closure and #32/#33 open states verified. Documentation-only diff, privacy scope and whitespace checked; no new runtime tests or render claimed.
   - Updated: 2026-10-03
-  - Scope: generic CSDD/checkpoint reconciliation and evaluation protocol; all private case work remains local and Git-ignored. No storefront source changes.
-  - Note: matched runs require reviewed common inputs, exact request/copy, recipient settings and effort records. Private case identifiers, metadata and progress belong in local records. A greenfield landing does not satisfy an existing-site-change criterion. Generic provider accounting is tracked in #37.
-
-## Ready to Land
+  - Scope: generic product roadmap, README, CSDD, checkpoint and result-review guidance; Linear product reconciliation and GitHub backlog updates. Private cases remain local and Git-ignored. No app or storefront implementation.
+  - Note: PR #38 is merged into main @ 34d7d77. The user prioritizes guided onboarding and a contained local workspace; optional matched evaluation and vendor generation are not product-development gates. Preserve pending provenance/render checks and unknown accounting. Keep naming unchanged.
 
 ## Blocked
 
@@ -29,24 +30,35 @@
   - Agent: Codex (P0 worktree)
   - Scope: no active source-code claim; implementation is merged from PR #29/#34.
   - Note: declared-use thresholds, aliases, uncertainty, blockers and manual tasks are implemented. Native composer overlap/sticker and final rendered accessibility remain pending for an accepted future piece; rejected artwork is not a publishing target.
-- [ ] GitHub #32 — Validate a second consumer-neutral handoff.
+- [ ] GitHub #32 / VAL-102 — Export reusable task-specific context for generic agents.
   - Owner: Valentin Felizia
   - Depends on: #31 (completed)
-  - Note: reuse canonical artifacts and the matched request; do not introduce a second source of truth or promise untested vendor support.
+  - Note: reuse canonical artifacts and preserve exploratory/approved status, relative references and original bytes. Matched generation is optional research, not a delivery gate. No untested vendor support is promised.
 - [ ] GitHub #33 — Evaluate product positioning and naming.
   - Owner: Valentin Felizia
   - Depends on: #31 (completed)
-  - Note: keep repository/package/CLI names until a concrete decision is recorded.
+  - Note: positioning is accepted under DEC-010. Naming is lower priority; keep repository/package/CLI/schema names until a concrete naming decision after journey/workspace design.
 - [ ] GitHub #37 — Preserve provider usage and phase effort in end-to-end run records.
   - Owner: Valentin Felizia
   - Scope: no active implementation claim.
-  - Note: runPipeline does not retain analyzer usage while returning color usage. Keep historical unknowns null; capture actual usage/wall time and import effort events without double counting. Linked to VAL-100 and #21.
+  - Note: runPipeline does not retain analyzer usage while returning color usage. Keep historical unknowns null; capture actual usage/wall time and import effort events without double counting. Linked to VAL-100/VAL-107; accounting is useful independently of optional comparisons.
+- [ ] VAL-104–VAL-107 — Design the guided local product increment.
+  - Owner: Valentin Felizia
+  - Scope: no active implementation claim; product planning is tracked in Linear.
+  - Note: start with VAL-104 onboarding (Todo), alongside VAL-105 selective review. VAL-106 local workspace/platform decision and VAL-107 cost/progress remain Backlog. No framework or app implementation is selected. See docs/product-roadmap.md.
 
 ## Deferred
 
 ## Recently Completed
 
 Retention: 5
+
+- [x] GitHub #21 — Close the implemented result-review scope.
+  - Owner: Valentin Felizia
+  - Agent: Codex (P0 worktree)
+  - Scope: released
+  - Landed: main via PR #34 and subsequent integration; reachable from 34d7d77.
+  - Verification: previously recorded synthetic checks and merged immutable snapshots, explicit observations, feedback/corrections and effort records. Closed 2026-10-03 under DEC-010; optional matched research is not a completion gate. No measured utility or rendered accessibility claim.
 
 - [x] GitHub #31 / VAL-101 — Separate canonical core from the OpenDesign adapter.
   - Owner: Valentin Felizia
@@ -70,8 +82,3 @@ Retention: 5
   - Scope: released
   - Landed: main @ c7f7a7d via PR #28/#34/#27
   - Verification: saved JSON download/scoped import, keyboard/focus/errors, Narrator form/error, 390/1440px layout, local-only browser traffic and readable no-JavaScript content. Issue closed 2026-10-03; no full conformance claim.
-- [x] GitHub #16 — Prepare and review original assets.
-  - Owner: Valentin Felizia
-  - Scope: released
-  - Landed: main @ c7f7a7d via PR #25/#27
-  - Verification: technical/rights fixtures, human original-versus-capture/permission/contain/alternative review and original bytes retained in first rendered Story. Issue closed 2026-10-03; artwork acceptance remains separate.
