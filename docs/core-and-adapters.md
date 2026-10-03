@@ -42,6 +42,8 @@ The core validates safe token names/values but does not impose OpenDesign's 56-s
 
 Authorized existing-site context records an explicit directory, source and selected file hashes. The recipient must obtain access before editing. The core does not prescribe a vendor-specific access mechanism or copy the repository into a bundle. The OpenDesign delivery adapter supplies its `linkedDirs` instruction.
 
+The changed access instruction invalidates the context fingerprint of previously cached existing-site directions. Explicitly review/reimport those directions and recompile the brief; the core does not run another paid suggestion automatically. Requests without existing-site context retain their canonical hashes, as checked with the local Felisa Story package.
+
 ## OpenDesign compilation contract
 
 The implementation is `src/adapters/opendesign/package.js`, with token compatibility checks in `src/adapters/opendesign/tokens.js`. Existing imports from `src/package.js` remain supported through a compatibility re-export. CLI names and output shapes are unchanged.
