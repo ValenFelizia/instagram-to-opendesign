@@ -12,7 +12,7 @@
   - Scope: core token-rule validation and existing-site access instructions; explicit OpenDesign package/token adapter, compatible entry points, generic selected-brief fixture, boundary tests/docs and evidence-backed closure reconciliation.
   - Note: based on main @ 6e7e8f1 (merged PR #35). Historical P0 claims are reconciled below against reachable implementation and manual evidence; human ownership and historical executors are preserved.
 
-  - Landing: separate PR into main; link to be recorded after creation.
+  - Landing: PR #36 into main, pending human review/merge.
   - Verification: 47 local tests; complete public synthetic brief without an OpenDesign package; real local Felisa source/decision/DESIGN/token bytes and context hash preserved on separate compilation, without provider calls.
 
 ## Blocked
