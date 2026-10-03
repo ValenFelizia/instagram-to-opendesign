@@ -2,7 +2,7 @@
 
 ## Product increment boundary — 2026-10-03
 
-The old implementation stack and PR #36/#38 are merged into main @ 34d7d77. GitHub #16/#18/#20/#31 are closed with evidence; #22 is closed under its no-expansion gate. #21 closes the implemented review feature under DEC-010, without a matched utility claim. VAL-100 now coordinates the guided local product increment; see docs/product-roadmap.md and the linked Linear document. Real assets, runtime bindings and original feedback remain Git-ignored.
+The old implementation stack and PR #36/#38/#40 are merged into main @ 96120d8. GitHub #16/#18/#20/#31 are closed with evidence; #22 is closed under its no-expansion gate. #21 closes the implemented review feature under DEC-010, without a matched utility claim. VAL-100 now coordinates the guided local product increment; see docs/product-roadmap.md and the linked Linear document. Real assets, runtime bindings and original feedback remain Git-ignored.
 
 The two earlier Felisa Story versions were rejected. A fresh chat with a more permissive prompt and user-reported GPT 6 Astra produced a new PNG with substantially better user feedback. Model, prompt and chat changed together: cause and general utility remain unknown. The user explicitly resumed hero exploration with repository context on 2026-10-03. Do not resume the rejected variants or treat positive visual feedback as publication approval. Preserve the actual website palette/Quicksand and supplied assets; new photos and a production change are not implied.
 

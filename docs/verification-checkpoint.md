@@ -26,7 +26,7 @@ PR #38 is merged into main at `34d7d77f490789db8844cc125bc3879979fdc068`, includ
 | #19 | Declared-use preflight, uncertainty and blockers are implemented. Actual platform overlays/native sticker and final rendered accessibility remain unverified; the rejected Story is not a publication target. |
 | #32 | Export generic task-specific context using canonical inputs, resolvable references and preserved bytes. Additional vendor generation and matched research are not completion gates. |
 | #33 | Positioning is accepted. Naming remains a lower-priority follow-up after journey/workspace design. Keep repository, package, CLI and schema names. |
-| #37 | The end-to-end pipeline does not retain analyzer usage while returning color usage. Preserve actual phase/provider accounting and import it without double counting; historic unknowns remain unknown. |
+| #37 | Provider accounting implementation is prepared in codex/provider-accounting: 51 local synthetic tests passed for separate usage, failed attempts, cache reuse and idempotent review imports. Pending PR review/merge; no live spending or historical backfill. |
 
 ## Story outcome and experiment stop
 

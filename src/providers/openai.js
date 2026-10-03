@@ -40,7 +40,7 @@ function instructions() {
   ].join(' ');
 }
 
-export async function requestBrandInferences(prepared, { token, fetchImpl = fetch } = {}) {
+export async function requestBrandInferences(prepared, { token, fetchImpl = fetch, onUsage } = {}) {
   if (!token) throw new Error('OPENAI_API_KEY is required for live brand analysis.');
   const catalog = prepared.evidence.map(({ id, kind, summary }) => ({ id, kind, summary }));
   const content = [{
@@ -71,6 +71,7 @@ export async function requestBrandInferences(prepared, { token, fetchImpl = fetc
   });
   if (!response.ok) throw new Error(`OpenAI API returned HTTP ${response.status}.`);
   const result = await response.json();
+  await onUsage?.({ model: result.model ?? ANALYSIS_MODEL, responseId: result.id, usage: result.usage });
   if (result.status !== 'completed') throw new Error(`OpenAI response was ${result.status ?? 'invalid'}.`);
   const message = result.output?.filter((item) => item.type === 'message') ?? [];
   if (message.some((item) => item.content?.some((part) => part.type === 'refusal'))) {
