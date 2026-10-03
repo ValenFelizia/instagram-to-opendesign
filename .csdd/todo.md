@@ -7,7 +7,7 @@
 - [ ] GitHub #39 / VAL-100 — Reconcile the guided product workflow and backlog.
   - Owner: Valentin Felizia
   - Agent: Codex
-  - Landing: codex/product-workflow-roadmap into main; documentation PR pending creation.
+  - Landing: PR #40, codex/product-workflow-roadmap into main; pending human review/merge.
   - Verification: Linear project/document and VAL-100/102–107 read back; GitHub #21 closure and #32/#33 open states verified. Documentation-only diff, privacy scope and whitespace checked; no new runtime tests or render claimed.
   - Updated: 2026-10-03
   - Scope: generic product roadmap, README, CSDD, checkpoint and result-review guidance; Linear product reconciliation and GitHub backlog updates. Private cases remain local and Git-ignored. No app or storefront implementation.
