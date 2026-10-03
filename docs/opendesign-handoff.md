@@ -57,7 +57,7 @@ This read-only verification requires a running local daemon and checks catalog v
 
 ## Integration evidence — 2026-09-30
 
-A fresh isolated OpenDesign **0.23.1** daemon on loopback port 7497 accepted a synthetic promotional-image handoff. `GET /api/design-systems` returned published `user:example-studio`; `POST /api/projects` selected that ID with HTTP 200 and no prompt/generation. Package `DESIGN.md` bytes were preserved. The local fixture is not a brand endorsement or performance experiment. Agent context consumption, rendered quality and real unfamiliar-brand evaluation remain pending under #21. Real Felisa hero generation stays deferred until the user supplies the new approach/photos; no new request or asset permissions were invented.
+A fresh isolated OpenDesign **0.23.1** daemon on loopback port 7497 accepted a synthetic promotional-image handoff. `GET /api/design-systems` returned published `user:example-studio`; `POST /api/projects` selected that ID with HTTP 200 and no prompt/generation. Package `DESIGN.md` bytes were preserved. The local fixture is not a brand endorsement or performance experiment. At that checkpoint, agent context consumption, rendered quality and unfamiliar-brand evaluation remained pending and the Felisa hero was deferred. For subsequent concrete recipient readback, the closed delivery scope and user-authorized hero resumption, see the current [verification checkpoint](verification-checkpoint.md); matched unfamiliar-brand utility remains open.
 
 Source contract inspected locally: OpenDesign 0.23.1 `apps/daemon/src/routes/static-resource.ts`, `routes/project/index.ts`, `design-systems/index.ts` and `app-config.ts`.
 
