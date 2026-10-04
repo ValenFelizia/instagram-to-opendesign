@@ -21,6 +21,13 @@ jobs:
         with:
           version: '11.19.0'
       - run: pnpm install --frozen-lockfile
+      - name: Use an unaliased temporary directory for path-safety fixtures
+        shell: pwsh
+        run: |
+          $appCiTemp = Join-Path $env:GITHUB_WORKSPACE 'tmp/ci-temp'
+          New-Item -ItemType Directory -Force -Path $appCiTemp | Out-Null
+          "TEMP=$appCiTemp" | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding utf8
+          "TMP=$appCiTemp" | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding utf8
       - run: pnpm test
       - run: pnpm app:build
         env:
