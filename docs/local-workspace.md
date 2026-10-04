@@ -4,6 +4,8 @@ Tracking: [GitHub #45](https://github.com/ValenFelizia/instagram-to-opendesign/i
 
 The operator merged [PR #49](https://github.com/ValenFelizia/instagram-to-opendesign/pull/49), verified on main at `86bcf94` on 2026-10-04. VAL-106 is Done for the scoped blueprint; production app work remains separate.
 
+Implementation checkpoint, 2026-10-04: PR 60/61 shell/projects/credentials are merged through `dd4a1db`; native manual gates remain open. Issue 53 selects bundled `node:sqlite` for the app and verifies the [transactional job kernel](transactional-jobs.md) separately. The proposals below remain the blueprint; the implemented database layout uses separate `jobs.sqlite` and lifetime-lock `writer.sqlite`, with the existing JSON registry retained. Real stage orchestration and guided job controls remain issues 54/57.
+
 **Status:** reviewed architecture blueprint. Issues #51/#52 now implement a [packaged Windows shell](windows-app-shell.md) and [managed projects/credentials](managed-projects.md) under source review. Projects use a bounded JSON registry pending transactional job integration; there is no production scheduler or integrated analysis. In the joint interview, the operator selected an installable Windows-first app, closing the window keeps work running, explicit **Exit** stops work, projects default to an app-managed local folder, and Electron is accepted for the first version. See DEC-011. UI library, job storage binding and recovery remain proposals unless explicitly recorded as accepted. Existing CLI, schemas and selected-brief gates remain unchanged.
 
 ## Platform comparison

@@ -1,6 +1,6 @@
 # Managed projects and Windows credentials
 
-Tracking: [issue 52](https://github.com/ValenFelizia/instagram-to-opendesign/issues/52), [source PR 61](https://github.com/ValenFelizia/instagram-to-opendesign/pull/61), VAL-100. Depends on the shell in [PR 60](https://github.com/ValenFelizia/instagram-to-opendesign/pull/60). Target main and land the parent first. This increment persists local projects and provider configuration; it does not run the pipeline, grant paid authorization or implement transactional jobs.
+Tracking: [issue 52](https://github.com/ValenFelizia/instagram-to-opendesign/issues/52), [source PR 61](https://github.com/ValenFelizia/instagram-to-opendesign/pull/61), VAL-100. Source and prerequisite [PR 60](https://github.com/ValenFelizia/instagram-to-opendesign/pull/60) are operator-merged into main through `dd4a1db`, verified 2026-10-04. Native manual gates remain open. This increment persists local projects and provider configuration; it does not run the pipeline or grant paid authorization. Issue 53 adds a separate [transactional job kernel](transactional-jobs.md) and writer interlock: backup/trash/restore block an active writer, exclude control markers from backups and revoke job approval on moves.
 
 ## Operations
 

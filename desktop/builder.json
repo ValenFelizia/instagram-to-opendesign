@@ -3,7 +3,7 @@
   "productName": "Instagram to OpenDesign",
   "electronVersion": "44.5.1",
   "directories": { "output": "dist/app" },
-  "files": ["desktop/main.cjs", "desktop/preload.cjs", "desktop/protocol.cjs", "desktop/supervisor.cjs", "desktop/worker.cjs", "desktop/paths.cjs", "desktop/workspace.cjs", "desktop/credentials.cjs", "desktop/broker.cjs", "desktop/ui/**", "src/**", "schemas/**", "examples/example-studio/tokens.css", "package.json", "LICENSE"],
+  "files": ["desktop/main.cjs", "desktop/preload.cjs", "desktop/protocol.cjs", "desktop/supervisor.cjs", "desktop/worker.cjs", "desktop/paths.cjs", "desktop/workspace.cjs", "desktop/credentials.cjs", "desktop/broker.cjs", "desktop/jobs.cjs", "desktop/ui/**", "src/**", "schemas/**", "examples/example-studio/tokens.css", "package.json", "LICENSE"],
   "asar": true,
   "asarUnpack": ["node_modules/sharp/**", "node_modules/@img/**"],
   "npmRebuild": false,

@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 import { deliver, verifyCatalog } from '../src/delivery.js';
+import writer from '../src/writer-guard.cjs';
 const args = process.argv.slice(2);
 const usage = 'Usage: pnpm brand:deliver <profile-dir> --package <dir> --brief <dir> --od-data-dir <absolute-dir> --od-root <installation-dir> [--replace] [--daemon-url <loopback-origin> --workspace-id <id> --workspace-member-id <id>]\n       pnpm brand:deliver --verify <delivery-dir> --daemon-url <loopback-origin> [--workspace-id <id> --workspace-member-id <id>]';
 function flags(values, names, allowReplace = false) {
@@ -15,6 +16,7 @@ function flags(values, names, allowReplace = false) {
   return options;
 }
 const connection = { '--daemon-url': 'daemonUrl', '--workspace-id': 'workspaceId', '--workspace-member-id': 'workspaceMemberId' };
+let release = () => {};
 try {
   let result;
   if (args[0] === '--verify') {
@@ -27,7 +29,8 @@ try {
     const names = { '--package': 'packageDir', '--brief': 'briefDir', '--od-data-dir': 'odDataDir', '--od-root': 'odRoot', ...connection };
     if (!profile || profile.startsWith('-')) throw new Error(usage);
     const options = flags(values, names, true);
+    release = writer.acquireCliWriters([profile, ...[options.packageDir, options.briefDir, options.odDataDir].filter(Boolean)]);
     result = await deliver(profile, options);
   }
   console.log(JSON.stringify(result, null, 2));
-} catch (error) { console.error(error.message); process.exitCode = 1; }
+} catch (error) { console.error(error.message); process.exitCode = 1; } finally { release(); }

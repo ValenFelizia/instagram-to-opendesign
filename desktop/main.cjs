@@ -5,6 +5,7 @@ const { CHANNEL, UPDATES, validRequest, trustedSender, workerEnvironment } = req
 const { Supervisor } = require('./supervisor.cjs');
 const { Workspace } = require('./workspace.cjs');
 const { Credentials } = require('./credentials.cjs');
+const { JobStore, digest } = require('./jobs.cjs');
 const { BROKER, Broker } = require('./broker.cjs');
 
 app.setName('Instagram to OpenDesign');
@@ -15,6 +16,7 @@ const hidden = process.argv.includes('--shell-test-hidden');
 let window = null;
 let tray = null;
 let supervisor = null;
+let jobs = null;
 let exiting = false;
 let allowQuit = false;
 let closeExplained = false;
@@ -51,6 +53,7 @@ async function exit() {
   if (exiting) return;
   exiting = true;
   await supervisor?.shutdown();
+  try { jobs?.close(); } catch { console.error('JOB_STORE_CLOSE_INCOMPLETE'); }
   allowQuit = true;
   tray?.destroy();
   app.quit();
@@ -74,6 +77,13 @@ else {
     const localRoot = testData ? path.join(app.getPath('userData'), 'workspace') : path.join(localData, 'Instagram to OpenDesign', 'workspace');
     const workspace = new Workspace(localRoot);
     const credentials = new Credentials(path.join(localRoot, 'credentials'), safeStorage);
+    startupStep = 'jobs';
+    jobs = new JobStore(path.join(localRoot, 'jobs'), {
+      resolveProject: id => workspace.project(id, workspace.registry().projects.find(item => item.id === id)?.status),
+      configuration: scope => digest({ provider: scope.provider, model: scope.model,
+        credential: ['apify', 'openai'].includes(scope.provider) ? credentials.revision(scope.provider) : null })
+    });
+    workspace.onMove = (id, token) => jobs.beforeProjectMutation(id, token);
     ipcMain.handle(BROKER, (event, request) => {
       const authorized = () => trustedSender(event, window, documentUrl) && !exiting;
       if (!authorized()) return { ok: false, code: 'request-unavailable' };

@@ -2,10 +2,13 @@
 import { readFile, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { accessibilityPreflight, accessibilityMarkdown, tokenMap } from '../src/accessibility.js';
+import writer from '../src/writer-guard.cjs';
 const args = process.argv.slice(2);
 const usage = 'Usage: pnpm brand:accessibility <package-dir> <design-brief.json> [--lang es|en]';
+let release = () => {};
 try {
   if (![2, 4].includes(args.length) || args.length === 4 && (args[2] !== '--lang' || !['es', 'en'].includes(args[3]))) throw new Error(usage);
+  release = writer.acquireCliWriters([args[0], args[1]]);
   const brief = JSON.parse(await readFile(args[1], 'utf8'));
   if (brief.schemaVersion !== 'design-brief/v1') throw new Error('Expected a selected design brief.');
   const tokens = tokenMap(await readFile(path.join(args[0], 'tokens.css'), 'utf8'));
@@ -15,4 +18,4 @@ try {
   await writeFile(path.join(output, args[3] === 'en' ? 'ACCESSIBILITY.en.md' : 'ACCESSIBILITY.md'), accessibilityMarkdown(report, { lang: args[3] ?? 'es' }));
   console.log(JSON.stringify({ status: report.status, output }));
   if (report.status === 'fail') process.exitCode = 2;
-} catch (error) { console.error(error.message); process.exitCode = 1; }
+} catch (error) { console.error(error.message); process.exitCode = 1; } finally { release(); }

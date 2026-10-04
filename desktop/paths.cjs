@@ -39,7 +39,7 @@ function ensureDirectory(target) {
   return target;
 }
 const extensions = new Set(['.json', '.html', '.css', '.md', '.txt', '.jpg', '.jpeg', '.png', '.webp', '.gif', '.svg', '.avif', '.tif', '.tiff', '.woff', '.woff2', '.ttf', '.otf', '.pdf', '.mp4', '.mov', '.webm']);
-function inventory(root, { imports = false } = {}) {
+function inventory(root, { imports = false, guardToken = null } = {}) {
   checked(root);
   const files = [], directories = [], aliases = new Set();
   let total = 0;
@@ -47,6 +47,10 @@ function inventory(root, { imports = false } = {}) {
     if (depth > 40) fail('import-too-large');
     checked(folder);
     for (const entry of fs.readdirSync(folder, { withFileTypes: true })) {
+      if (depth === 0 && entry.name === '.writer-guard' && guardToken) {
+        if (require('../src/writer-guard.cjs').readOwner(root)?.token !== guardToken) fail('writer-fenced');
+        continue;
+      }
       if (!safeName(entry.name) || entry.name.startsWith('.') || /^(credentials?|settings)(\.|$)/i.test(entry.name)) fail('unsafe-file');
       const full = path.join(folder, entry.name), relative = path.relative(root, full);
       const alias = relative.toLowerCase();
@@ -69,8 +73,8 @@ function inventory(root, { imports = false } = {}) {
   return { files: files.sort((a, b) => a.relative.localeCompare(b.relative)), directories: directories.sort(), total };
 }
 function fingerprint(value) { return crypto.createHash('sha256').update(JSON.stringify(value)).digest('hex'); }
-function copyInventory(source, destination, expected) {
-  if (fingerprint(inventory(source)) !== fingerprint(expected)) fail('source-changed');
+function copyInventory(source, destination, expected, options = {}) {
+  if (fingerprint(inventory(source, options)) !== fingerprint(expected)) fail('source-changed');
   ensureDirectory(destination);
   for (const relative of expected.directories) ensureDirectory(path.join(destination, relative));
   for (const file of expected.files) {
@@ -81,7 +85,7 @@ function copyInventory(source, destination, expected) {
     if (crypto.createHash('sha256').update(bytes).digest('hex') !== file.hash) fail('source-changed');
     fs.writeFileSync(to, bytes, { flag: 'wx' });
   }
-  if (fingerprint(inventory(source)) !== fingerprint(expected) || fingerprint(inventory(destination)) !== fingerprint(expected)) fail('source-changed');
+  if (fingerprint(inventory(source, options)) !== fingerprint(expected) || fingerprint(inventory(destination)) !== fingerprint(expected)) fail('source-changed');
 }
 // Never call recursive rm on a selected directory. Remove only a checked owned tree.
 function removeOwned(root, target) {

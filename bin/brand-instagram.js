@@ -1,6 +1,9 @@
 #!/usr/bin/env node
 import { runPipeline } from '../src/pipeline.js';
 import { buildBrandReport } from '../src/report.js';
+import path from 'node:path';
+import { cleanUsername } from '../src/normalize.js';
+import writer from '../src/writer-guard.cjs';
 
 const usage = "Usage: pnpm brand:instagram '@username' [--refresh] [--reanalyze] [--lang es|en]";
 const args = process.argv.slice(2);
@@ -21,7 +24,9 @@ for (let index = 0; index < args.length; index++) {
     if (!['es', 'en'].includes(options.language)) { console.error(usage); process.exit(1); }
   } else options[option.slice(2)] = true;
 }
+let release = () => {};
 try {
+  release = writer.acquireCliWriters([path.resolve('data', cleanUsername(username))]);
   const result = await runPipeline(username, {
     refresh: options.refresh, reanalyze: options.reanalyze,
   });
@@ -45,4 +50,4 @@ try {
   console.error(error.message);
   if (error.runRecordPath) console.error(`Local run record: ${error.runRecordPath}`);
   process.exitCode = 1;
-}
+} finally { release(); }

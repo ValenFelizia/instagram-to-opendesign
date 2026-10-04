@@ -11,7 +11,7 @@ Thanks for your interest. Start with a focused GitHub issue or discussion before
 - Do not commit access tokens, private profile data, third-party images without redistribution rights, or generated brand packages containing such material.
 - Keep changes small and explain how you verified them in the pull request.
 
-Public work is tracked in [GitHub Issues](https://github.com/ValenFelizia/instagram-to-opendesign/issues). Project coordination and durable decisions are tracked in `.csdd/`. The [Linear project](https://linear.app/valenf/project/instagram-opendesign-brand-importer-c97b589cc0b2) is historical product context; access to it may require permission.
+Technical implementation is tracked in [GitHub Issues](https://github.com/ValenFelizia/instagram-to-opendesign/issues). Project coordination and durable decisions are tracked in `.csdd/`. Product goals and prioritization are canonical in the [Linear project](https://linear.app/valenf/project/instagram-opendesign-brand-importer-c97b589cc0b2); access may require permission. Keep private case material and outcomes local.
 
 ## Pull requests
 

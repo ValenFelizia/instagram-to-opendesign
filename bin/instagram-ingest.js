@@ -1,5 +1,8 @@
 #!/usr/bin/env node
 import { ingest } from '../src/ingest.js';
+import path from 'node:path';
+import { cleanUsername } from '../src/normalize.js';
+import writer from '../src/writer-guard.cjs';
 
 function usage() {
   return 'Usage: node bin/instagram-ingest.js @username [--output data] [--posts 20] [--fixture path]';
@@ -22,10 +25,12 @@ while (args.length) {
   if (flag === '--posts') options.postLimit = Number(value);
   if (flag === '--fixture') options.fixturePath = value;
 }
+let release = () => {};
 try {
+  release = writer.acquireCliWriters([path.resolve(options.outputRoot || 'data', cleanUsername(username))]);
   const result = await ingest(username, options);
   console.log(`Saved ${result.source.posts.length} posts to ${result.outputDir}`);
 } catch (error) {
   console.error(error.message);
   process.exitCode = 1;
-}
+} finally { release(); }

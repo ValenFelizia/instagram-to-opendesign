@@ -2,10 +2,10 @@ name: Windows app shell
 on:
   workflow_dispatch:
   pull_request:
-    paths: ['desktop/**', 'src/**', 'schemas/**', 'test/**', 'package.json', 'pnpm-lock.yaml', 'pnpm-workspace.yaml', '.github/workflows/windows-app.yml']
+    paths: ['desktop/**', 'bin/**', 'src/**', 'schemas/**', 'test/**', 'package.json', 'pnpm-lock.yaml', 'pnpm-workspace.yaml', '.github/workflows/windows-app.yml']
   push:
     branches: [main]
-    paths: ['desktop/**', 'src/**', 'schemas/**', 'test/**', 'package.json', 'pnpm-lock.yaml', 'pnpm-workspace.yaml', '.github/workflows/windows-app.yml']
+    paths: ['desktop/**', 'bin/**', 'src/**', 'schemas/**', 'test/**', 'package.json', 'pnpm-lock.yaml', 'pnpm-workspace.yaml', '.github/workflows/windows-app.yml']
 permissions:
   contents: read
 jobs:

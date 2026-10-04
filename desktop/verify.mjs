@@ -74,6 +74,27 @@ try {
   assert.equal((await page.evaluate(id => window.localWorkspace.trash(id), imported.id)).ok, true);
   assert.equal((await page.evaluate(id => window.localWorkspace.restore(id), imported.id)).ok, true);
   assert.equal((await page.evaluate(id => window.localWorkspace.open(id), imported.id)).ok, true);
+  const jobProof = await electronApp.evaluate(async ({ app }, projectId) => {
+    const path = process.getBuiltinModule('path'), fs = process.getBuiltinModule('fs');
+    const packagedRequire = process.getBuiltinModule('module').createRequire(path.join(app.getAppPath(), 'package.json'));
+    const { Workspace } = packagedRequire('./desktop/workspace.cjs');
+    const { JobStore, digest } = packagedRequire('./desktop/jobs.cjs');
+    const crypto = process.getBuiltinModule('crypto');
+    const workspace = new Workspace(path.join(app.getPath('userData'), 'workspace'));
+    const root = path.join(app.getPath('userData'), 'sqlite-proof');
+    const options = { resolveProject: id => workspace.project(id) };
+    let store = new JobStore(root, options);
+    try {
+      const job = store.createJob(projectId, { taskId: crypto.randomUUID(), operation: 'report', provider: 'fake', model: 'synthetic', configRevision: digest('synthetic-config'), taskRevision: 1 });
+      await store.dispatch(job.id, store.authorize(job.id, job.planHash), () => ({ remoteId: 'synthetic-no-network' }));
+      const output = store.complete(job.id, null, payload => fs.writeFileSync(path.join(payload, 'result.txt'), 'Synthetic SQLite packaging proof'), () => true);
+      const sqlite = store.db.prepare('SELECT sqlite_version() AS version').get().version;
+      store.close(); store = new JobStore(root, options);
+      return { version: sqlite, state: store.view(job.id).state, outputRetained: store.view(job.id).output === output.output };
+    } finally { store.close(); }
+  }, imported.id);
+  assert.equal(jobProof.state, 'completed'); assert.equal(jobProof.outputRetained, true);
+  results.push(`Bundled node:sqlite ${jobProof.version}: intent/acknowledgement, inventoried snapshot and fresh-store recovery without external Node or network`);
   const syntheticKey = `synthetic-${randomUUID()}`;
   await page.locator('#settings').click();
   await page.locator('#credential-key').fill(syntheticKey);

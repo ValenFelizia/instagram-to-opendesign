@@ -1,6 +1,7 @@
 const fs = require('node:fs');
 const path = require('node:path');
 const crypto = require('node:crypto');
+const guard = require('../src/writer-guard.cjs');
 const { fail, UUID, checked, inside, ensureDirectory, inventory, fingerprint, copyInventory, removeOwned, atomicJson } = require('./paths.cjs');
 function label(value) { if (typeof value !== 'string' || value.trim().length < 1 || value.length > 80 || /[\x00-\x1f]/.test(value)) fail('invalid-name'); return value.trim(); }
 function profile(value) {
@@ -94,20 +95,37 @@ class Workspace {
     } catch (error) { removeOwned(parent, destination); throw error; }
   }
   open(id) { this.project(id); this.active = id; return this.view(); }
+  withWriter(id, status, moving, operation) {
+    const { directory } = this.project(id, status), token = crypto.randomUUID();
+    guard.claim(directory, { version: 1, type: 'workspace', token });
+    try {
+      if (moving) this.onMove?.(id, token);
+      return operation(token);
+    } finally {
+      const item = this.registry().projects.find(item => item.id === id);
+      guard.release(item?.path || directory, token);
+    }
+  }
   export(id, scope, parent) {
     if (scope !== 'project-backup') fail('invalid-request');
+    return this.withWriter(id, 'active', false, token => this.exportOwned(id, parent, token));
+  }
+  exportOwned(id, parent, token) {
     const { directory } = this.project(id);
     checked(parent);
     if (parent === directory || inside(directory, parent) || parent === this.root || inside(this.root, parent)) fail('unsafe-path');
-    const tree = inventory(directory), destination = path.join(parent, `backup-${id}-${crypto.randomUUID()}`);
+    const tree = inventory(directory, { guardToken: token }), destination = path.join(parent, `backup-${id}-${crypto.randomUUID()}`);
     ensureDirectory(destination);
-    try { copyInventory(directory, destination, tree); } catch (error) { removeOwned(parent, destination); throw error; }
+    try { copyInventory(directory, destination, tree, { guardToken: token }); } catch (error) { removeOwned(parent, destination); throw error; }
     return { files: tree.files.length };
   }
   trash(id, scope) {
     if (scope !== 'project') fail('invalid-request');
+    return this.withWriter(id, 'active', true, token => this.trashOwned(id, token));
+  }
+  trashOwned(id, token) {
     const { record, item, directory } = this.project(id);
-    inventory(directory); // Refuse links, secret-like filenames and unsupported content before moving.
+    inventory(directory, { guardToken: token }); // Refuse links, secret-like filenames and unsupported content before moving.
     const trash = path.join(path.dirname(directory), 'trash'); ensureDirectory(trash);
     const destination = path.join(trash, id);
     if (fs.existsSync(destination)) fail('project-unavailable');
@@ -118,8 +136,11 @@ class Workspace {
     return this.view(record);
   }
   restore(id) {
+    return this.withWriter(id, 'trash', true, token => this.restoreOwned(id, token));
+  }
+  restoreOwned(id, token) {
     const { record, item, directory } = this.project(id, 'trash');
-    inventory(directory);
+    inventory(directory, { guardToken: token });
     if (path.basename(path.dirname(directory)) !== 'trash') fail('unsafe-path');
     const parent = path.dirname(path.dirname(directory)); checked(parent);
     const destination = path.join(parent, id);
