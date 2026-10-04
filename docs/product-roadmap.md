@@ -44,7 +44,7 @@ GitHub #21 closes the implemented review-feature scope. Its optional comparison 
 
 Keep evidence, report, decisions, originals and deliverables discoverable in one local project. Reuse the existing core and valid results. Design save/resume, stale input, partial result and error recovery states. Include keyboard navigation, visible focus, clear names, responsive readability and status that does not rely on color or motion alone.
 
-No local web/desktop framework is selected. Hosted SaaS/accounts, cloud synchronization, telemetry by default, MCP, new social-network sources and universal vendor support are outside this increment.
+After joint platform review, DEC-011 selects a Windows-first Electron app, background work after window close, explicit Exit and app-managed local projects. Read the [workspace/job blueprint](local-workspace.md); UI library and implementation details remain open, and no app is implemented. Hosted SaaS/accounts, cloud synchronization, telemetry by default, MCP, new social-network sources and universal vendor support are outside this increment.
 
 ## Cost and privacy
 
@@ -58,4 +58,4 @@ The [local synthetic prototype](../prototypes/onboarding/README.md) makes the fi
 
 Future UI should be minimal, keep only useful information and use direct section/status titles instead of editorial SaaS copy. The user explicitly deferred visual/copy polishing so work can continue on product behavior.
 
-The next [selective-review proposal](selective-review.md) defines authority, task-specific questions, correction consequences and separate exploration/execution/publication states, with an isolated synthetic interaction prototype. It remains a proposal for VAL-105/operator review; production schemas and readiness remain unchanged. Local platform/jobs and detailed spend/progress follow in VAL-106/VAL-107.
+The [selective-review proposal](selective-review.md) defines authority, task-specific questions, correction consequences and separate exploration/execution/publication states, with an isolated synthetic interaction prototype. The operator merged PR #48; #44 is closed and VAL-105 Done for proposal/prototype scope. Production schemas and readiness remain unchanged. The [local workspace blueprint](local-workspace.md) develops VAL-106; detailed spend/progress follows in VAL-107. Backlog slices are proposed, not an authorization to implement an entire app.
