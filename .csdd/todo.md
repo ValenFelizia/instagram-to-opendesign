@@ -10,7 +10,7 @@
   - Scope: docs/selective-review.md, prototypes/selective-review, synthetic state tests and CSDD/roadmap tracking; no production schema/core changes or onboarding UI polish.
   - Updated: 2026-10-03
   - Verification: 62 synthetic tests and local Edge walkthrough passed; 1440/390px screenshots inspected, 320px overflow, keyboard/focus/errors and reduced motion checked. No real authority, core changes, providers or publication.
-  - Landing: codex/selective-review-contract into main; product/contract proposal review pending.
+  - Landing: PR #48, codex/selective-review-contract into main; product/contract proposal review pending.
   - Note: codex/selective-review-contract starts from main @ 55eb220 after explicitly authorized PR #47 merge. Deliver a reviewable contract proposal and isolated interactions; current readiness remains intact.
 
 ## Blocked
