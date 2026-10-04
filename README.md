@@ -14,6 +14,7 @@ Help people prepare context for a concrete creative task without reconstructing 
 - **Approach:** a standalone CLI or script, with a maintained Instagram extraction provider rather than a custom scraper.
 - **Stages:** extraction, evidence processing, analysis, and local OpenDesign package compilation are implemented. New profiles pause for image review before analysis.
 - **Product prototype:** [Navigable guided onboarding and dossier](prototypes/onboarding/README.md) using fictional material; open its local HTML without APIs. This is interaction design, not an integrated app. Progressive review, workspace/platform design and detailed paid-action information remain planned; no app framework is chosen.
+- **Review proposal:** [Selective authority and state transitions](docs/selective-review.md), with isolated synthetic interactions. Exploration, selected execution and publication acceptance remain distinct; proposed contract changes require separate review and implementation.
 - **Excluded from this increment:** hosted SaaS/accounts, continuous synchronization, productized MCP, other social networks and broad vendor support.
 
 Product context originated in the [Linear project](https://linear.app/valenf/project/instagram-opendesign-brand-importer-c97b589cc0b2). Public work is tracked in [GitHub Issues](https://github.com/ValenFelizia/instagram-to-opendesign/issues) and developed through pull requests. Technical decisions live in `.csdd/` and public documentation here.
