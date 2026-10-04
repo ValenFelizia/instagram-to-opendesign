@@ -4,7 +4,7 @@ This is a sanitized summary of merged implementation and human verification. Ori
 
 ## Merge baseline
 
-PR #38 is merged into main at `34d7d77f490789db8844cc125bc3879979fdc068`, including PR #36 and the previous implementation stack. Old stacked-landing instructions are consumed. Test/runtime claims below describe their recorded verification scope; neither an API readback nor a structural guard proves creative acceptance. DEC-010 records the accepted product direction; app/onboarding features are planned, not implemented.
+PR #38 is merged into main at `34d7d77f490789db8844cc125bc3879979fdc068`, including PR #36 and the previous implementation stack. Old stacked-landing instructions are consumed. Test/runtime claims below describe their recorded verification scope; neither an API readback nor a structural guard proves creative acceptance. DEC-010 records the accepted product direction; the integrated app is planned, not implemented. PR #41/#42 are subsequently merged and reachable from main @ `92723b5`; their old landing instructions are consumed.
 
 ## Closed scopes
 
@@ -16,6 +16,8 @@ PR #38 is merged into main at `34d7d77f490789db8844cc125bc3879979fdc068`, includ
 | #22 — Rich-profile gate | Recipient could read selected brief, evidence, original asset, provisional token origins and pending checks; no observed inaccessible-context gap warrants a rich manifest | Closed by its explicit no-expansion condition; no rich implementation or minimal/rich comparison was performed |
 | #31 — Core/adapter boundary | Merged PR #36, 47 recorded local tests, complete consumer-neutral synthetic brief and separate real-brand compilation preserving canonical bytes/hash; VAL-101 reconciled to Done | Generic export remains #32; no general utility claim |
 | #21 — Result review | Merged immutable output/brief snapshots, explicit rendered observations, original feedback, corrections and cumulative effort records with previously recorded synthetic verification | Closed for implemented scope under DEC-010; optional matched research, final rendered accessibility and publication acceptance are separate |
+| #32 — Generic agent handoff | Merged PR #42 via PR #41; main ancestry verified, 49 independent/53 combined recorded synthetic checks and portable START/BRIEF reading order with byte inventory | Current readiness remains authoritative; no universal recipient or usefulness claim |
+| #37 — Run accounting | Merged PR #41; returned usage/billing and phase time preserve failed attempts, cache state and idempotent imports | No live provider run, historical backfill or complete effort estimate |
 
 ## Open scopes
 
@@ -23,9 +25,7 @@ PR #38 is merged into main at `34d7d77f490789db8844cc125bc3879979fdc068`, includ
 | --- | --- |
 | #17 | Story request, assets and instructions were understood. A new exploratory version received positive user feedback; a user-authorized hero exploration with real repository context is resumed. Final applicable brief/execution review remains pending; matched utility is optional research. |
 | #19 | Declared-use preflight, uncertainty and blockers are implemented. Actual platform overlays/native sticker and final rendered accessibility remain unverified; the rejected Story is not a publication target. |
-| #32 | PR #42 implements the generic entrypoint, byte-verified inventory and portable canonical references; 49 independent/53 combined local tests passed. Merge review remains pending. Additional generation is not a gate. |
 | #33 | Positioning is accepted. Naming remains a lower-priority follow-up after journey/workspace design. Keep repository, package, CLI and schema names. |
-| #37 | Provider accounting implementation is prepared in codex/provider-accounting: 51 local synthetic tests passed for separate usage, failed attempts, cache reuse and idempotent review imports. Pending PR review/merge; no live spending or historical backfill. |
 
 ## Story outcome and experiment stop
 
@@ -38,3 +38,7 @@ No composer trial or publication was performed for these rejected outputs. The r
 A new Felisa Story in a fresh chat used a permissive creative prompt and user-reported GPT 6 Astra. The user judged it substantially better. Model, prompt and chat changed together, so this is request-specific feedback with unknown cause, not a controlled model/prompt comparison or proof of importer utility. The user explicitly resumed hero exploration with real repository context. Its current website palette, Quicksand, supplied photos and storefront behavior remain authoritative; additional new photos and production changes are not implied.
 
 Private project work stays local and Git-ignored, including identifiers, source content, assets, metadata, reports and outcomes. Public state records only generic requirements. If a comparative experiment is explicitly chosen, it requires common approved inputs/settings and complete effort records; a greenfield landing cannot stand in for an existing-site change. No general utility verdict is claimed. Guided onboarding, selective review, local workspace planning and cost/progress are tracked in VAL-104–VAL-107; see the [product roadmap](product-roadmap.md).
+
+## Onboarding prototype — ready for review
+
+GitHub #43 / VAL-104 has a local navigable synthetic prototype; see [verification and core-gap mapping](onboarding-prototype.md). The current suite passes 56 synthetic tests, and the local Edge walkthrough passes input/configuration errors, review pause, task reuse, limited download, stale input and explicit retry/resume. Desktop/mobile screenshots were inspected with reduced-motion/focus and overflow checks. No provider calls, real case content, real export or durable worker were exercised. Operator review and assistive-technology acceptance remain separate.

@@ -18,12 +18,12 @@ The intended journey is profile and objective → reused/local versus explicit p
 
 | Priority | Product scope | Product tracking | Technical boundary |
 | --- | --- | --- | --- |
-| Foundation | Retain targeted provenance, human brief and rendered accessibility checks | VAL-100 | #15 is closed after supplied-font source/compilation verification; #17/#19 retain targeted acceptance. #37 accounting is prepared in PR #41 |
+| Foundation | Retain targeted provenance, human brief and rendered accessibility checks | VAL-100 | #15 is closed after supplied-font source/compilation verification; #17/#19 retain targeted acceptance. #37 accounting is merged through PR #41 |
 | First | Design the first-use journey and recoverable states | [VAL-104](https://linear.app/valenf/issue/VAL-104/design-guided-onboarding-from-a-profile-to-a-first-useful-brief) | [GitHub issue 43](https://github.com/ValenFelizia/instagram-to-opendesign/issues/43): navigable synthetic onboarding/dossier prototype, screen states and core gap mapping |
 | Alongside journey design | Selective review and room for creative proposals | [VAL-105](https://linear.app/valenf/issue/VAL-105/make-brand-review-selective-while-preserving-creative-freedom) | [GitHub issue 44](https://github.com/ValenFelizia/instagram-to-opendesign/issues/44): review-state/authority proposal; preserve current gates |
 | Next | Plan a contained local workspace | [VAL-106](https://linear.app/valenf/issue/VAL-106/define-a-contained-local-app-workspace-for-evidence-and-deliverables) | [GitHub issue 45](https://github.com/ValenFelizia/instagram-to-opendesign/issues/45): platform comparison, durable jobs and workspace proposal before framework selection |
 | Across the journey | Understandable spend, cache reuse and progress | [VAL-107](https://linear.app/valenf/issue/VAL-107/make-paid-actions-cache-reuse-and-run-progress-understandable) | [GitHub issue 46](https://github.com/ValenFelizia/instagram-to-opendesign/issues/46): paid-action/cache/progress surfaces based on accounting; unknowns retained |
-| Delivery | Generic task-specific export | [VAL-102](https://linear.app/valenf/issue/VAL-102/prepare-reusable-task-specific-context-for-generic-creative-agents) | #32 implementation is ready in PR #42; canonical entrypoint and verified inventory, without reanalysis or OpenDesign packaging |
+| Delivery | Generic task-specific export | [VAL-102](https://linear.app/valenf/issue/VAL-102/prepare-reusable-task-specific-context-for-generic-creative-agents) | #32 implementation is merged through PR #42/#41; canonical entrypoint and verified inventory, without reanalysis or OpenDesign packaging |
 | Later | Evaluate naming | [VAL-103](https://linear.app/valenf/issue/VAL-103/reframe-product-positioning-and-evaluate-projectrepository-name) | #33 keeps current repo/package/CLI/schema names until a concrete decision |
 
 [VAL-100](https://linear.app/valenf/issue/VAL-100/deliver-a-guided-workflow-from-brand-evidence-to-useful-creative-agent-context) coordinates the increment. GitHub #39 reconciles this documentation and backlog; future implementation tasks should follow observed orchestration gaps rather than assume a framework or hosted service now.
@@ -51,3 +51,7 @@ No local web/desktop framework is selected. Hosted SaaS/accounts, cloud synchron
 Make paid actions explicit before execution, identify cached/local work and avoid automatic paid retries. Preserve actual billed cost, tokens, provider wall time and human effort separately. Label estimates with their basis; unknown values remain unknown, not zero.
 
 User-designated private work remains local and Git-ignored, including identifiers, source material, paths, assets, reports, feedback and outcomes. Public docs, fixtures and product tracking contain generic requirements only. No private case material is needed for this roadmap.
+
+## Onboarding prototype review
+
+The [local synthetic prototype](../prototypes/onboarding/README.md) now makes the first-use journey navigable, including the dossier, selective decisions and failure/recovery scenarios. Read the [screen/core mapping and integration gaps](onboarding-prototype.md). Browser verification is recorded there; operator acceptance remains pending. This is interaction design, not the integrated app or a platform decision.
