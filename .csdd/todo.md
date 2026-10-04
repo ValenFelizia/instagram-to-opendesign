@@ -4,6 +4,16 @@
 
 ## Ready to Land
 
+- [ ] GitHub #46 / VAL-107 — Design paid-action, cache and progress surfaces.
+  - Owner: Valentin Felizia
+  - Agent: Codex
+  - Scope: docs/spend-progress.md, prototypes/spend-progress, synthetic projection/browser tests and CSDD/roadmap tracking; no live provider, core/accounting changes or app integration.
+  - Updated: 2026-10-03
+  - Depends on: #37 (merged PR #41); #45 blueprint under review in PR #49.
+  - Verification: 10 model checks, actual synthetic journal projection and full 79/79 suite passed; Edge walkthrough and desktop/mobile screenshots inspected, keyboard/focus/errors, 390/320px overflow, reduced motion, forced colors and no page network/storage checked. No provider, pricing, Narrator or installed app claim.
+  - Landing: PR #50, codex/paid-action-progress into codex/local-workspace-plan while PR #49 is open; VAL-107 In Review. Parent first, then retarget/reconcile to main before landing.
+  - Note: starts at PR #49 head 5e90bb8 while operator reviews that proposal. Retarget/reconcile after #49 merge before landing #46; keep no paid retry and canonical gates intact.
+
 - [ ] GitHub #45 / VAL-106 — Evaluate local app packaging and durable jobs.
   - Owner: Valentin Felizia
   - Agent: Codex
@@ -26,10 +36,6 @@
   - Agent: Codex (P0 worktree)
   - Scope: no active source-code claim; implementation is merged from PR #29/#34.
   - Note: declared-use thresholds, aliases, uncertainty, blockers and manual tasks are implemented. Native composer overlap/sticker and final rendered accessibility remain pending for an accepted future piece; rejected artwork is not a publishing target.
-- [ ] GitHub #46 / VAL-107 — Design paid-action, cache and progress surfaces.
-  - Owner: Valentin Felizia
-  - Depends on: #37 (merged through PR #41)
-  - Scope: no active implementation claim; synthetic state/copy prototype and journal-to-UI mapping.
 
 ## Deferred
 

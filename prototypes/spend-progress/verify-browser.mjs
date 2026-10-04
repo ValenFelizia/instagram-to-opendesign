@@ -1,0 +1,115 @@
+import { createRequire } from 'node:module';
+import { mkdir, writeFile } from 'node:fs/promises';
+import { fileURLToPath } from 'node:url';
+import path from 'node:path';
+import assert from 'node:assert/strict';
+
+const require=createRequire(import.meta.url);
+const {chromium}=require(process.env.PLAYWRIGHT_MODULE||'playwright');
+const browser=await chromium.launch({headless:true,...(process.env.BROWSER_CHANNEL?{channel:process.env.BROWSER_CHANNEL}:{})});
+const context=await browser.newContext({viewport:{width:1440,height:1000}});
+const page=await context.newPage(),errors=[],external=[],checks=[];
+const output=fileURLToPath(new URL('../../tmp/spend-progress-qa/',import.meta.url));
+await mkdir(output,{recursive:true});
+page.on('pageerror',e=>errors.push(e.message));
+page.on('console',m=>{if(m.type()==='error')errors.push(m.text());});
+page.on('request',r=>{if(/^https?:/.test(r.url()))external.push(r.url());});
+const focused=s=>page.locator(s).evaluate(n=>document.activeElement===n);
+const select=value=>page.locator('#scenario').selectOption(value);
+const click=id=>page.locator(`#${id}`).click();
+const disclosure=async(id,open=true)=>{if(await page.locator(`#${id}`).evaluate(d=>d.open)!==open)await page.locator(`#${id} > summary`).click();};
+const data=async()=>JSON.parse(await page.locator('#records').textContent());
+const attempts=async()=>{const d=await data();return new Set(d.records.flatMap(r=>r.phases.flatMap(p=>p.attempts.map(a=>a.id)))).size;};
+const noOverflow=async()=>assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth),false);
+const shot=async name=>{await page.evaluate(()=>scrollTo(0,0));await page.screenshot({path:path.join(output,`${name}.png`),fullPage:true});};
+const authorize=async()=>{await page.locator('#authorize').check();await page.locator('#consent-form button[type=submit]').click();};
+try {
+  await page.goto(new URL('index.html',import.meta.url).href);
+  await page.keyboard.press('Tab');assert.ok(await focused('.skip'));
+  await page.keyboard.press('Enter');assert.ok(await focused('#main'));
+  assert.equal(await page.locator('progress').count(),0);
+  await click('start');assert.ok(await focused('#authorize'));
+  await page.locator('#consent-form button[type=submit]').click();
+  assert.ok(await focused('#authorize'));assert.equal(await page.locator('#authorize').getAttribute('aria-invalid'),'true');
+  assert.equal(await page.locator('#authorize').getAttribute('aria-describedby'),'consent-error');
+  assert.ok(await page.locator('#consent-error').isVisible());
+  await page.keyboard.press('Escape');assert.ok(await focused('#start'));assert.equal(await attempts(),0);
+  await click('start');await click('cancel-consent');assert.ok(await focused('#start'));
+  await click('start');await authorize();assert.ok(await focused('#work-title'));
+  assert.equal(await attempts(),1);assert.equal((await data()).job.status,'running');
+  const before=await data();await click('leave');assert.ok(await focused('#reopen'));
+  await click('reopen');assert.ok(await focused('#work-title'));
+  assert.deepEqual((await data()).records,before.records);
+  await click('response');assert.equal((await data()).job.status,'review-required');assert.equal(await attempts(),2);
+  assert.match(await page.locator('.timeline').innerText(),/Análisis\s+Sin iniciar/);
+  await noOverflow();await shot('desktop-review');
+  checks.push('Native skip/focus, linked consent error, cancel/Escape and view reconnection work; intake stops at image review without automatic analysis.');
+
+  await select('cached');const saved=await attempts();await click('start');
+  assert.equal(await page.locator('#consent-dialog').evaluate(d=>d.open),false);
+  await click('response');assert.equal(await attempts(),saved);assert.match(await page.locator('.timeline').innerText(),/Reutilizado/);
+  await page.locator('#output-content > summary').click();
+  assert.match(await page.locator('#output-content').innerText(),/No es un archivo real/);
+  await select('shared');assert.match(await page.locator('aside').innerText(),/no se duplica el cargo/);
+  await select('missing');await page.locator('#attempts > summary').click();
+  const usage=await page.locator('#attempts').innerText();
+  assert.match(usage,/Importe no disponible/);assert.match(usage,/Entrada: 800 · salida: 240/);
+  assert.match(usage,/incluidos en la entrada/);assert.match(usage,/esfuerzo humano no medido/);
+  await select('mixed');assert.match(await page.locator('.totals').innerText(),/USD/);assert.match(await page.locator('.totals').innerText(),/EUR/);
+  assert.match(await page.locator('aside').innerText(),/No se suman monedas distintas/);
+  checks.push('Local cache start needs no paid modal; prior/shared costs persist once; missing bills, token subsets, human-effort unknowns and mixed currencies are readable.');
+
+  await select('reanalyze');await click('start');
+  await page.locator('#consent-scope details > summary').click();
+  assert.match(await page.locator('#consent-scope').innerText(),/no son tarifas vigentes/);
+  await page.locator('#consent-form > details > summary').click();
+  await click('change-in-dialog');await authorize();
+  assert.ok(await page.locator('#consent-error').isVisible());assert.ok(await focused('#cancel-consent'));
+  await page.keyboard.press('Escape');assert.ok(await focused('#review-inputs'));
+  assert.equal((await data()).job.stale,true);assert.equal(await attempts(),4);
+  await click('review-inputs');assert.equal((await data()).plan.revision,2);
+  await click('start');await authorize();assert.equal(await attempts(),5);
+  await disclosure('technical');await click('inputs-changed');
+  assert.equal((await data()).job.status,'running');
+  assert.match(await page.locator('.timeline').innerText(),/En curso · contexto anterior/);
+  assert.equal(await page.locator('#review-inputs').count(),0);assert.equal(await page.locator('#start').count(),0);
+  checks.push('Fictional estimate has an explicit basis; changed scope rejects open consent. Changing inputs during an active attempt does not claim it stopped or authorize a concurrent new call.');
+
+  await select('failed');const failedCount=await attempts();await click('repair');assert.equal(await attempts(),failedCount);
+  assert.equal((await data()).job.status,'completed');assert.match(await page.locator('.timeline').innerText(),/Contexto\s+5 s observados\s+Listo · local/);
+  await select('incomplete');const incomplete=await attempts();await click('retry');assert.equal(await attempts(),incomplete);
+  assert.equal((await data()).job.status,'queued');await click('start');assert.ok(await page.locator('#consent-dialog').evaluate(d=>d.open));await page.keyboard.press('Escape');
+  await select('interrupted');const unknown=await attempts();
+  await disclosure('technical');await click('restart');assert.equal(await attempts(),unknown);
+  await click('reconcile');assert.match(await page.locator('#consent-scope').innerText(),/Hasta 1 consulta/);
+  await authorize();assert.equal(await attempts(),unknown);assert.equal((await data()).job.status,'review-required');
+  await click('review');assert.equal((await data()).plan.operation,'colors');
+  assert.match(await page.locator('section').first().innerText(),/No repite el análisis/);
+  checks.push('Local repair adds no attempt, incomplete response retry gets fresh consent, interrupted lookup gets explicit scope and preserves IDs, and remaining work is not marked completed.');
+
+  await page.setViewportSize({width:390,height:844});
+  await disclosure('technical',false);await disclosure('attempts',false);
+  for(const name of Object.keys(await page.evaluate(()=>SpendProgress.scenarios))) {
+    await select(name);await noOverflow();
+    if(['fresh','mixed','interrupted'].includes(name)) await shot(`mobile-${name}`);
+  }
+  await select('fresh');await click('start');await noOverflow();await shot('mobile-consent');
+  await page.keyboard.press('Tab');assert.ok(await page.locator('#consent-dialog').evaluate(d=>d.contains(document.activeElement)));
+  await page.keyboard.press('Escape');
+  await page.setViewportSize({width:320,height:740});
+  for(const name of ['fresh','missing','mixed','incomplete','shared']) {await select(name);await noOverflow();}
+  await page.emulateMedia({reducedMotion:'reduce'});await page.locator('#scenario').focus();
+  assert.equal(await page.locator('#scenario').evaluate(n=>getComputedStyle(n).outlineWidth),'3px');
+  assert.equal(await page.locator('#scenario').evaluate(n=>getComputedStyle(n).transitionDuration),'0s');
+  await page.emulateMedia({forcedColors:'active'});await noOverflow();
+  await page.emulateMedia({forcedColors:'none'});
+  await select('fresh');await click('start');await authorize();
+  assert.match(await page.locator('#announcement').textContent(),/No se llamó a ningún servicio/);
+  await page.reload();assert.equal((await data()).job.status,'queued');assert.equal(await attempts(),0);
+  assert.equal(await page.evaluate(()=>localStorage.length),0);assert.equal(await page.evaluate(()=>sessionStorage.length),0);
+  assert.deepEqual(errors,[]);assert.deepEqual(external,[]);
+  checks.push('Ten 390px cases and representative 320px views, native dialog focus, visible focus/reduced motion/forced colors checked; reload resets fiction, no page errors, HTTP(S) traffic or browser storage.');
+  const result={status:'pass',checks,errors,external};
+  await writeFile(path.join(output,'verification.json'),JSON.stringify(result,null,2),'utf8');
+  console.log(JSON.stringify(result,null,2));
+} finally {await browser.close();}
