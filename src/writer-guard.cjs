@@ -24,7 +24,8 @@ function managedRoot(target) {
       if (fs.lstatSync(file).isSymbolicLink()) busy();
       let record;
       try { record = JSON.parse(fs.readFileSync(file, 'utf8')); } catch { busy(); }
-      if (record.version === 1 && typeof record.id === 'string' && uuid.test(record.id) && path.basename(current) === record.id) return current;
+      const identity = process.platform === 'win32' ? path.basename(current).toLowerCase() : path.basename(current);
+      if (record.version === 1 && typeof record.id === 'string' && uuid.test(record.id) && identity === record.id) return fs.realpathSync.native(current);
     }
     const parent = path.dirname(current); if (parent === current) return null; current = parent;
   }

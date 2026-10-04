@@ -76,6 +76,11 @@ test('revision-bound confirmation rejects changed input, config, scope and reuse
   await assert.rejects(store.dispatch(secondJob.id, store.authorize(secondJob.id, secondJob.planHash), () => { calls++; }), /writer-busy/);
   const cli = spawnSync(process.execPath, ['bin/brand-report.js', f.input], { windowsHide: true, encoding: 'utf8' });
   assert.equal(cli.status, 1); assert.match(cli.stderr, /Project writer unavailable/);
+  if (process.platform === 'win32') {
+    const alias = f.input.replace(f.project, f.project.toUpperCase());
+    const aliasedCli = spawnSync(process.execPath, ['bin/brand-report.js', alias], { windowsHide: true, encoding: 'utf8' });
+    assert.equal(aliasedCli.status, 1); assert.match(aliasedCli.stderr, /Project writer unavailable/);
+  }
   assert.throws(() => f.workspace.trash(f.project, 'project'), /Project writer unavailable/);
   const observation = `run-${randomUUID()}-analyze-1`;
   finish({ remoteId: 'request-1', observationRef: observation }); await pending;
