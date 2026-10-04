@@ -1,6 +1,6 @@
 # Selective review and authority proposal
 
-**Status: proposal for operator review.** Tracking: [GitHub issue 44](https://github.com/ValenFelizia/instagram-to-opendesign/issues/44) / [VAL-105](https://linear.app/valenf/issue/VAL-105/make-brand-review-selective-while-preserving-creative-freedom). Interactive examples: [`prototypes/selective-review/index.html`](../prototypes/selective-review/index.html). This PR changes neither production schemas nor readiness gates. Its isolated synthetic model is not a security boundary, real approval system or canonical export.
+**Status: proposal/prototype reviewed and merged through PR #48, main `4b50917`; #44 closed and VAL-105 Done.** Tracking: [GitHub issue 44](https://github.com/ValenFelizia/instagram-to-opendesign/issues/44) / [VAL-105](https://linear.app/valenf/issue/VAL-105/make-brand-review-selective-while-preserving-creative-freedom). Interactive examples: [`prototypes/selective-review/index.html`](../prototypes/selective-review/index.html). Production schema/contract implementation remains separate. Its isolated synthetic model is not a security boundary, real approval system or canonical export.
 
 The user accepted the onboarding concept/flow and authorized PR #47's merge. Future product UI should use direct titles, less copy and only useful information; visual/copy polishing is deferred. This proposal addresses review behavior, not a redesign of that prototype.
 
