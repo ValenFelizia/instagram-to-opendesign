@@ -4,14 +4,14 @@
 
 ## Ready to Land
 
-- [ ] GitHub #44 / VAL-105 — Specify selective review and exploration/approval states.
+- [ ] GitHub #45 / VAL-106 — Evaluate local app packaging and durable jobs.
   - Owner: Valentin Felizia
   - Agent: Codex
-  - Scope: docs/selective-review.md, prototypes/selective-review, synthetic state tests and CSDD/roadmap tracking; no production schema/core changes or onboarding UI polish.
+  - Scope: docs/local-workspace.md, isolated synthetic lifecycle spike/tests, platform sources and CSDD/roadmap tracking; no app shell, core/schema changes, real projects or providers.
   - Updated: 2026-10-03
-  - Verification: 62 synthetic tests and local Edge walkthrough passed; 1440/390px screenshots inspected, 320px overflow, keyboard/focus/errors and reduced motion checked. No real authority, core changes, providers or publication.
-  - Landing: PR #48, codex/selective-review-contract into main; product/contract proposal review pending.
-  - Note: codex/selective-review-contract starts from main @ 55eb220 after explicitly authorized PR #47 merge. Deliver a reviewable contract proposal and isolated interactions; current readiness remains intact.
+  - Verification: 7 synthetic process/checkpoint tests and full 69/69 regression suite passed on Windows; no app packaging, providers or production storage. Official platform sources inspected.
+  - Landing: codex/local-workspace-plan into main; blueprint PR pending.
+  - Note: DEC-011 records operator-selected Windows-first Electron, window close keeps work running, explicit Exit and app-managed projects. UI library, storage binding and release/integration choices remain separate.
 
 ## Blocked
 
@@ -26,9 +26,6 @@
   - Agent: Codex (P0 worktree)
   - Scope: no active source-code claim; implementation is merged from PR #29/#34.
   - Note: declared-use thresholds, aliases, uncertainty, blockers and manual tasks are implemented. Native composer overlap/sticker and final rendered accessibility remain pending for an accepted future piece; rejected artwork is not a publishing target.
-- [ ] GitHub #45 / VAL-106 — Evaluate local app packaging and durable jobs.
-  - Owner: Valentin Felizia
-  - Scope: no active implementation claim; reviewed platform recommendation, local persistence and lifecycle blueprint.
 - [ ] GitHub #46 / VAL-107 — Design paid-action, cache and progress surfaces.
   - Owner: Valentin Felizia
   - Depends on: #37 (merged through PR #41)
@@ -45,6 +42,13 @@
 ## Recently Completed
 
 Retention: 5
+
+- [x] GitHub #44 / VAL-105 — Specify selective review and exploration/approval states.
+  - Owner: Valentin Felizia
+  - Agent: Codex
+  - Scope: released
+  - Landed: main @ 4b50917 (PR #48), verified 2026-10-03; GitHub issue closed, VAL-105 Done after operator merge.
+  - Verification: 62 synthetic tests and Edge walkthrough previously passed. Proposal/prototype deliverables complete; production contracts and actual authority remain unchanged.
 
 - [x] GitHub #43 / VAL-104 — Prototype guided onboarding and an actionable dossier.
   - Owner: Valentin Felizia
@@ -72,10 +76,3 @@ Retention: 5
   - Scope: released
   - Landed: implementation through PR #23; source/compilation verification completed and issue closed 2026-10-03.
   - Verification: supplied storefront font copied unchanged and registered with source-backed website-only rules; two stable compilations preserve palette and model analysis. No font licensing, embedding, rendered-font or production claim.
-
-- [x] GitHub #39 / VAL-100 — Reconcile the guided product workflow and backlog.
-  - Owner: Valentin Felizia
-  - Agent: Codex
-  - Scope: released
-  - Landed: main @ 96120d8 (PR #40), verified 2026-10-03.
-  - Verification: technical initial audience and guided local workflow documented; app implementation remains planned in VAL-104–VAL-107.

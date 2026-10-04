@@ -1,5 +1,15 @@
 # Decisions
 
+## DEC-011 — Windows-first Electron app with managed local projects
+
+- Status: accepted platform/product direction; blueprint and isolated spike, not an implemented app
+- Date: 2026-10-03
+- Context: #45 / VAL-106 compares local browser and desktop packaging after accepted onboarding/review prototypes. The existing core is Node with native image dependencies; no contained app or persistent scheduler exists.
+- Decision: deliver an installable Windows-first app opened from an icon; closing the window keeps work in the background, explicit Exit stops local work. Projects default to an app-managed local folder outside the repository, with advanced location/export options. Adopt Electron for the first version, accepting runtime/installer footprint to reuse Node; keep UI-library selection separate and the core portable for later OS support.
+- Rationale: the operator explicitly selected each option in a four-question grill-me interview, including Electron after the local-web/Electron/Tauri comparison. A second packaged platform is not required now.
+- Consequence: main owns lifecycle/worker supervision; closing the view is distinct from exit/crash/restart. No automatic paid retry, provider spending, startup service, hosted account, sync or telemetry is authorized. SQLite, credential implementation, recovery protocol, installer/signing/update choices and backlog slices remain proposals/acceptance work. Test packaged Node/sharp compatibility and actual Windows accessibility before release.
+- Evidence: operator answers on 2026-10-03; [platform and lifecycle blueprint](../docs/local-workspace.md) with official platform sources. No real/private project material is needed.
+
 ## DEC-010 — Prioritize a guided local product for creative-agent context
 
 - Status: accepted direction; roadmap/backlog reconciliation, not an app implementation
