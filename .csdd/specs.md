@@ -7,6 +7,7 @@ The project prepares traceable, task-specific creative-agent context from review
 ## Requirements
 
 - The guided onboarding prototype uses synthetic local material and separates observations, inferences, proposals and pending decisions. It does not call providers, persist credentials or entered profile URLs, alter canonical brief readiness, choose an app framework or claim durable background jobs. Its screen/core mapping is documented in `docs/onboarding-prototype.md`; future authority, platform and paid-action decisions remain issues #44–#46. Source: GitHub #43 / VAL-104, 2026-10-03.
+- The user accepted the onboarding idea/flow and authorized PR #47's merge. Future UI should be minimal, contain useful information only and use direct section/status titles; visual/copy polishing is explicitly deferred while product behavior progresses. Source: user review, 2026-10-03; DEC-010.
 
 - Context must remain useful before a recipient is chosen. OpenDesign is an optional adapter; additional vendor generation and a controlled benchmark are not prerequisites for product development. Comparative savings or superiority claims still require a matched experiment. Source: user's approved product direction, 2026-10-03.
 - Important identity inferences retain evidence and confidence. Brand identity must be distinguished from incidental aesthetics in photos or products. Source: the Linear project.

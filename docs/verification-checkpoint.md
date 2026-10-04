@@ -39,6 +39,10 @@ A new Felisa Story in a fresh chat used a permissive creative prompt and user-re
 
 Private project work stays local and Git-ignored, including identifiers, source content, assets, metadata, reports and outcomes. Public state records only generic requirements. If a comparative experiment is explicitly chosen, it requires common approved inputs/settings and complete effort records; a greenfield landing cannot stand in for an existing-site change. No general utility verdict is claimed. Guided onboarding, selective review, local workspace planning and cost/progress are tracked in VAL-104–VAL-107; see the [product roadmap](product-roadmap.md).
 
-## Onboarding prototype — ready for review
+## Onboarding prototype — accepted concept and flow
 
-GitHub #43 / VAL-104 has a local navigable synthetic prototype; see [verification and core-gap mapping](onboarding-prototype.md). The current suite passes 56 synthetic tests, and the local Edge walkthrough passes input/configuration errors, review pause, task reuse, limited download, stale input and explicit retry/resume. Desktop/mobile screenshots were inspected with reduced-motion/focus and overflow checks. No provider calls, real case content, real export or durable worker were exercised. Operator review and assistive-technology acceptance remain separate.
+GitHub #43 / VAL-104 is merged through PR #47 into main @ `55eb220`; issue closed and Linear Done after the user accepted its idea/flow and explicitly authorized merge. The user requested a minimal future UI with direct titles and less copy, and deferred visual polishing. Recorded verification: 56 synthetic tests and the Edge workflow with desktop/mobile inspection. This is prototype acceptance, not an integrated app or full accessibility certification.
+
+## Selective review — proposal for review
+
+GitHub #44 / VAL-105 has [authority/transition matrices and compatibility implications](selective-review.md), plus six memory-only fictional interaction cases. 62 synthetic tests and the local Edge walkthrough pass; desktop/mobile screenshots were inspected, with keyboard/focus/error, reduced-motion and overflow checks. Production schemas/core gates and the earlier onboarding UI remain unchanged. No real source or permission verification, artifact review, authority, canonical export or publication is implied. Operator contract review and actual assistive-technology acceptance remain separate.

@@ -54,4 +54,8 @@ User-designated private work remains local and Git-ignored, including identifier
 
 ## Onboarding prototype review
 
-The [local synthetic prototype](../prototypes/onboarding/README.md) now makes the first-use journey navigable, including the dossier, selective decisions and failure/recovery scenarios. Read the [screen/core mapping and integration gaps](onboarding-prototype.md). Browser verification is recorded there; operator acceptance remains pending. This is interaction design, not the integrated app or a platform decision.
+The [local synthetic prototype](../prototypes/onboarding/README.md) makes the first-use journey navigable, including the dossier, selective decisions and failure/recovery scenarios. The user accepted its concept/flow and authorized PR #47's merge into main @ `55eb220`; VAL-104 is Done. Read the [screen/core mapping and integration gaps](onboarding-prototype.md). This is interaction design, not the integrated app or a platform decision.
+
+Future UI should be minimal, keep only useful information and use direct section/status titles instead of editorial SaaS copy. The user explicitly deferred visual/copy polishing so work can continue on product behavior.
+
+The next [selective-review proposal](selective-review.md) defines authority, task-specific questions, correction consequences and separate exploration/execution/publication states, with an isolated synthetic interaction prototype. It remains a proposal for VAL-105/operator review; production schemas and readiness remain unchanged. Local platform/jobs and detailed spend/progress follow in VAL-106/VAL-107.

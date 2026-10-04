@@ -4,14 +4,14 @@
 
 ## Ready to Land
 
-- [ ] GitHub #43 / VAL-104 — Prototype guided onboarding and an actionable dossier.
+- [ ] GitHub #44 / VAL-105 — Specify selective review and exploration/approval states.
   - Owner: Valentin Felizia
   - Agent: Codex
-  - Scope: prototypes/onboarding, synthetic visual fixtures, screen/core map and browser verification; no app framework or provider integration.
+  - Scope: docs/selective-review.md, prototypes/selective-review, synthetic state tests and CSDD/roadmap tracking; no production schema/core changes or onboarding UI polish.
   - Updated: 2026-10-03
-  - Verification: 56 synthetic tests and the local Edge walkthrough passed; 1440/390px screenshots inspected, 320px overflow and keyboard/reduced-motion checked. No provider calls, real data or real export.
-  - Landing: PR #47, codex/onboarding-prototype into main; user flow/design review pending.
-  - Note: codex/onboarding-prototype starts from main @ 92723b5; it includes PR #42 through the earlier #41 branch merge, confirmed by ancestry. Real credentials and case content are excluded.
+  - Verification: 62 synthetic tests and local Edge walkthrough passed; 1440/390px screenshots inspected, 320px overflow, keyboard/focus/errors and reduced motion checked. No real authority, core changes, providers or publication.
+  - Landing: PR #48, codex/selective-review-contract into main; product/contract proposal review pending.
+  - Note: codex/selective-review-contract starts from main @ 55eb220 after explicitly authorized PR #47 merge. Deliver a reviewable contract proposal and isolated interactions; current readiness remains intact.
 
 ## Blocked
 
@@ -26,9 +26,6 @@
   - Agent: Codex (P0 worktree)
   - Scope: no active source-code claim; implementation is merged from PR #29/#34.
   - Note: declared-use thresholds, aliases, uncertainty, blockers and manual tasks are implemented. Native composer overlap/sticker and final rendered accessibility remain pending for an accepted future piece; rejected artwork is not a publishing target.
-- [ ] GitHub #44 / VAL-105 — Specify selective review and exploration/approval states.
-  - Owner: Valentin Felizia
-  - Scope: no active implementation claim; authority/transition matrix, interaction examples and compatibility proposal.
 - [ ] GitHub #45 / VAL-106 — Evaluate local app packaging and durable jobs.
   - Owner: Valentin Felizia
   - Scope: no active implementation claim; reviewed platform recommendation, local persistence and lifecycle blueprint.
@@ -48,6 +45,13 @@
 ## Recently Completed
 
 Retention: 5
+
+- [x] GitHub #43 / VAL-104 — Prototype guided onboarding and an actionable dossier.
+  - Owner: Valentin Felizia
+  - Agent: Codex
+  - Scope: released
+  - Landed: main @ 55eb220 (PR #47), verified 2026-10-03; GitHub issue closed, VAL-104 Done.
+  - Verification: 56 synthetic tests and local Edge walkthrough; user accepted idea/flow and authorized merge. Future UI should be minimal with useful information and direct titles; visual/copy polishing explicitly deferred. No integrated app or assistive-technology certification.
 
 - [x] GitHub #37 — Preserve provider usage and phase effort.
   - Owner: Valentin Felizia
@@ -75,10 +79,3 @@ Retention: 5
   - Scope: released
   - Landed: main @ 96120d8 (PR #40), verified 2026-10-03.
   - Verification: technical initial audience and guided local workflow documented; app implementation remains planned in VAL-104–VAL-107.
-
-- [x] GitHub #21 — Close the implemented result-review scope.
-  - Owner: Valentin Felizia
-  - Agent: Codex (P0 worktree)
-  - Scope: released
-  - Landed: main via PR #34 and subsequent integration; reachable from 34d7d77.
-  - Verification: previously recorded synthetic checks and merged immutable snapshots, explicit observations, feedback/corrections and effort records. Closed 2026-10-03 under DEC-010; optional matched research is not a completion gate. No measured utility or rendered accessibility claim.

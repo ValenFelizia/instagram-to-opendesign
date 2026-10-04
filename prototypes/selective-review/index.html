@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; connect-src 'none'; img-src 'self'; style-src 'self'; script-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'">
+  <title>Revisión selectiva — prototipo</title>
+  <link rel="stylesheet" href="styles.css">
+  <script src="model.js" defer></script>
+  <script src="app.js" defer></script>
+</head>
+<body>
+  <a class="skip" href="#main">Saltar al contenido</a>
+  <header><a href="../onboarding/index.html">← Onboarding</a><span>Prototipo · datos ficticios</span></header>
+  <main id="main" tabindex="-1">
+    <h1>Revisión</h1>
+    <p class="intro">Decisiones para la tarea elegida. Las confirmaciones de esta demo no tienen autoridad real.</p>
+    <div class="toolbar">
+      <label>Escenario<select id="scenario"><option value="normal">Muestra revisada</option><option value="incomplete">Evidencia incompleta</option><option value="collaborator">Foto de un colaborador</option><option value="low-resolution">Baja resolución</option><option value="missing-site">Sin acceso al sitio</option><option value="channel-conflict">Web y redes en conflicto</option></select></label>
+      <label>Tarea<select id="task"><option value="instagram-story">Historia</option><option value="promotional-image">Imagen promocional</option><option value="conceptual-landing">Landing conceptual</option><option value="website-change">Cambio en sitio existente</option></select></label>
+    </div>
+    <div id="review-content"></div>
+  </main>
+  <p id="announcement" class="sr-only" role="status" aria-live="polite" aria-atomic="true"></p>
+  <dialog id="copy-dialog" aria-labelledby="copy-title">
+    <form id="copy-form" novalidate>
+      <h2 id="copy-title">Corregir texto confirmado</h2>
+      <p id="copy-before"></p>
+      <p>Se conserva la versión anterior y se crea una fuente ficticia para la corrección. La dirección y las revisiones de ejecución/publicación dejan de estar vigentes. Otras decisiones se conservan.</p>
+      <label for="copy-text">Texto nuevo</label><textarea id="copy-text" maxlength="180" required aria-describedby="copy-error"></textarea>
+      <label for="copy-note">Motivo de la corrección</label><input id="copy-note" maxlength="180" required aria-describedby="copy-error">
+      <p id="copy-error" class="error" role="alert" hidden></p>
+      <div class="buttons"><button type="button" data-action="cancel-copy">Cancelar</button><button class="primary" type="submit">Confirmar corrección demo</button></div>
+    </form>
+  </dialog>
+  <noscript>Este prototipo necesita JavaScript. La propuesta está documentada en README.md.</noscript>
+</body>
+</html>
