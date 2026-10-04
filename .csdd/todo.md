@@ -11,7 +11,7 @@
   - Updated: 2026-10-03
   - Depends on: #37 (merged PR #41); #45 blueprint under review in PR #49.
   - Verification: 10 model checks, actual synthetic journal projection and full 79/79 suite passed; Edge walkthrough and desktop/mobile screenshots inspected, keyboard/focus/errors, 390/320px overflow, reduced motion, forced colors and no page network/storage checked. No provider, pricing, Narrator or installed app claim.
-  - Landing: codex/paid-action-progress; prototype/spec PR pending, explicit stack on PR #49 until it merges.
+  - Landing: PR #50, codex/paid-action-progress into codex/local-workspace-plan while PR #49 is open; VAL-107 In Review. Parent first, then retarget/reconcile to main before landing.
   - Note: starts at PR #49 head 5e90bb8 while operator reviews that proposal. Retarget/reconcile after #49 merge before landing #46; keep no paid retry and canonical gates intact.
 
 - [ ] GitHub #45 / VAL-106 — Evaluate local app packaging and durable jobs.
