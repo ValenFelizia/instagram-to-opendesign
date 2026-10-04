@@ -4,18 +4,51 @@
 
 ## Ready to Land
 
-- [ ] GitHub #45 / VAL-106 — Evaluate local app packaging and durable jobs.
+- [ ] GitHub #46 / VAL-107 — Design paid-action, cache and progress surfaces.
   - Owner: Valentin Felizia
   - Agent: Codex
-  - Scope: docs/local-workspace.md, isolated synthetic lifecycle spike/tests, platform sources and CSDD/roadmap tracking; no app shell, core/schema changes, real projects or providers.
-  - Updated: 2026-10-03
-  - Verification: 7 synthetic process/checkpoint tests and full 69/69 regression suite passed on Windows; no app packaging, providers or production storage. Official platform sources inspected.
-  - Landing: PR #49, codex/local-workspace-plan into main; blueprint review pending, VAL-106 In Review.
-  - Note: DEC-011 records operator-selected Windows-first Electron, window close keeps work running, explicit Exit and app-managed projects. UI library, storage binding and release/integration choices remain separate.
+  - Scope: docs/spend-progress.md, prototypes/spend-progress, synthetic projection/browser tests and CSDD/roadmap tracking; no live provider, core/accounting changes or app integration.
+  - Updated: 2026-10-04
+  - Depends on: #37 (merged PR #41); #45 blueprint merged into main through PR #49 at 86bcf94.
+  - Verification: 10 model checks, actual synthetic journal projection and full 79/79 suite passed; Edge walkthrough and desktop/mobile screenshots inspected, keyboard/focus/errors, 390/320px overflow, reduced motion, forced colors and no page network/storage checked. No provider, pricing, Narrator or installed app claim.
+  - Landing: PR #59, codex/land-progress-plan into main. VAL-107 remains In Review until main contains the approved prototype.
+  - Note: operator merged PR #50 into codex/local-workspace-plan at 391a157 after PR #49 had landed. Main lacks its feature commits; they were cherry-picked without conflicts and the resulting tree matched the approved branch exactly before tracking edits. Implementation gaps are now backlog #51–#58, not active app work.
 
 ## Blocked
 
 ## Pending
+
+- [ ] GitHub #51 — Build a Windows Electron shell and verify native core packaging.
+  - Owner: Valentin Felizia
+  - Scope: no active source-code claim; first app implementation slice under VAL-100.
+- [ ] GitHub #52 — Implement managed projects and an OS-protected credential broker.
+  - Owner: Valentin Felizia
+  - Depends on: #51
+  - Scope: no active source-code claim; see docs/app-implementation.md.
+- [ ] GitHub #53 — Implement transactional jobs, scoped authorization and snapshots.
+  - Owner: Valentin Felizia
+  - Depends on: #51, #52
+  - Scope: no active source-code claim; see docs/app-implementation.md.
+- [ ] GitHub #54 — Integrate core stages, recoverable responses and request accounting.
+  - Owner: Valentin Felizia
+  - Depends on: #53
+  - Scope: no active source-code claim; see docs/app-implementation.md.
+- [ ] GitHub #55 — Implement selective review and task authority contracts.
+  - Owner: Valentin Felizia
+  - Depends on: #53
+  - Scope: no active source-code claim; contract decisions remain explicit before implementation.
+- [ ] GitHub #56 — Integrate generic handoff, result history and external effort records.
+  - Owner: Valentin Felizia
+  - Depends on: #52, #53, #54, #55
+  - Scope: no active source-code claim; see docs/app-implementation.md.
+- [ ] GitHub #57 — Wire guided onboarding and accessible progress to actual jobs.
+  - Owner: Valentin Felizia
+  - Depends on: #51–#56
+  - Scope: no active source-code claim; packaged Windows accessibility remains acceptance work.
+- [ ] GitHub #58 — Verify Windows install, upgrade and retained local data.
+  - Owner: Valentin Felizia
+  - Depends on: #51, #57
+  - Scope: no active source-code claim; release/distribution remains separately authorized.
 
 - [ ] GitHub #17 — Complete human brief/execution review.
   - Owner: Valentin Felizia
@@ -26,10 +59,6 @@
   - Agent: Codex (P0 worktree)
   - Scope: no active source-code claim; implementation is merged from PR #29/#34.
   - Note: declared-use thresholds, aliases, uncertainty, blockers and manual tasks are implemented. Native composer overlap/sticker and final rendered accessibility remain pending for an accepted future piece; rejected artwork is not a publishing target.
-- [ ] GitHub #46 / VAL-107 — Design paid-action, cache and progress surfaces.
-  - Owner: Valentin Felizia
-  - Depends on: #37 (merged through PR #41)
-  - Scope: no active implementation claim; synthetic state/copy prototype and journal-to-UI mapping.
 
 ## Deferred
 
@@ -42,6 +71,13 @@
 ## Recently Completed
 
 Retention: 5
+
+- [x] GitHub #45 / VAL-106 — Evaluate local app packaging and durable jobs.
+  - Owner: Valentin Felizia
+  - Agent: Codex
+  - Scope: released
+  - Landed: main @ 86bcf94 (PR #49), verified 2026-10-04; GitHub issue closed, VAL-106 Done after operator merge.
+  - Verification: previously passed 7 synthetic lifecycle tests and 69/69 full suite. DEC-011 selects Electron/Windows/background close/explicit Exit/managed projects; no installed app, secure store or production scheduler claim.
 
 - [x] GitHub #44 / VAL-105 — Specify selective review and exploration/approval states.
   - Owner: Valentin Felizia
@@ -70,9 +106,3 @@ Retention: 5
   - Scope: released
   - Landed: PR #42 @ fa67960, reachable from main @ 92723b5 through PR #41, verified 2026-10-03; GitHub issue is closed and VAL-102 is Done.
   - Verification: previously recorded 49 independent/53 combined synthetic tests, portable canonical reading order and byte-verified inventory; current core suite also passes. Readiness unchanged; no vendor run or general usefulness claim.
-
-- [x] GitHub #15 — Record verified brand decisions and conflicts.
-  - Owner: Valentin Felizia
-  - Scope: released
-  - Landed: implementation through PR #23; source/compilation verification completed and issue closed 2026-10-03.
-  - Verification: supplied storefront font copied unchanged and registered with source-backed website-only rules; two stable compilations preserve palette and model analysis. No font licensing, embedding, rendered-font or production claim.
