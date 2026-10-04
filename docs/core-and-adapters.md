@@ -1,5 +1,7 @@
 # Canonical core and reference adapter
 
+Use [generic agent handoff](generic-agent-handoff.md) for a clear entrypoint and verifiable file inventory on the canonical brief. It is independent of consumer-specific package and token mappings.
+
 The core prepares source-backed design context before choosing a recipient. OpenDesign is the first implemented reference adapter. A selected brief can be compiled, reviewed and consumed without an OpenDesign package or installation. This boundary does not demonstrate improved creative quality or compatibility with an untested consumer.
 
 ```text

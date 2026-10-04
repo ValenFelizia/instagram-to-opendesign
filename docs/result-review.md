@@ -1,5 +1,7 @@
 # Review a preserved rendered result
 
+Finished end-to-end journals can be supplied as `runRecords` in the review input. Import retains returned usage/billing and wall time without turning elapsed time into human effort or duplicating provider events across revisions. See [run accounting](run-accounting.md) for unknown values, currency guards and coverage limits.
+
 `brand:result` compares a selected brief with local HTML, screenshots, rendered DOM observations and original human feedback. It records checks and correction candidates; it does not edit a brief, brand decisions or the website and makes no provider calls.
 
 ## Capture the result

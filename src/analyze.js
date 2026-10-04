@@ -134,8 +134,8 @@ async function replaceFile(outputPath, content) {
 }
 
 export async function analyzeBrand(prepared, { token = process.env.OPENAI_API_KEY,
-  fetchImpl = fetch, provider = requestBrandInferences, generatedAt = new Date().toISOString() } = {}) {
-  const { inferences, usage } = await provider(prepared, { token, fetchImpl });
+  fetchImpl = fetch, provider = requestBrandInferences, onUsage, generatedAt = new Date().toISOString() } = {}) {
+  const { inferences, usage } = await provider(prepared, { token, fetchImpl, onUsage });
   if (!Array.isArray(inferences)) throw new Error('Model output is missing inferences.');
   const analysis = {
     schemaVersion: 'instagram-to-opendesign-brand-analysis/v1',

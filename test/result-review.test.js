@@ -8,6 +8,7 @@ import { compileExisting } from '../src/pipeline.js';
 import { reviewResult, compareReviews } from '../src/result-review.js';
 import { digest } from '../src/local.js';
 import sharp from 'sharp';
+import { createRunRecord } from '../src/run-record.js';
 
 test('rendered checks detect hidden CTA, copy/asset mismatch and contrast; archives keep revisions and human preferences separate', async () => {
   const fixture = await briefFixture(), archive = `${fixture.root}-results`;
@@ -83,5 +84,42 @@ test('Story review checks actual export dimensions and reserved sticker overlap 
     assert.equal(builtReview.report.checks.find((check) => check.id === 'portrait-sticker-headline').status, 'fail');
     assert.equal(builtReview.report.checks.find((check) => check.id === 'portrait-contrast-headline').status, 'manual-review');
     assert.equal(builtReview.report.metrics.complete, false);
+  } finally { await rm(archive, { recursive: true, force: true }); await rm(fixture.root, { recursive: true, force: true }); }
+});
+
+
+test('result review imports observed billing once across revisions and retains the run source', async () => {
+  const fixture = await briefFixture(), archive = `${fixture.root}-results`;
+  try {
+    fixture.request.selectedDirectionId = 'D-1';
+    await writeFile(path.join(fixture.root, 'design-request.json'), JSON.stringify(fixture.request));
+    const { context } = await prepareBrief(fixture.root);
+    await importDirections(fixture.root, { directions: fixtureDirections(context) });
+    const built = await compileBrief(fixture.root);
+    const artifacts = path.join(fixture.root, 'render'); await mkdir(artifacts);
+    await writeFile(path.join(artifacts, 'index.html'), '<!doctype html><title>Example</title>');
+    const journal = await createRunRecord(fixture.root, { refresh: false, reanalyze: false, postLimit: 20 });
+    await journal.phase('ingestion', async ({ observe }) => {
+      await observe({ event: 'start', key: 'details', provider: 'synthetic' });
+      await observe({ event: 'end', key: 'details', status: 'completed', billing: { amount: 0.12, currency: 'USD', source: 'Synthetic returned bill' } });
+    });
+    await journal.finish('complete');
+    const input = { schemaVersion: 'result-review-input/v1', experimentId: 'run-import', variant: 'manual', revision: 0,
+      artifactRoot: artifacts, commonInputs: { root: fixture.root, files: ['assets/product.jpg'] },
+      run: { model: 'synthetic', openDesignVersion: 'test', priorKnowledge: 'none', iterationBudget: 2 },
+      artifacts: [{ id: 'first', kind: 'html', path: 'index.html' }], events: [], currency: 'USD',
+      runRecords: [journal.outputPath, journal.outputPath] };
+    const first = await reviewResult(built.outputDir, input, { outputRoot: archive });
+    const second = await reviewResult(built.outputDir, { ...input, revision: 1 }, { outputRoot: archive });
+    assert.equal(first.report.events.length, 1); assert.equal(second.report.events.length, 1);
+    assert.equal(second.report.metrics.suppliedCost, 0.12);
+    assert.equal(second.report.metrics.suppliedMinutes, 0);
+    assert.equal(second.report.metrics.complete, false);
+    assert.equal(second.report.events[0].minutes, null);
+    assert.equal(await readFile(path.join(first.outputDir, 'runs', `${journal.record.id}.json`), 'utf8'), await readFile(journal.outputPath, 'utf8'));
+    journal.record.phases[0].attempts[0].billing.amount = 1;
+    await journal.finish('complete');
+    await assert.rejects(() => reviewResult(built.outputDir, { ...input, revision: 2 }, { outputRoot: archive }), /Conflicting imported/);
+    await assert.rejects(() => reviewResult(built.outputDir, { ...input, experimentId: 'currency', currency: 'EUR' }, { outputRoot: archive }), /currency must match/);
   } finally { await rm(archive, { recursive: true, force: true }); await rm(fixture.root, { recursive: true, force: true }); }
 });

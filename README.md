@@ -10,7 +10,7 @@ Help people prepare context for a concrete creative task without reconstructing 
 
 ## Initial scope
 
-- **Consumer:** OpenDesign is an optional implemented adapter. Canonical selected briefs are prepared before consumer-specific packaging; generic task-specific export is tracked in #32.
+- **Consumer:** [Generic task-specific handoff](docs/generic-agent-handoff.md) exports canonical context with an entrypoint and byte-verified inventory. OpenDesign is an optional implemented adapter.
 - **Approach:** a standalone CLI or script, with a maintained Instagram extraction provider rather than a custom scraper.
 - **Stages:** extraction, evidence processing, analysis, and local OpenDesign package compilation are implemented. New profiles pause for image review before analysis.
 - **Planned product work:** guided onboarding, progressive review, local workspace/platform design and understandable paid-action information. No app framework is chosen or app UI implemented yet.
@@ -23,6 +23,8 @@ Product context originated in the [Linear project](https://linear.app/valenf/pro
 The first delivery improvements add [human brand decisions](docs/brand-decisions.md), [asset preflight](docs/asset-preflight.md) and an [executable hero/Story brief](docs/design-brief.md). These keep confirmed rules, evidence, creative proposals and pending reviews distinct. Design briefs require a human-selected direction; local compilation makes no paid calls.
 
 The implemented review stage supports [declared-use accessibility checks](docs/accessibility-preflight.md), [explicit OpenDesign delivery and promotional/site-change requests](docs/opendesign-handoff.md), and [immutable result review with an optional matched-evaluation protocol](docs/result-review.md). Extra vendor generation and formal comparisons are not gates for product development; comparative savings claims still require evidence. Website/social rules retain separate authority. Felisa's current website identity stays in effect during user-authorized hero exploration; richer packages require observed missing context first.
+
+The end-to-end command preserves [local run accounting](docs/run-accounting.md): provider usage, returned billing when available, phase wall time, cache reuse and failed attempts. Finished records import into result review without counting the same event twice. Unknown costs and human effort remain unknown.
 
 Node 20+ and `pnpm install` run the project. The package compiler uses Sharp to create a local WebP moodboard; the report generator uses it for portable thumbnails. See the guides above and [CONTRIBUTING.md](CONTRIBUTING.md).
 

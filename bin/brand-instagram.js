@@ -25,6 +25,8 @@ try {
   const result = await runPipeline(username, {
     refresh: options.refresh, reanalyze: options.reanalyze,
   });
+  console.log(`Local run record: ${result.runRecordPath}`);
+  if (result.analysisUsage) console.log(`Analysis API usage: ${result.analysisUsage.input_tokens ?? '?'} input, ${result.analysisUsage.output_tokens ?? '?'} output tokens.`);
   if (result.status === 'review-required') {
     console.log(`${result.pending.length} selected profile-owned images need review before analysis.`);
     console.log(`Contact sheet: ${result.contactSheet}`);
@@ -39,4 +41,8 @@ try {
     console.log(`Reused existing source: ${!result.ingested}; reused analysis: ${!result.analyzed}; reused color proposal: ${!result.colorProposed}.`);
     if (result.colorUsage) console.log(`Color API usage: ${result.colorUsage.input_tokens ?? '?'} input, ${result.colorUsage.output_tokens ?? '?'} output tokens.`);
   }
-} catch (error) { console.error(error.message); process.exitCode = 1; }
+} catch (error) {
+  console.error(error.message);
+  if (error.runRecordPath) console.error(`Local run record: ${error.runRecordPath}`);
+  process.exitCode = 1;
+}

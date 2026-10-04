@@ -5,6 +5,7 @@ import sharp from 'sharp';
 import { createDirectoryAtomically } from './atomic.js';
 import { contrastRatio } from './accessibility.js';
 import { digest, fileDigests, json, profileFile } from './local.js';
+import { runEffortEvents } from './run-record.js';
 
 const box = { type: 'object', additionalProperties: false, required: ['x', 'y', 'width', 'height'], properties: {
   x: { type: 'number' }, y: { type: 'number' }, width: { type: 'number', minimum: 0 }, height: { type: 'number', minimum: 0 } } };
@@ -130,7 +131,20 @@ export async function reviewResult(briefDir, input, { outputRoot } = {}) {
     if (!source) throw new Error('Human feedback must cite a preserved original feedback artifact.');
     corrections.push({ ...feedback, origin: 'human-judgment', status: 'manual-review', scope: 'request', action: 'Keep this preference request-specific; review before editing a brief or any brand decision.' });
   }
-  const events = input.events ?? [];
+  const events = [...(input.events ?? [])];
+  const importedRuns = [];
+  if (input.runRecords !== undefined && !Array.isArray(input.runRecords)) throw new Error('runRecords must be an array of local JSON paths.');
+  const imported = [];
+  for (const file of input.runRecords ?? []) {
+    const content = await readFile(file, 'utf8'), record = JSON.parse(content);
+    importedRuns.push({ id: record.id, sha256: digest(Buffer.from(content)), content });
+    imported.push(...runEffortEvents(record, input.currency ?? null));
+  }
+  const uniqueImports = new Map();
+  for (const event of imported) {
+    if (uniqueImports.has(event.id) && json(uniqueImports.get(event.id)) !== json(event)) throw new Error('Conflicting imported run event.');
+    uniqueImports.set(event.id, event);
+  }
   if (input.currency !== undefined && input.currency !== null && !/^[A-Z]{3}$/.test(input.currency)) throw new Error('Record an explicit three-letter currency or null.');
   if (new Set(events.map((event) => event.id)).size !== events.length) throw new Error('Duplicate effort event.');
   for (const event of events) if (!safeId.test(event.id) || !['ingestion', 'analysis', 'asset-preparation', 'prompt', 'manual-edit', 'review'].includes(event.type) ||
@@ -163,6 +177,12 @@ export async function reviewResult(briefDir, input, { outputRoot } = {}) {
     if (previous.metrics.currency !== (input.currency ?? null)) throw new Error('Keep the same currency across revisions; do not sum incomparable costs.');
     if (events.some((event) => previous.eventIds.includes(event.id))) throw new Error('Record only new prompts/edits/preparation events per revision.');
   }
+  for (const event of uniqueImports.values()) {
+    const existing = previous?.events.find((item) => item.id === event.id) ?? events.find((item) => item.id === event.id);
+    if (existing) {
+      if (json(existing) !== json(event)) throw new Error('Conflicting imported run event.');
+    } else events.push(event);
+  }
   const phases = ['ingestion', 'analysis', 'asset-preparation', 'prompt', 'manual-edit', 'review'];
   const cumulative = [...(previous?.events ?? []), ...events];
   const metrics = { suppliedMinutes: cumulative.reduce((sum, event) => sum + (event.minutes ?? 0), 0),
@@ -174,12 +194,17 @@ export async function reviewResult(briefDir, input, { outputRoot } = {}) {
     packageFiles: sourcePackage ? await fileDigests(sourcePackage) : null,
     recordedAt: new Date().toISOString(), status: checks.some((check) => check.status === 'fail') ? 'unmet-requirements' : 'needs-human-review',
     checks, corrections, metrics, events: cumulative, eventIds: cumulative.map((event) => event.id),
+    importedRuns: [...new Map(importedRuns.map(({ id, sha256 }) => [id, { id, sha256 }])).values()],
     conclusion: 'insufficient-evidence', publication: 'human-acceptance-required',
     iterationBudgetExceeded: cumulative.filter((event) => event.type === 'prompt').length > input.run.iterationBudget,
     artifacts: input.artifacts.map((artifact) => ({ ...artifact, path: `artifacts/${artifact.path}`, sha256: archive.get(artifact.path).sha256,
       ...(technical.has(artifact.id) ? { technical: technical.get(artifact.id) } : {}) })),
     firstOutput: input.revision === 0 ? '.' : '../r000', modelSuggestions: [] };
   await createDirectoryAtomically(target, async (staged) => {
+    if (importedRuns.length) {
+      await mkdir(path.join(staged, 'runs'));
+      for (const run of importedRuns) await writeFile(path.join(staged, 'runs', `${run.id}.json`), run.content);
+    }
     await mkdir(path.join(staged, 'artifacts'));
     for (const [relative, file] of archive) {
       const destination = path.join(staged, 'artifacts', relative); await mkdir(path.dirname(destination), { recursive: true }); await copyFile(file.absolute, destination);

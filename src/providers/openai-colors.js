@@ -21,7 +21,7 @@ const COLOR_SCHEMA = {
 
 export const COLOR_MODEL = 'gpt-6-luna';
 
-export async function requestColorCandidates(graphics, analysis, { token, fetchImpl = fetch } = {}) {
+export async function requestColorCandidates(graphics, analysis, { token, fetchImpl = fetch, onUsage } = {}) {
   if (!token) throw new Error('OPENAI_API_KEY is required to propose brand colors.');
   const content = [{ type: 'input_text', text: JSON.stringify({
     paletteInference: analysis.inferences.find((item) => item.topic === 'color.palette'),
@@ -55,6 +55,7 @@ export async function requestColorCandidates(graphics, analysis, { token, fetchI
   });
   if (!response.ok) throw new Error(`OpenAI color proposal returned HTTP ${response.status}.`);
   const result = await response.json();
+  await onUsage?.({ model: result.model ?? COLOR_MODEL, responseId: result.id, usage: result.usage });
   if (result.status !== 'completed') throw new Error(`OpenAI color proposal was ${result.status ?? 'invalid'}.`);
   const messages = result.output?.filter((item) => item.type === 'message') ?? [];
   if (messages.some((item) => item.content?.some((part) => part.type === 'refusal'))) {

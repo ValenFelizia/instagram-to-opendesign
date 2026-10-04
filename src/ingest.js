@@ -5,13 +5,13 @@ import { cleanUsername, normalizeSource } from './normalize.js';
 import { downloadAssets } from './assets.js';
 
 export async function ingest(usernameInput, { outputRoot = 'data', postLimit = 20,
-  fixturePath, token = process.env.APIFY_TOKEN, provider, fetchImpl = fetch } = {}) {
+  fixturePath, token = process.env.APIFY_TOKEN, provider, fetchImpl = fetch, onProviderEvent } = {}) {
   const username = cleanUsername(usernameInput);
   if (!Number.isInteger(postLimit) || postLimit < 1 || postLimit > 25) throw new Error('Post limit must be 1–25.');
   const collector = fixturePath
     ? { collect: async () => JSON.parse(await readFile(fixturePath, 'utf8')) }
     : provider ?? new ApifyInstagramProvider({ token, fetchImpl });
-  const collected = await collector.collect(username, postLimit);
+  const collected = await collector.collect(username, postLimit, { onProviderEvent });
   const source = normalizeSource(username, collected);
   const finalDir = path.resolve(outputRoot, username);
   const temporaryDir = `${finalDir}.partial-${process.pid}`;
@@ -37,7 +37,7 @@ export async function ingest(usernameInput, { outputRoot = 'data', postLimit = 2
         await writeFile(path.join(temporaryDir, next), content);
       } catch (error) { if (error.code !== 'ENOENT') throw error; }
     }
-    for (const directory of ['manual', 'brief']) {
+    for (const directory of ['manual', 'brief', 'runs']) {
       try { await cp(path.join(finalDir, directory), path.join(temporaryDir, directory), { recursive: true }); }
       catch (error) { if (error.code !== 'ENOENT') throw error; }
     }

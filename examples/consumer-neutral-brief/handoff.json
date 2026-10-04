@@ -1,0 +1,22 @@
+{
+  "schemaVersion": "agent-handoff/v1",
+  "status": "ready-for-execution",
+  "mode": "selected-execution",
+  "briefInputHash": "09f8ad49836cf4b600782079f824a162da688a767fa589c2cf24d08748d1cf18",
+  "entrypoint": "START.md",
+  "files": {
+    "accessibility.json": "e2e96c928d855d55f9f409e72fc62920481fb080f8d944c13a388a51cbd51af4",
+    "ACCESSIBILITY.md": "550559099483fa85b271aeb2d05e287f420b5c74036055027bb04321da768ef4",
+    "ARTWORK-DESCRIPTION.md": "2df2f13e07e7fe3f843322f343aabdb896fa37e96b40e5f93aed63c301baf318",
+    "assets/E-IMG-A0A8AF237EC969A8.jpg": "ed4837c2dd01e6f8a52e1c9acb81b85d9c89b8cb547e5002518c4a45d09cd940",
+    "BRIEF.md": "1c5091edd4b30f0902e9e099fa3e45862c202464651410b451707402f81278e8",
+    "design-brief.json": "46e445022be6388283152f378055cd4a8ea33c7e9b1f7879c29e9a0e7763d13c",
+    "evidence/E-CAP-DBF32D5791CB570C.md": "462ab6afc420fed0f7b4849cf6d7177369116eadaf4ac409929996ed425f5550",
+    "evidence/E-IMG-2189F24AE9BF3848.png": "37078e81e7483520f8538a10aa75261018bdc000c3e2ba8f64a74001c3944efb",
+    "evidence/E-IMG-A0A8AF237EC969A8.jpg": "ed4837c2dd01e6f8a52e1c9acb81b85d9c89b8cb547e5002518c4a45d09cd940",
+    "evidence/E-PROFILE.json": "30f86a4727ab9c09779bf5f42b54cc5762987c2d5205cf82c6aee0bb7f19ce4f",
+    "README.md": "ced6b365ed5e637b06d3c951315ef211ccd3077cee3ceeea15ed7c1cd8ad2195",
+    "sources/S-REQUEST.md": "8a8d1cce18fd41908d344d1d34bb91405ba5a836151af56404ea50b93bcfb87d",
+    "START.md": "6c38e1689fb5d6f8fc1485b33996cd9ea8ae970ca804aeba1b1fe475ce77cc99"
+  }
+}

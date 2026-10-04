@@ -38,7 +38,7 @@ export async function colorInputFingerprint(analysis, graphics) {
 
 export async function getColorProposals(prepared, analysis, {
   force = false, token = process.env.OPENAI_API_KEY, fetchImpl = fetch,
-  provider = requestColorCandidates,
+  provider = requestColorCandidates, onUsage,
 } = {}) {
   const graphics = prepared.images.filter((item) => item.review.classification === 'brand-graphic').slice(0, 4);
   const inputHash = await colorInputFingerprint(analysis, graphics);
@@ -53,7 +53,7 @@ export async function getColorProposals(prepared, analysis, {
     } catch (error) { if (error.code !== 'ENOENT') throw error; }
   }
   const { candidates, usage } = graphics.length
-    ? await provider(graphics, analysis, { token, fetchImpl })
+    ? await provider(graphics, analysis, { token, fetchImpl, onUsage })
     : { candidates: {
       primary: emptyCandidate('No hay gráficos propios revisados para proponer colores.'),
       secondary: emptyCandidate('No hay gráficos propios revisados para proponer colores.'),
