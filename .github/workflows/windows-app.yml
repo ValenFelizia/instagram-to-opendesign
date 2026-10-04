@@ -1,0 +1,38 @@
+name: Windows app shell
+on:
+  workflow_dispatch:
+  pull_request:
+    paths: ['desktop/**', 'src/**', 'schemas/**', 'test/**', 'package.json', 'pnpm-lock.yaml', 'pnpm-workspace.yaml', '.github/workflows/windows-app.yml']
+  push:
+    branches: [main]
+    paths: ['desktop/**', 'src/**', 'schemas/**', 'test/**', 'package.json', 'pnpm-lock.yaml', 'pnpm-workspace.yaml', '.github/workflows/windows-app.yml']
+permissions:
+  contents: read
+jobs:
+  shell:
+    runs-on: windows-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - uses: pnpm/action-setup@v4
+        with:
+          version: '11.19.0'
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm test
+      - run: pnpm app:build
+        env:
+          CSC_IDENTITY_AUTO_DISCOVERY: 'false'
+      - run: node desktop/audit-package.mjs
+      - run: pnpm app:verify --packaged
+      - uses: actions/upload-artifact@v4
+        if: success()
+        with:
+          name: windows-app-shell-review
+          path: |
+            dist/app/*setup.exe
+            tmp/app-shell-qa/packaged-verification.json
+            tmp/app-shell-qa/packaged.png
+          retention-days: 7

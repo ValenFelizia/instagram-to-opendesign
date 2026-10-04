@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self'; connect-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'; frame-src 'none'">
+  <title>Instagram to OpenDesign</title>
+  <link rel="stylesheet" href="styles.css">
+  <script src="app.js" defer></script>
+</head>
+<body>
+  <a class="skip" href="#main">Ir al contenido</a>
+  <header><span>Instagram to OpenDesign</span><button id="exit" type="button">Salir</button></header>
+  <main id="main" tabindex="-1">
+    <p class="eyebrow">Base de la app · prueba local</p>
+    <h1>Trabajo en segundo plano</h1>
+    <p>Probá cerrar y volver a abrir la ventana. La prueba sigue hasta terminar.</p>
+    <section aria-labelledby="state-label">
+      <h2 id="state-label">Estado</h2>
+      <p id="status" role="status">Preparando el proceso local…</p>
+      <p id="error" role="alert" hidden></p>
+      <dl><div><dt>Núcleo</dt><dd id="core">Pendiente</dd></div><div><dt>Procesamiento de imágenes</dt><dd id="sharp">Pendiente</dd></div></dl>
+      <button id="start" type="button" disabled aria-describedby="scope">Iniciar prueba local</button>
+      <p id="scope" class="muted">Dura unos 10 segundos. No usa APIs ni analiza un perfil.</p>
+    </section>
+    <details><summary>Detalles</summary><p id="ticks">0 pasos locales</p><p>Por ahora, el estado vive mientras la app está abierta. «Salir» termina el proceso. Los proyectos y la recuperación entre sesiones se implementan después.</p></details>
+  </main>
+  <dialog id="close-dialog" aria-labelledby="close-title" aria-describedby="close-description">
+    <h2 id="close-title">La app sigue abierta</h2>
+    <p id="close-description">Cerrar esta ventana deja el trabajo en segundo plano. Podés volver desde el icono o «Abrir» en la bandeja. Para detener la app, elegí «Salir».</p>
+    <div class="actions"><button id="keep-open" autofocus>Volver</button><button id="confirm-close">Cerrar ventana</button></div>
+  </dialog>
+</body>
+</html>

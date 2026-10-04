@@ -2,7 +2,7 @@
 
 ## DEC-011 — Windows-first Electron app with managed local projects
 
-- Status: accepted platform/product direction; blueprint and isolated spike, not an implemented app
+- Status: accepted platform/product direction; issue #51 implements the executable shell under review, with synthetic work only. The integrated guided app and durable project/jobs remain pending.
 - Date: 2026-10-03
 - Context: #45 / VAL-106 compares local browser and desktop packaging after accepted onboarding/review prototypes. The existing core is Node with native image dependencies; no contained app or persistent scheduler exists.
 - Decision: deliver an installable Windows-first app opened from an icon; closing the window keeps work in the background, explicit Exit stops local work. Projects default to an app-managed local folder outside the repository, with advanced location/export options. Adopt Electron for the first version, accepting runtime/installer footprint to reuse Node; keep UI-library selection separate and the core portable for later OS support.

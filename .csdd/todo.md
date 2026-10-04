@@ -4,23 +4,19 @@
 
 ## Ready to Land
 
-- [ ] GitHub #46 / VAL-107 — Design paid-action, cache and progress surfaces.
+- [ ] GitHub #51 — Build a Windows Electron shell and verify native core packaging.
   - Owner: Valentin Felizia
   - Agent: Codex
-  - Scope: docs/spend-progress.md, prototypes/spend-progress, synthetic projection/browser tests and CSDD/roadmap tracking; no live provider, core/accounting changes or app integration.
+  - Scope: desktop shell/worker/IPC/UI, manifest/lock/build policy, synthetic tests, Windows build verification and tracking; no real project storage, credentials, paid calls or core changes.
   - Updated: 2026-10-04
-  - Depends on: #37 (merged PR #41); #45 blueprint merged into main through PR #49 at 86bcf94.
-  - Verification: 10 model checks, actual synthetic journal projection and full 79/79 suite passed; Edge walkthrough and desktop/mobile screenshots inspected, keyboard/focus/errors, 390/320px overflow, reduced motion, forced colors and no page network/storage checked. No provider, pricing, Narrator or installed app claim.
-  - Landing: PR #59, codex/land-progress-plan into main. VAL-107 remains In Review until main contains the approved prototype.
-  - Note: operator merged PR #50 into codex/local-workspace-plan at 391a157 after PR #49 had landed. Main lacks its feature commits; they were cherry-picked without conflicts and the resulting tree matched the approved branch exactly before tracking edits. Implementation gaps are now backlog #51–#58, not active app work.
+  - Verification: 83/83 suite; actual packaged executable core/sharp, close/reopen/second instance, renderer crash/recovery, explicit Exit/worker termination, sandbox/IPC/navigation, 360px/focus/high contrast; package allowlist audit passed. Local unsigned NSIS installer built. No live providers or private data; CLI/source core unchanged.
+  - Landing: codex/windows-app-shell into main; source review pending. Issue remains open after merge for clean Windows install and native tray/keyboard/Narrator acceptance documented in docs/windows-app-shell.md. CI result remains separate.
+  - Note: user authorized app implementation. No UI framework chosen; plain HTML shell only. Subsequent managed projects/credentials, durable jobs and paid integration remain #52–#57.
 
 ## Blocked
 
 ## Pending
 
-- [ ] GitHub #51 — Build a Windows Electron shell and verify native core packaging.
-  - Owner: Valentin Felizia
-  - Scope: no active source-code claim; first app implementation slice under VAL-100.
 - [ ] GitHub #52 — Implement managed projects and an OS-protected credential broker.
   - Owner: Valentin Felizia
   - Depends on: #51
@@ -72,6 +68,13 @@
 
 Retention: 5
 
+- [x] GitHub #46 / VAL-107 — Design paid-action, cache and progress surfaces.
+  - Owner: Valentin Felizia
+  - Agent: Codex
+  - Scope: released
+  - Landed: main @ 4993c15 (PR #59), verified 2026-10-04; issue closed and VAL-107 Done after integration of operator-reviewed PR #50.
+  - Verification: approved source tree retained with tracking edits; prior 10 model/full 79 tests and Edge walkthrough remain recorded evidence. No real app/billing/Narrator claim; implementation gaps mapped to #51–#58.
+
 - [x] GitHub #45 / VAL-106 — Evaluate local app packaging and durable jobs.
   - Owner: Valentin Felizia
   - Agent: Codex
@@ -99,10 +102,3 @@ Retention: 5
   - Scope: released
   - Landed: main @ 92723b5 through PR #41, verified 2026-10-03; GitHub issue is closed.
   - Verification: previously recorded 53 combined synthetic tests; returned usage/billing, phase effort and idempotent import remain separate. No live provider run or historical backfill.
-
-- [x] GitHub #32 / VAL-102 — Export reusable task-specific context for generic agents.
-  - Owner: Valentin Felizia
-  - Agent: Codex
-  - Scope: released
-  - Landed: PR #42 @ fa67960, reachable from main @ 92723b5 through PR #41, verified 2026-10-03; GitHub issue is closed and VAL-102 is Done.
-  - Verification: previously recorded 49 independent/53 combined synthetic tests, portable canonical reading order and byte-verified inventory; current core suite also passes. Readiness unchanged; no vendor run or general usefulness claim.
