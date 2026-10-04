@@ -10,7 +10,7 @@
   - Scope: docs/local-workspace.md, isolated synthetic lifecycle spike/tests, platform sources and CSDD/roadmap tracking; no app shell, core/schema changes, real projects or providers.
   - Updated: 2026-10-03
   - Verification: 7 synthetic process/checkpoint tests and full 69/69 regression suite passed on Windows; no app packaging, providers or production storage. Official platform sources inspected.
-  - Landing: codex/local-workspace-plan into main; blueprint PR pending.
+  - Landing: PR #49, codex/local-workspace-plan into main; blueprint review pending, VAL-106 In Review.
   - Note: DEC-011 records operator-selected Windows-first Electron, window close keeps work running, explicit Exit and app-managed projects. UI library, storage binding and release/integration choices remain separate.
 
 ## Blocked

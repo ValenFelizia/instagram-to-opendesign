@@ -2,6 +2,8 @@
 
 Tracking: [GitHub #45](https://github.com/ValenFelizia/instagram-to-opendesign/issues/45) / [VAL-106](https://linear.app/valenf/issue/VAL-106/define-a-contained-local-app-workspace-for-evidence-and-deliverables).
 
+Review: [PR #49](https://github.com/ValenFelizia/instagram-to-opendesign/pull/49). VAL-106 is In Review for the scoped blueprint; production app work remains separate.
+
 **Status:** architecture blueprint; no packaged app or production scheduler exists. In the joint interview, the operator selected an installable Windows-first app, closing the window keeps work running, explicit **Exit** stops work, projects default to an app-managed local folder, and Electron is accepted for the first version. See DEC-011. UI library, storage binding, recovery and implementation details below are proposals unless explicitly recorded as accepted. Existing CLI, schemas and selected-brief gates remain unchanged.
 
 ## Platform comparison
