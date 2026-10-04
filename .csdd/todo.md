@@ -10,7 +10,7 @@
   - Scope: prototypes/onboarding, synthetic visual fixtures, screen/core map and browser verification; no app framework or provider integration.
   - Updated: 2026-10-03
   - Verification: 56 synthetic tests and the local Edge walkthrough passed; 1440/390px screenshots inspected, 320px overflow and keyboard/reduced-motion checked. No provider calls, real data or real export.
-  - Landing: codex/onboarding-prototype into main; user flow/design review pending.
+  - Landing: PR #47, codex/onboarding-prototype into main; user flow/design review pending.
   - Note: codex/onboarding-prototype starts from main @ 92723b5; it includes PR #42 through the earlier #41 branch merge, confirmed by ancestry. Real credentials and case content are excluded.
 
 ## Blocked
@@ -60,7 +60,7 @@ Retention: 5
   - Owner: Valentin Felizia
   - Agent: Codex
   - Scope: released
-  - Landed: PR #42 @ fa67960, reachable from main @ 92723b5 through PR #41, verified 2026-10-03.
+  - Landed: PR #42 @ fa67960, reachable from main @ 92723b5 through PR #41, verified 2026-10-03; GitHub issue is closed and VAL-102 is Done.
   - Verification: previously recorded 49 independent/53 combined synthetic tests, portable canonical reading order and byte-verified inventory; current core suite also passes. Readiness unchanged; no vendor run or general usefulness claim.
 
 - [x] GitHub #15 — Record verified brand decisions and conflicts.
