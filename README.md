@@ -2,11 +2,15 @@
 
 An early open source tool that turns Instagram evidence, human decisions and selected assets into reviewable context for creative agents. OpenDesign is an optional implemented destination.
 
+## Windows app shell
+
+The first Windows shell has a packaged local worker, close/reopen and explicit Exit. Read [build instructions and verification boundaries](docs/windows-app-shell.md). It currently runs a synthetic local check; managed projects, credentials and the guided workflow remain subsequent implementation issues.
+
 **Status:** Implemented stages include ingestion, evidence, analysis, reviewed decisions, asset preparation, HTML review, accessibility preflight, brief compilation, OpenDesign delivery and result review. Canonical preparation is separate from OpenDesign package/token requirements; landing state is tracked in `.csdd/todo.md`. Local checks and recipient context readback passed; two earlier Felisa Story versions were rejected for creative quality. Quantified effort savings and cross-brand reliability remain unmeasured. The generated identity remains provisional. See the [verification checkpoint](docs/verification-checkpoint.md), [core/adapter boundary](docs/core-and-adapters.md), [validation results](docs/mvp-validation.md), [package CLI guide](docs/package-cli.md), [brand report guide](docs/brand-report.md), [OpenDesign output contract](docs/output-contract.md), [synthetic package](examples/example-studio/), [ingestion guide](docs/ingestion.md), [evidence guide](docs/evidence-processor.md), and [analysis guide](docs/brand-analyzer.md).
 
 ## Goal
 
-Help people prepare context for a concrete creative task without reconstructing the business before every agent session. Retain source material, uncertainty, reviewed decisions and useful originals. The next product increment focuses on guided onboarding and a contained local workspace; the current implementation remains a CLI with local reports. See the [product roadmap](docs/product-roadmap.md).
+Help people prepare context for a concrete creative task without reconstructing the business before every agent session. Retain source material, uncertainty, reviewed decisions and useful originals. The next product increment focuses on guided onboarding and a contained local workspace. The actual brand workflow remains in the CLI/local reports; the first executable shell checks packaging/lifecycle with synthetic work only. See the [product roadmap](docs/product-roadmap.md).
 
 ## Initial scope
 

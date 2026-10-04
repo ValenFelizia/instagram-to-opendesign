@@ -2,7 +2,7 @@
 
 ## Project Summary
 
-The project prepares traceable, task-specific creative-agent context from reviewed brand evidence, human decisions and selected assets. Instagram is the first implemented source and OpenDesign an optional implemented destination. The next product increment prioritizes guided onboarding and a contained local workspace; those app features are not yet implemented. Quantified savings and general reliability remain unmeasured. Product goals and prioritization are canonical in Linear; implementation is tracked in GitHub. Source: the user's approved product direction, 2026-10-03; VAL-100 and `docs/product-roadmap.md`.
+The project prepares traceable, task-specific creative-agent context from reviewed brand evidence, human decisions and selected assets. Instagram is the first implemented source and OpenDesign an optional implemented destination. The next product increment prioritizes guided onboarding and a contained local workspace. Issue #51 now supplies a Windows Electron shell under source review: real local utility-process lifecycle and native import feasibility, with a synthetic task only. Managed projects, credential storage, durable jobs and integrated onboarding are not yet implemented. Quantified savings and general reliability remain unmeasured. Product goals and prioritization are canonical in Linear; implementation is tracked in GitHub. Source: the user's approved product direction and implementation authorization, 2026-10-03/04; VAL-100 and `docs/product-roadmap.md`.
 
 ## Requirements
 
