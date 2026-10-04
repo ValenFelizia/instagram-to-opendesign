@@ -1,6 +1,9 @@
 import assert from 'node:assert/strict';
 import { createRequire } from 'node:module';
-import { mkdir, mkdtemp, writeFile } from 'node:fs/promises';
+import { mkdir, mkdtemp, writeFile, readFile, readdir } from 'node:fs/promises';
+import { randomUUID } from 'node:crypto';
+import { realpathSync } from 'node:fs';
+import { tmpdir } from 'node:os';
 import { spawn } from 'node:child_process';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -12,6 +15,10 @@ const packaged = process.argv.includes('--packaged');
 const output = path.join(root, 'tmp', 'app-shell-qa');
 await mkdir(output, { recursive: true });
 const profile = await mkdtemp(path.join(output, 'chromium-'));
+const testTemp = realpathSync.native(tmpdir());
+const source = await mkdtemp(path.join(testTemp, 'synthetic-import-'));
+const backup = await mkdtemp(path.join(testTemp, 'synthetic-backup-'));
+await writeFile(path.join(source, 'instagram-source.json'), '{"username":"example.studio","biography":"Fictional test fixture."}');
 const exe = packaged ? path.join(root, 'dist', 'app', 'win-unpacked', 'Instagram to OpenDesign.exe') : require('electron');
 const args = [...(packaged ? [] : [root]), `--shell-test-data=${profile}`, '--shell-test-hidden'];
 // No Node path or provider key is available to the packaged application.
@@ -38,6 +45,61 @@ try {
   assert.deepEqual(await page.evaluate(() => [typeof require, typeof process]), ['undefined', 'undefined']);
   const prefs = await electronApp.evaluate(({ BrowserWindow }) => BrowserWindow.getAllWindows()[0].webContents.getLastWebPreferences());
   assert.equal(prefs.sandbox, true); assert.equal(prefs.contextIsolation, true); assert.equal(prefs.nodeIntegration, false);
+  // Dialog substitution lives in this test process, never in production IPC or preload.
+  await electronApp.evaluate(({ dialog }, selected) => {
+    dialog.showOpenDialog = async () => ({ canceled: false, filePaths: [selected] });
+    dialog.showMessageBox = async () => ({ response: 1 });
+  }, source);
+  await page.locator('#new-project').click();
+  await page.locator('#project-name').fill('Example studio');
+  await page.locator('#project-url').fill('https://example.invalid/profile');
+  await page.locator('#save-project').click();
+  await page.locator('#project-error').waitFor({ state: 'visible' });
+  assert.equal(await page.evaluate(() => document.activeElement.id), 'project-url');
+  await page.locator('#project-url').fill('https://www.instagram.com/example.studio/');
+  await page.locator('#save-project').click();
+  await page.locator('#project-dialog').waitFor({ state: 'hidden' });
+  await page.locator('#import-project').click();
+  await page.locator('#project-dialog').waitFor({ state: 'visible' });
+  await page.locator('#project-name').fill('Imported fixture');
+  await page.locator('#save-project').click();
+  await page.locator('#project-dialog').waitFor({ state: 'hidden' });
+  const imported = (await page.evaluate(() => window.localWorkspace.list())).workspace.projects.find(item => item.name === 'Imported fixture');
+  assert.ok(imported);
+  const copiedSource = path.join(profile, 'workspace', 'projects', imported.id, 'data', 'imported', 'instagram-source.json');
+  assert.deepEqual(await readFile(copiedSource), await readFile(path.join(source, 'instagram-source.json')));
+  await electronApp.evaluate(({ dialog }, selected) => { dialog.showOpenDialog = async () => ({ canceled: false, filePaths: [selected] }); }, backup);
+  assert.equal((await page.evaluate(id => window.localWorkspace.exportBackup(id), imported.id)).ok, true);
+  assert.equal((await readdir(backup)).length, 1);
+  assert.equal((await page.evaluate(id => window.localWorkspace.trash(id), imported.id)).ok, true);
+  assert.equal((await page.evaluate(id => window.localWorkspace.restore(id), imported.id)).ok, true);
+  assert.equal((await page.evaluate(id => window.localWorkspace.open(id), imported.id)).ok, true);
+  const syntheticKey = `synthetic-${randomUUID()}`;
+  await page.locator('#settings').click();
+  await page.locator('#credential-key').fill(syntheticKey);
+  await page.locator('#save-credential').click();
+  await poll(() => page.locator('#credential-state').textContent(), value => value?.includes('Clave guardada'));
+  assert.equal(await page.locator('#credential-key').inputValue(), '');
+  assert.equal(JSON.stringify(await page.evaluate(() => window.localWorkspace.credentialStatus())).includes(syntheticKey), false);
+  const protectedFile = path.join(profile, 'workspace', 'credentials', 'apify.json');
+  assert.equal((await readFile(protectedFile, 'utf8')).includes(syntheticKey), false);
+  assert.equal(await electronApp.evaluate(async ({ safeStorage }, value) => {
+    const plain = await safeStorage.decryptStringAsync(Buffer.from(value.encrypted, 'base64'));
+    return plain.result === value.expected;
+  }, { encrypted: JSON.parse(await readFile(protectedFile, 'utf8')).encrypted, expected: syntheticKey }), true);
+  assert.equal(await page.evaluate(() => localStorage.length + sessionStorage.length), 0);
+  await page.keyboard.press('Escape');
+  await poll(() => page.evaluate(() => document.activeElement.id), value => value === 'settings');
+  await electronApp.evaluate(({ safeStorage }) => {
+    const original = safeStorage.isAsyncEncryptionAvailable.bind(safeStorage);
+    safeStorage.isAsyncEncryptionAvailable = async () => { safeStorage.isAsyncEncryptionAvailable = original; return false; };
+  });
+  await page.locator('#settings').click();
+  await poll(() => page.locator('#save-credential').isDisabled(), value => value === true);
+  assert.equal(await page.locator('#credential-key').isDisabled(), true);
+  assert.equal(await page.locator('#remove-credential').isEnabled(), true);
+  await page.keyboard.press('Escape');
+  results.push('Managed create/import/open/backup/trash/restore, source byte equality, real Windows DPAPI and cleared password input');
   await page.evaluate(() => document.querySelector('.skip').click());
   assert.equal((await page.evaluate(() => window.appShell.status())).ok, true);
   await page.locator('#start').focus();
@@ -69,7 +131,12 @@ try {
   assert.ok(resumed.state.ticks > before); assert.equal(await workerPid(), pid);
   assert.equal(await electronApp.evaluate(({ BrowserWindow }) => BrowserWindow.getAllWindows().length), 1);
   results.push('Packaged core/sharp, isolated renderer, keyboard close dialog and background worker/second instance');
-  await page.screenshot({ path: path.join(output, packaged ? 'packaged.png' : 'development.png') });
+  await page.evaluate(() => scrollTo(0, 0));
+  const screenshot = await electronApp.evaluate(async ({ BrowserWindow }) => {
+    const image = await BrowserWindow.getAllWindows()[0].webContents.capturePage(undefined, { stayHidden: true });
+    return image.toPNG().toString('base64');
+  });
+  await writeFile(path.join(output, packaged ? 'packaged.png' : 'development.png'), Buffer.from(screenshot, 'base64'));
   // Renderer failure is independent of utility process ownership.
   await electronApp.evaluate(({ BrowserWindow }) => BrowserWindow.getAllWindows()[0].webContents.forcefullyCrashRenderer());
   assert.equal(await workerPid(), pid);
@@ -100,6 +167,14 @@ try {
   // OS process lookup must show that explicit Exit terminated the utility worker.
   assert.throws(() => process.kill(pid, 0));
   results.push('Explicit Exit terminates the worker');
+  electronApp = await _electron.launch({ executablePath: exe, args, env, timeout: 30000 });
+  page = await electronApp.firstWindow();
+  await poll(() => page.evaluate(() => window.localWorkspace?.list()), value => value?.workspace?.projects.length === 2);
+  assert.equal((await page.evaluate(() => window.localWorkspace.credentialStatus())).credentials.providers.apify, true);
+  assert.equal((await page.evaluate(id => window.localWorkspace.open(id), imported.id)).ok, true);
+  assert.equal((await page.evaluate(() => window.localWorkspace.removeCredential('apify'))).credentials.providers.apify, false);
+  const reopenedExit = electronApp.waitForEvent('close'); await page.evaluate(() => window.appShell.exit()); await reopenedExit;
+  results.push('Fresh app launch retains projects and protected credential configuration; explicit key removal');
   await writeFile(path.join(output, packaged ? 'packaged-verification.json' : 'development-verification.json'), JSON.stringify({ packaged, results }, null, 2));
   console.log(JSON.stringify({ packaged, passed: results }, null, 2));
 } finally {

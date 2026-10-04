@@ -2,12 +2,12 @@
 
 ## DEC-011 — Windows-first Electron app with managed local projects
 
-- Status: accepted platform/product direction; issue #51 implements the executable shell under review, with synthetic work only. The integrated guided app and durable project/jobs remain pending.
+- Status: accepted platform/product direction; issues #51/#52 implement the shell and managed project/Windows credential broker under source review, verified with synthetic material only. The integrated guided app and transactional jobs remain pending.
 - Date: 2026-10-03
 - Context: #45 / VAL-106 compares local browser and desktop packaging after accepted onboarding/review prototypes. The existing core is Node with native image dependencies; no contained app or persistent scheduler exists.
 - Decision: deliver an installable Windows-first app opened from an icon; closing the window keeps work in the background, explicit Exit stops local work. Projects default to an app-managed local folder outside the repository, with advanced location/export options. Adopt Electron for the first version, accepting runtime/installer footprint to reuse Node; keep UI-library selection separate and the core portable for later OS support.
 - Rationale: the operator explicitly selected each option in a four-question grill-me interview, including Electron after the local-web/Electron/Tauri comparison. A second packaged platform is not required now.
-- Consequence: main owns lifecycle/worker supervision; closing the view is distinct from exit/crash/restart. No automatic paid retry, provider spending, startup service, hosted account, sync or telemetry is authorized. SQLite, credential implementation, recovery protocol, installer/signing/update choices and backlog slices remain proposals/acceptance work. Test packaged Node/sharp compatibility and actual Windows accessibility before release.
+- Consequence: main owns lifecycle/worker supervision; closing the view is distinct from exit/crash/restart. No automatic paid retry, provider spending, startup service, hosted account, sync or telemetry is authorized. Issue #52 implements checked asynchronous Windows safeStorage and a bounded JSON registry; it does not choose the future SQLite job binding or establish crash transactions. Recovery protocol, signing/update choices and later slices remain proposals/acceptance work. Test packaged Node/sharp compatibility and actual Windows accessibility before release.
 - Evidence: operator answers on 2026-10-03; [platform and lifecycle blueprint](../docs/local-workspace.md) with official platform sources. No real/private project material is needed.
 
 ## DEC-010 — Prioritize a guided local product for creative-agent context
