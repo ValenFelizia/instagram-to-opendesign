@@ -12,8 +12,10 @@ import { DIRECTIONS_MODEL, DIRECTIONS_SCHEMA, requestCreativeDirections } from '
 import { writeAgentHandoff } from './agent-handoff.js';
 
 const requestSchema = JSON.parse(await readFile(new URL('../schemas/design-request.schema.json', import.meta.url), 'utf8'));
+const taskRequestSchema = JSON.parse(await readFile(new URL('../schemas/design-request-v2.schema.json', import.meta.url), 'utf8'));
 const ajv = new Ajv2020({ allErrors: true, strictTypes: false });
 const validateRequestSchema = ajv.compile(requestSchema), validateDirectionsSchema = ajv.compile(DIRECTIONS_SCHEMA);
+const validateTaskRequestSchema = ajv.compile(taskRequestSchema);
 const unique = (items, key, label) => { if (new Set(items.map(key)).size !== items.length) throw new Error(`Duplicate ${label}.`); };
 
 export function emptyRequest(username, kind = 'web-hero', target) {
@@ -22,11 +24,16 @@ export function emptyRequest(username, kind = 'web-hero', target) {
     constraints: [], selectedDirectionId: null, ...(target ? { target } : {}) };
 }
 
-export function validateRequest(request, username) {
-  if (!validateRequestSchema(request)) throw new Error(`Invalid design request: ${ajv.errorsText(validateRequestSchema.errors)}`);
+export function validateRequest(request, username, { versionedTask = false } = {}) {
+  const validator = versionedTask && request?.schemaVersion === 'design-request/v2' ? validateTaskRequestSchema : validateRequestSchema;
+  if (!validator(request)) throw new Error(`Invalid design request: ${ajv.errorsText(validator.errors)}`);
   if (request.username !== username) throw new Error('Design request belongs to another profile.');
   if (request.accessibility) validateAccessibilityPlan(request.accessibility);
   if (['promotional-image', 'website-change'].includes(request.kind) && !request.target) throw new Error('This request kind requires explicit target dimensions.');
+  if (request.schemaVersion === 'design-request/v2') {
+    if (request.kind === 'conceptual-landing' && (!request.target || !request.pageScope?.sections.includes('hero'))) throw new Error('Conceptual landing requires a bounded page scope, hero section and explicit viewport dimensions.');
+    if (request.kind !== 'conceptual-landing' && request.pageScope !== null) throw new Error('Page scope applies only to conceptual landings.');
+  }
   if (request.existingSite && request.kind !== 'website-change') throw new Error('Existing-site code context applies only to website changes.');
   unique(request.copy, (item) => item.id, 'copy ID'); unique(request.assets, (item) => item.id, 'request asset');
   const action = request.action, box = action.reservedSpace;
@@ -55,15 +62,20 @@ export function validateDirections(directions, context) {
   }
 }
 
-export async function prepareBrief(profileDir) {
+export async function prepareBrief(profileDir, { requestDocument } = {}) {
   const prepared = await prepareAnalysis(profileDir);
   const analysis = JSON.parse(await readFile(path.join(prepared.root, 'brand-analysis.json'), 'utf8'));
   await validateAnalysis(analysis, prepared);
   if (JSON.stringify(analysis.evidence) !== JSON.stringify(prepared.evidence)) throw new Error('Analysis evidence is stale; re-analyze before briefing.');
-  const request = JSON.parse(await readFile(path.join(prepared.root, 'design-request.json'), 'utf8'));
-  validateRequest(request, prepared.source.profile.username);
+  const request = requestDocument ?? JSON.parse(await readFile(path.join(prepared.root, 'design-request.json'), 'utf8'));
+  validateRequest(request, prepared.source.profile.username, { versionedTask: Boolean(requestDocument) });
   const channel = ['instagram-story', 'promotional-image'].includes(request.kind) ? 'social' : 'website';
   const decisions = await loadDecisions(prepared, analysis, { channel });
+  if (request.schemaVersion === 'design-request/v2') {
+    for (const id of request.inferenceIds) if (!analysis.inferences.some(item => item.id === id)) throw new Error('Unknown task inference.');
+    decisions.effectiveAnalysis.inferences = decisions.effectiveAnalysis.inferences.filter(item => request.inferenceIds.includes(item.id));
+    decisions.conflicts = decisions.conflicts.filter(item => decisions.activeRules.some(rule => rule.id === item.ruleId));
+  }
   const { catalog, entries } = await buildAssetCatalog(prepared, analysis, { kind: request.kind, ...(request.target ? { target: request.target } : {}), write: false });
   const selected = request.assets.map((use) => {
     const asset = entries.find((entry) => entry.id === use.id);
@@ -92,6 +104,7 @@ export async function prepareBrief(profileDir) {
   }
   if (request.action.type === 'native-sticker' && !request.action.reservedSpace) blockers.push('Reserve native sticker space and review it in Instagram composer.');
   let codeContext = null;
+  if (request.schemaVersion === 'design-request/v2' && request.kind === 'website-change' && !request.existingSite) blockers.push('Selected website editing requires current authorized code context.');
   if (request.existingSite) {
     const source = decisions.sources.find((item) => item.id === request.existingSite.sourceId);
     if (!source || source.stale) throw new Error('Existing-site access requires a current registered authorization source.');
@@ -105,6 +118,12 @@ export async function prepareBrief(profileDir) {
     }
     codeContext = { root, sourceId: source.id, files, access: 'Give the chosen agent explicit access to this authorized local directory before editing; code is not copied into the brief.' };
   }
+  if (request.schemaVersion === 'design-request/v2') {
+    const usedSources = new Set([request.sourceId, request.existingSite?.sourceId, ...decisions.activeRules.map(rule => rule.sourceId),
+      ...decisions.staleRules.map(rule => rule.sourceId), ...selected.map(asset => asset.permission.sourceId)]);
+    decisions.sources = decisions.sources.filter(source => usedSources.has(source.id));
+    decisions.assetSelections = decisions.assetSelections.filter(asset => selected.some(item => item.id === asset.evidenceId));
+  }
   const { selectedDirectionId, existingSite, ...suggestionRequest } = request;
   const context = { request: suggestionRequest,
     observations: decisions.effectiveAnalysis.inferences,
@@ -112,6 +131,7 @@ export async function prepareBrief(profileDir) {
     evidence: prepared.evidence,
     assets: selected.map(({ absolutePath, ...entry }) => entry),
     brandConflicts: decisions.conflicts,
+    ...(request.schemaVersion === 'design-request/v2' ? { proposalDecisions: decisions.decisions.filter(item => request.inferenceIds.includes(item.inferenceId)) } : {}),
     ...(codeContext ? { existingSite: { sourceId: codeContext.sourceId, files: codeContext.files, access: codeContext.access } } : {}),
   };
   // Only selection is excluded: approvals, byte hashes, evidence and fit changes invalidate paid cache.
@@ -194,9 +214,9 @@ export function briefMarkdown(brief) {
     `## Ideation record — do not execute unselected alternatives\n\n${brief.directions.map((item) => `- ${quoted(item.id)} ${quoted(item.label)} (${item.id === selected?.id ? 'selected' : 'unselected'}): ${item.layout}, ${item.hierarchy}, ${item.assetTreatment}; assets ${item.assetIds.join(', ')}; citations ${item.evidenceIds.join(', ')}. Proposal rationale: ${quoted(item.rationale)}. Limits: ${quoted(item.limits)}. Missing: ${quoted(item.missingInformation)}.`).join('\n')}\n`;
 }
 
-export async function selectedBrief(profileDir) {
-  const state = await prepareBrief(profileDir);
-  const cached = await readOptionalJson(path.join(state.prepared.root, 'creative-directions.json'));
+export async function selectedBrief(profileDir, { requestDocument, directionsDocument } = {}) {
+  const state = await prepareBrief(profileDir, { requestDocument });
+  const cached = directionsDocument ?? await readOptionalJson(path.join(state.prepared.root, 'creative-directions.json'));
   if (!cached || cached.schemaVersion !== 'creative-directions/v1' || cached.inputHash !== state.inputHash) throw new Error('Creative directions are missing or stale; explicitly generate or import reviewed proposals.');
   validateDirections(cached.directions, state.context);
   const selected = cached.directions.find((direction) => direction.id === state.request.selectedDirectionId) ?? null;
@@ -208,8 +228,8 @@ export async function selectedBrief(profileDir) {
   const assets = selected ? state.selected.filter((entry) => selected.assetIds.includes(entry.id)) : state.selected;
   const accessibility = accessibilityPreflight({ tokens: state.decisions.tokenOverrides, plan: state.request.accessibility, request: state.request, assets });
   pending.push(...accessibility.checks.filter((check) => check.status === 'fail').map((check) => `Accessibility failure ${check.id}: ${check.instruction}`));
-  const brief = { schemaVersion: 'design-brief/v1', inputHash: state.inputHash, kind: state.request.kind,
-    status: pending.length ? 'needs-review' : 'ready-for-execution', request: state.request,
+  const brief = { schemaVersion: state.request.schemaVersion === 'design-request/v2' ? 'design-brief/v2' : 'design-brief/v1', inputHash: state.inputHash, kind: state.request.kind,
+    status: pending.length ? 'needs-review' : state.request.schemaVersion === 'design-request/v2' ? 'inputs-ready' : 'ready-for-execution', request: state.request,
     selectedDirection: selected, directions: cached.directions, pending, accessibility, codeContext: state.codeContext,
     observations: state.decisions.effectiveAnalysis.inferences,
     verifiedRules: state.decisions.activeRules, brandConflicts: state.decisions.conflicts,
@@ -218,7 +238,7 @@ export async function selectedBrief(profileDir) {
     assets: assets.map(({ absolutePath, ...entry }) => ({ ...entry, path: `assets/${entry.id}${path.extname(entry.path)}` })),
     acceptanceCriteria: [
       'Use the exact approved copy and selected direction; invent no brand facts or extra assets.',
-      ...(['web-hero', 'website-change'].includes(state.request.kind) ? [
+      ...(['web-hero', 'website-change', 'conceptual-landing'].includes(state.request.kind) ? [
         'Render and review at 1440 px and 390 px wide: no overlap, clipped copy or horizontal overflow.',
         'Use semantic headings, meaningful image alternatives, keyboard access and visible focus for links.',
         'Check actual color contrast and reduced-motion behavior; tokens alone do not prove accessibility.',

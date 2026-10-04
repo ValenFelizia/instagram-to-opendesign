@@ -1,5 +1,13 @@
 # Handoff
 
+## Task authority checkpoint — 2026-10-04
+
+The operator merged PR #62/#63. Their merge commits a6c3d5f/c7739d7 are verified ancestors of origin/main c7739d7; issues #53/#54 are closed. Their earlier parent-first/source-review instructions below are consumed. Windows CI 37220147076/37227598539 passed at source heads 726f4e6/1427b07; native #51/#52/#58 gates remain separate.
+
+Issue #55 is ready for source review on codex/selective-task-authority from that main. DEC-013 records explicit exploration v1, opted-in request/brief v2, sourced decision/history v2 and managed task authority. Preserve v1 CLI rejection/readiness, inferred/default versus confirmed meaning and private projects. New selected inputs are only inputs-ready until exact-key human review. Conceptual landing scope is bounded; website editing needs current authorized code. Exact artifact/platform/use acceptance needs separately explicit rights/render sources and never performs publication. Correction/history file commits are separate; dependency checks reject stale approval after partial failure. Details: docs/task-authority.md. Delivery/history integration is #56 and renderer controls #57; no providers or UI polishing.
+
+Final local verification: 141/141 full synthetic tests, followed by 14/14 final authority checks including caller edits during asynchronous validation. Final Windows NSIS rebuild, 655-entry package/source-byte audit and actual packaged explicit task selection/review, SQLite reopen and changed-source revocation passed. Inherited core/DPAPI/lifecycle checks remain passing. No actual rendered acceptance, live paid calls, private cases, clean installation or release publication. Target main; CI is separate evidence after execution.
+
 ## Current checkpoint — 2026-10-04
 
 Issue #54 is implemented on `codex/recoverable-core-pipeline`, based on PR 62 head `726f4e6` while the operator reviews that prerequisite. Target main and land PR 62 first; do not merge into a retired parent. The privileged main API binds the complete recipe, stage configuration and call/data limits to authorization, runs the existing core in unique fenced staging, retains actual provider request intents/observations/private responses and commits only a complete requested stage set. The generic app default produces a Spanish report without requiring the OpenDesign adapter; the existing CLI retains its package and language behavior. Standalone ingestion/analysis/colors/directions/translation now retain private HTTP checkpoints. Raw responses stay outside app delivery snapshots; explicit full-project backups include private response history but no credential store.

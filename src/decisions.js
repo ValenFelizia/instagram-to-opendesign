@@ -5,13 +5,34 @@ import addFormats from 'ajv-formats';
 import { digest, escapeHtml, profileFile, readOptionalJson } from './local.js';
 
 const schema = JSON.parse(await readFile(new URL('../schemas/brand-decisions.schema.json', import.meta.url), 'utf8'));
+const historySchema = JSON.parse(await readFile(new URL('../schemas/brand-decisions-v2.schema.json', import.meta.url), 'utf8'));
 const ajv = new Ajv2020({ allErrors: true }); addFormats(ajv);
 const validate = ajv.compile(schema);
+const validateHistory = ajv.compile(historySchema);
 const sorted = (value) => Array.isArray(value) ? value.map(sorted) : value && typeof value === 'object'
   ? Object.fromEntries(Object.keys(value).sort().map((key) => [key, sorted(value[key])])) : value;
 
 export function validateDecisionDocument(document) {
-  if (!validate(document)) throw new Error(`Invalid brand decisions: ${ajv.errorsText(validate.errors)}`);
+  const validator = document?.schemaVersion === 'brand-decisions/v2' ? validateHistory : validate;
+  if (!validator(document)) throw new Error(`Invalid brand decisions: ${ajv.errorsText(validator.errors)}`);
+  if (document.schemaVersion === 'brand-decisions/v2') {
+    unique(document.history, item => item.id, 'history event');
+    const latest = new Map();
+    for (const event of document.history) {
+      const rule = event.kind === 'rule-correction';
+      const key = `${event.kind}/${rule ? event.after.id : event.after.inferenceId}`;
+      if (rule ? !event.before?.id || event.before.id !== event.after.id || event.before.kind !== event.after.kind ||
+          event.before.target !== event.after.target || (event.before.scope ?? 'all') !== (event.after.scope ?? 'all') || event.before.sourceId === event.after.sourceId
+        : !event.after.inferenceId || event.before && event.before.inferenceId !== event.after.inferenceId) throw new Error('Invalid decision history transition.');
+      if (latest.has(key) && JSON.stringify(sorted(latest.get(key))) !== JSON.stringify(sorted(event.before))) throw new Error('Broken decision history chain.');
+      latest.set(key, event.after);
+    }
+    for (const [key, value] of latest) {
+      const current = key.startsWith('rule-correction/') ? document.rules.find(item => item.id === value.id)
+        : document.inferenceDecisions.find(item => item.inferenceId === value.inferenceId);
+      if (JSON.stringify(sorted(current)) !== JSON.stringify(sorted(value))) throw new Error('Current decision differs from its retained history.');
+    }
+  }
 }
 
 export async function inferenceFingerprint(item, prepared, { allowMissing = false } = {}) {

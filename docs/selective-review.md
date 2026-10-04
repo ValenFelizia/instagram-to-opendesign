@@ -2,6 +2,8 @@
 
 **Status: proposal/prototype reviewed and merged through PR #48, main `4b50917`; #44 closed and VAL-105 Done.** Tracking: [GitHub issue 44](https://github.com/ValenFelizia/instagram-to-opendesign/issues/44) / [VAL-105](https://linear.app/valenf/issue/VAL-105/make-brand-review-selective-while-preserving-creative-freedom). Interactive examples: [`prototypes/selective-review/index.html`](../prototypes/selective-review/index.html). Production schema/contract implementation remains separate. Its isolated synthetic model is not a security boundary, real approval system or canonical export.
 
+Issue 55 now implements explicit versioned contracts and privileged task authority in a separate source PR; see [implemented task authority and compatibility boundaries](task-authority.md). The proposal descriptions below retain their original design-stage meaning, rather than silently describing a shipped guided UI. Existing v1 CLI gates stay unchanged.
+
 The user accepted the onboarding concept/flow and authorized PR #47's merge. Future product UI should use direct titles, less copy and only useful information; visual/copy polishing is deferred. This proposal addresses review behavior, not a redesign of that prototype.
 
 ## Proposed principle
