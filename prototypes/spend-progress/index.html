@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; connect-src 'none'; img-src 'self'; style-src 'self'; script-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'">
+  <title>Trabajo y gastos — prototipo</title>
+  <link rel="stylesheet" href="styles.css">
+  <script src="model.js" defer></script>
+  <script src="app.js" defer></script>
+</head>
+<body>
+  <a class="skip" href="#main">Saltar al contenido</a>
+  <header><a href="../onboarding/index.html">← Onboarding</a><span>Prototipo · datos ficticios</span></header>
+  <main id="main" tabindex="-1">
+    <div class="heading"><h1>Trabajo</h1><label for="scenario">Escenario<select id="scenario"></select></label></div>
+    <div id="content"></div>
+  </main>
+  <p id="announcement" class="sr-only" role="status" aria-live="polite" aria-atomic="true"></p>
+  <dialog id="consent-dialog" aria-labelledby="consent-title">
+    <form id="consent-form" novalidate>
+      <h2 id="consent-title">Revisar pedido</h2>
+      <div id="consent-scope"></div>
+      <label class="check" for="authorize"><input id="authorize" type="checkbox" required aria-describedby="consent-error">Autorizar solo este alcance ficticio</label>
+      <p id="consent-error" class="error" role="alert" hidden></p>
+      <div class="actions"><button type="button" id="cancel-consent">Cancelar</button><button type="submit" class="primary">Confirmar pedido demo</button></div>
+      <details><summary>Prueba de recuperación</summary><button id="change-in-dialog" type="button">Simular cambio de contexto</button></details>
+    </form>
+  </dialog>
+  <noscript>La interacción necesita JavaScript. La especificación está en docs/spend-progress.md.</noscript>
+</body>
+</html>
