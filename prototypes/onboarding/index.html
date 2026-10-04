@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; connect-src 'none'; img-src 'self'; style-src 'self'; script-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'">
+  <title>Contexto de marca — Onboarding</title>
+  <link rel="stylesheet" href="styles.css">
+  <script src="model.js" defer></script>
+  <script src="fixtures.js" defer></script>
+  <script src="app.js" defer></script>
+</head>
+<body>
+  <a class="skip-link" href="#main">Saltar al contenido</a>
+  <div class="shell">
+    <aside class="sidebar" aria-label="Proyectos y configuración">
+      <a class="wordmark" href="#home" data-action="home"><span class="brand-mark" aria-hidden="true">c.</span><span>Contexto<br><small>de marca</small></span></a>
+      <button class="new-project" data-action="home"><span aria-hidden="true">＋</span> Nuevo contexto</button>
+      <div class="sidebar-label">TU ESPACIO</div>
+      <nav id="projects" aria-label="Proyectos"></nav>
+      <div class="sidebar-bottom">
+        <button class="quiet-button settings-trigger" data-action="settings"><span aria-hidden="true">⚙</span> Configuración <span id="setup-dot" class="status-dot" aria-hidden="true"></span></button>
+        <p id="storage-note">La demo recuerda tu avance en este navegador.</p>
+        <span class="local-label"><span aria-hidden="true">◉</span> Espacio local</span>
+      </div>
+    </aside>
+    <div class="workspace">
+      <header class="topbar">
+        <span id="breadcrumb">Tu espacio / Nuevo contexto</span>
+        <div class="topbar-tools">
+          <span class="demo-label">Prototipo · datos ficticios</span>
+          <details class="scenarios">
+            <summary>Explorar estados</summary>
+            <div class="scenario-menu">
+              <p>Atajos de la demostración</p>
+              <button data-scenario="first">Primera vez</button>
+              <button data-scenario="configured">Configuración lista</button>
+              <button data-scenario="running">Procesando</button>
+              <button data-scenario="evidence">Imágenes para revisar</button>
+              <button data-scenario="cached">Informe guardado</button>
+              <button data-scenario="stale">Fuentes cambiadas</button>
+              <button data-scenario="failed">Fallo recuperable</button>
+              <button data-scenario="interrupted">Proceso interrumpido</button>
+            </div>
+          </details>
+        </div>
+      </header>
+      <main id="main" tabindex="-1"></main>
+      <footer class="workspace-footer"><span>Instagram → contexto → tu próxima idea</span><span>Sin conexiones a servicios ni cargos reales</span></footer>
+    </div>
+  </div>
+  <p id="announcement" class="sr-only" role="status" aria-live="polite" aria-atomic="true"></p>
+  <dialog id="settings-dialog" aria-labelledby="settings-title">
+    <form id="settings-form" novalidate>
+      <div class="dialog-top"><span class="eyebrow">TU ENTORNO</span><button class="icon-button" type="button" data-action="close-settings" aria-label="Cerrar configuración">×</button></div>
+      <h2 id="settings-title">Una vez, para tus próximos proyectos.</h2>
+      <p>Extracción y lectura de marca, en un mismo lugar. En esta demo solo se aceptan las credenciales ficticias indicadas.</p>
+      <div id="settings-error" class="form-error" role="alert" hidden></div>
+      <label for="apify-key">Apify <span>Extracción de Instagram</span></label>
+      <input id="apify-key" type="password" autocomplete="off" spellcheck="false" required aria-describedby="apify-hint settings-error">
+      <p id="apify-hint" class="field-hint">Escribí <code>demo-apify</code>. No ingreses una API key real.</p>
+      <label for="analysis-key">OpenAI <span>Lectura de texto e imágenes</span></label>
+      <input id="analysis-key" type="password" autocomplete="off" spellcheck="false" required aria-describedby="analysis-hint settings-error">
+      <p id="analysis-hint" class="field-hint">Escribí <code>demo-openai</code>. Las claves nunca se guardan.</p>
+      <details class="advanced"><summary>Opciones del análisis de ejemplo</summary><dl class="compact-facts"><div><dt>Modelo</dt><dd>gpt-6-luna</dd></div><div><dt>Razonamiento</dt><dd>Alto</dd></div><div><dt>Límite de muestra</dt><dd>20 publicaciones · 24 imágenes</dd></div></dl><p class="field-hint">Valores del flujo actual. Elegir proveedores y modelos será una configuración real de la futura app.</p></details>
+      <div class="dialog-actions"><button type="button" class="secondary" data-action="fill-demo">Completar con ejemplos</button><button type="submit" class="primary">Guardar configuración demo <span aria-hidden="true">→</span></button></div>
+    </form>
+  </dialog>
+  <dialog id="run-dialog" aria-labelledby="run-title">
+    <div class="dialog-top"><span class="eyebrow">ANTES DE CONTINUAR</span><button class="icon-button" data-action="close-run" aria-label="Cerrar confirmación">×</button></div>
+    <h2 id="run-title">Una pasada, con alcance claro.</h2>
+    <p id="run-reason">Vamos a preparar el perfil y una primera lectura de la marca.</p>
+    <ol class="paid-stages"><li><strong>Apify</strong><span id="extraction-scope">Perfil y hasta 20 publicaciones</span></li><li><strong>OpenAI</strong><span>Texto y hasta 24 imágenes revisadas</span></li></ol>
+    <div class="notice"><strong>El costo no está disponible.</strong><p>En un análisis real se conservaría el consumo devuelto por cada proveedor. Un dato ausente no equivale a costo cero.</p></div>
+    <p class="field-hint">Esta simulación no usa tus APIs y no genera cargos. Un fallo no vuelve a iniciar una llamada por su cuenta.</p>
+    <div class="dialog-actions"><button class="secondary" data-action="close-run">Volver</button><button class="primary" data-action="confirm-run">Iniciar simulación <span aria-hidden="true">→</span></button></div>
+  </dialog>
+  <noscript><div class="noscript">Este prototipo necesita JavaScript para recorrer los estados. Podés leer el mapa del recorrido en <a href="README.md">README.md</a>.</div></noscript>
+</body>
+</html>

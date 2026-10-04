@@ -13,7 +13,7 @@ Help people prepare context for a concrete creative task without reconstructing 
 - **Consumer:** [Generic task-specific handoff](docs/generic-agent-handoff.md) exports canonical context with an entrypoint and byte-verified inventory. OpenDesign is an optional implemented adapter.
 - **Approach:** a standalone CLI or script, with a maintained Instagram extraction provider rather than a custom scraper.
 - **Stages:** extraction, evidence processing, analysis, and local OpenDesign package compilation are implemented. New profiles pause for image review before analysis.
-- **Planned product work:** guided onboarding, progressive review, local workspace/platform design and understandable paid-action information. No app framework is chosen or app UI implemented yet.
+- **Product prototype:** [Navigable guided onboarding and dossier](prototypes/onboarding/README.md) using fictional material; open its local HTML without APIs. This is interaction design, not an integrated app. Progressive review, workspace/platform design and detailed paid-action information remain planned; no app framework is chosen.
 - **Excluded from this increment:** hosted SaaS/accounts, continuous synchronization, productized MCP, other social networks and broad vendor support.
 
 Product context originated in the [Linear project](https://linear.app/valenf/project/instagram-opendesign-brand-importer-c97b589cc0b2). Public work is tracked in [GitHub Issues](https://github.com/ValenFelizia/instagram-to-opendesign/issues) and developed through pull requests. Technical decisions live in `.csdd/` and public documentation here.
