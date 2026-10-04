@@ -11,7 +11,7 @@
   - Updated: 2026-10-04
   - Depends on: #51 / PR #60 (under operator review).
   - Verification: 95/95 suite; actual Electron/packaged project operations, source byte equality, real Windows DPAPI, cleared password input, unavailable-protection UI and fresh-launch persistence; inherited shell checks and package allowlist passed. Synthetic material only; no providers or private projects.
-  - Landing: codex/managed-projects-credentials into main; dependent source PR pending creation. Keep #52 open for native picker/confirmation and keyboard/Narrator review in docs/managed-projects.md. CI remains separate evidence.
+  - Landing: PR #61, codex/managed-projects-credentials into main; land parent PR #60 first. Keep #52 open for native picker/confirmation and keyboard/Narrator review in docs/managed-projects.md. CI remains separate evidence.
   - Note: branch starts at PR #60; land #60 first, never merge this work solely into a retired parent branch. Registry persistence is not transactional job recovery; #53 follows.
 
 - [ ] GitHub #51 — Build a Windows Electron shell and verify native core packaging.

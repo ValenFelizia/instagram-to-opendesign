@@ -1,6 +1,6 @@
 # Managed projects and Windows credentials
 
-Tracking: [issue 52](https://github.com/ValenFelizia/instagram-to-opendesign/issues/52), VAL-100. Depends on the shell in [PR 60](https://github.com/ValenFelizia/instagram-to-opendesign/pull/60). This increment persists local projects and provider configuration; it does not run the pipeline, grant paid authorization or implement transactional jobs.
+Tracking: [issue 52](https://github.com/ValenFelizia/instagram-to-opendesign/issues/52), [source PR 61](https://github.com/ValenFelizia/instagram-to-opendesign/pull/61), VAL-100. Depends on the shell in [PR 60](https://github.com/ValenFelizia/instagram-to-opendesign/pull/60). Target main and land the parent first. This increment persists local projects and provider configuration; it does not run the pipeline, grant paid authorization or implement transactional jobs.
 
 ## Operations
 
