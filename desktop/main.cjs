@@ -1,8 +1,11 @@
-const { app, BrowserWindow, ipcMain, Menu, Tray, nativeImage, utilityProcess, session } = require('electron');
+const { app, BrowserWindow, ipcMain, Menu, Tray, nativeImage, utilityProcess, session, dialog, safeStorage } = require('electron');
 const path = require('node:path');
 const { pathToFileURL } = require('node:url');
 const { CHANNEL, UPDATES, validRequest, trustedSender, workerEnvironment } = require('./protocol.cjs');
 const { Supervisor } = require('./supervisor.cjs');
+const { Workspace } = require('./workspace.cjs');
+const { Credentials } = require('./credentials.cjs');
+const { BROKER, Broker } = require('./broker.cjs');
 
 app.setName('Instagram to OpenDesign');
 // Test launches isolate Chromium files; this argument is not exposed through renderer IPC.
@@ -17,7 +20,7 @@ let allowQuit = false;
 let closeExplained = false;
 let startupStep = 'ready';
 const documentUrl = pathToFileURL(path.join(__dirname, 'ui', 'index.html')).href;
-const allowedFiles = new Set(['index.html', 'app.js', 'styles.css'].map(name => pathToFileURL(path.join(__dirname, 'ui', name)).href));
+const allowedFiles = new Set(['index.html', 'app.js', 'workspace.js', 'styles.css'].map(name => pathToFileURL(path.join(__dirname, 'ui', name)).href));
 
 function openWindow() {
   if (exiting) return;
@@ -39,7 +42,7 @@ function openWindow() {
     event.preventDefault();
     window.webContents.send('app-shell:closing');
   });
-  window.on('closed', () => { window = null; });
+  window.on('closed', () => { if (window === ownedWindow) window = null; });
   window.once('ready-to-show', () => { if (!hidden) window.show(); });
   window.loadURL(documentUrl);
 }
@@ -65,6 +68,19 @@ else {
     session.defaultSession.setPermissionCheckHandler(() => false);
     session.defaultSession.webRequest.onBeforeRequest((details, callback) => callback({ cancel: !allowedFiles.has(details.url) }));
     session.defaultSession.on('will-download', event => event.preventDefault());
+    startupStep = 'workspace';
+    // Test profiles are isolated; normal projects live outside browser data and the checkout.
+    const localData = process.env.LOCALAPPDATA && path.isAbsolute(process.env.LOCALAPPDATA) ? process.env.LOCALAPPDATA : path.join(app.getPath('home'), 'AppData', 'Local');
+    const localRoot = testData ? path.join(app.getPath('userData'), 'workspace') : path.join(localData, 'Instagram to OpenDesign', 'workspace');
+    const workspace = new Workspace(localRoot);
+    const credentials = new Credentials(path.join(localRoot, 'credentials'), safeStorage);
+    ipcMain.handle(BROKER, (event, request) => {
+      const authorized = () => trustedSender(event, window, documentUrl) && !exiting;
+      if (!authorized()) return { ok: false, code: 'request-unavailable' };
+      const broker = new Broker(workspace, credentials, dialog, { window: () => window, authorized,
+        forbidden: [path.join(localRoot, 'credentials'), app.getAppPath()], importForbidden: [localRoot] });
+      return broker.handle(request);
+    });
     startupStep = 'supervisor';
     supervisor = new Supervisor(() => utilityProcess.fork(path.join(__dirname, 'worker.cjs'), [], {
       env: workerEnvironment(process.env), stdio: 'ignore', serviceName: 'Local shell check'

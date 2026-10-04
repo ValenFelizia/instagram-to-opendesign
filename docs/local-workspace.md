@@ -4,7 +4,7 @@ Tracking: [GitHub #45](https://github.com/ValenFelizia/instagram-to-opendesign/i
 
 The operator merged [PR #49](https://github.com/ValenFelizia/instagram-to-opendesign/pull/49), verified on main at `86bcf94` on 2026-10-04. VAL-106 is Done for the scoped blueprint; production app work remains separate.
 
-**Status:** reviewed architecture blueprint. Issue #51 now implements a [packaged Windows shell](windows-app-shell.md) under source review, using synthetic work only; no production scheduler or integrated workspace exists. In the joint interview, the operator selected an installable Windows-first app, closing the window keeps work running, explicit **Exit** stops work, projects default to an app-managed local folder, and Electron is accepted for the first version. See DEC-011. UI library, storage binding, recovery and implementation details below are proposals unless explicitly recorded as accepted. Existing CLI, schemas and selected-brief gates remain unchanged.
+**Status:** reviewed architecture blueprint. Issues #51/#52 now implement a [packaged Windows shell](windows-app-shell.md) and [managed projects/credentials](managed-projects.md) under source review. Projects use a bounded JSON registry pending transactional job integration; there is no production scheduler or integrated analysis. In the joint interview, the operator selected an installable Windows-first app, closing the window keeps work running, explicit **Exit** stops work, projects default to an app-managed local folder, and Electron is accepted for the first version. See DEC-011. UI library, job storage binding and recovery remain proposals unless explicitly recorded as accepted. Existing CLI, schemas and selected-brief gates remain unchanged.
 
 ## Platform comparison
 

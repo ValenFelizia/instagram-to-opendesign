@@ -7,14 +7,18 @@
   <title>Instagram to OpenDesign</title>
   <link rel="stylesheet" href="styles.css">
   <script src="app.js" defer></script>
+  <script src="workspace.js" defer></script>
 </head>
 <body>
   <a class="skip" href="#main">Ir al contenido</a>
-  <header><span>Instagram to OpenDesign</span><button id="exit" type="button">Salir</button></header>
+  <header><span>Instagram to OpenDesign</span><div class="actions"><button id="settings" type="button">Configuración</button><button id="exit" type="button">Salir</button></div></header>
   <main id="main" tabindex="-1">
-    <p class="eyebrow">Base de la app · prueba local</p>
-    <h1>Trabajo en segundo plano</h1>
-    <p>Probá cerrar y volver a abrir la ventana. La prueba sigue hasta terminar.</p>
+    <h1>Proyectos</h1>
+    <div class="actions project-actions"><button id="new-project">Nuevo proyecto</button><button id="import-project">Importar carpeta</button><button id="reload-projects">Actualizar</button></div>
+    <p id="workspace-status" role="status"></p>
+    <p id="workspace-error" role="alert" hidden></p>
+    <ul id="projects" aria-label="Proyectos locales"></ul>
+    <p id="project-next" class="muted">Guardar un proyecto no inicia un análisis ni usa APIs.</p>
     <section aria-labelledby="state-label">
       <h2 id="state-label">Estado</h2>
       <p id="status" role="status">Preparando el proceso local…</p>
@@ -23,12 +27,36 @@
       <button id="start" type="button" disabled aria-describedby="scope">Iniciar prueba local</button>
       <p id="scope" class="muted">Dura unos 10 segundos. No usa APIs ni analiza un perfil.</p>
     </section>
-    <details><summary>Detalles</summary><p id="ticks">0 pasos locales</p><p>Por ahora, el estado vive mientras la app está abierta. «Salir» termina el proceso. Los proyectos y la recuperación entre sesiones se implementan después.</p></details>
+    <details><summary>Detalles de la prueba</summary><p id="ticks">0 pasos locales</p><p>La prueba vive mientras la app está abierta. «Salir» termina el proceso. Los proyectos se guardan; los trabajos recuperables se implementan después.</p></details>
   </main>
   <dialog id="close-dialog" aria-labelledby="close-title" aria-describedby="close-description">
     <h2 id="close-title">La app sigue abierta</h2>
     <p id="close-description">Cerrar esta ventana deja el trabajo en segundo plano. Podés volver desde el icono o «Abrir» en la bandeja. Para detener la app, elegí «Salir».</p>
     <div class="actions"><button id="keep-open" autofocus>Volver</button><button id="confirm-close">Cerrar ventana</button></div>
+  </dialog>
+  <dialog id="project-dialog" aria-labelledby="project-title">
+    <form id="project-form">
+      <h2 id="project-title">Nuevo proyecto</h2>
+      <p id="import-preview" hidden></p>
+      <label for="project-name">Nombre</label><input id="project-name" required maxlength="80" autofocus aria-describedby="project-error">
+      <label for="project-url">Perfil de Instagram (opcional)</label><input id="project-url" type="url" placeholder="https://www.instagram.com/example.studio/" maxlength="200" aria-describedby="project-error">
+      <label id="location-label" for="project-location">Ubicación</label><select id="project-location"><option value="default">Carpeta local de la app</option><option value="choose">Elegir otra carpeta local…</option></select>
+      <p id="project-error" role="alert" hidden></p>
+      <div class="actions"><button id="cancel-project" type="button">Cancelar</button><button id="save-project" type="submit">Crear</button></div>
+    </form>
+  </dialog>
+  <dialog id="settings-dialog" aria-labelledby="settings-title">
+    <h2 id="settings-title">Configuración</h2>
+    <p id="protection" role="status">Comprobando protección de Windows…</p>
+    <form id="credential-form" autocomplete="off">
+      <label for="provider">Proveedor</label><select id="provider"><option value="apify">Apify</option><option value="openai">OpenAI</option></select>
+      <p id="credential-state"></p>
+      <label for="credential-key">Nueva clave</label><input id="credential-key" type="password" required minlength="8" maxlength="4096" autocomplete="off" spellcheck="false" aria-describedby="credential-error credential-help">
+      <p id="credential-help" class="muted">Se guarda protegida por Windows. Configurar una clave no autoriza gastos.</p>
+      <p id="credential-error" role="alert" hidden></p>
+      <div class="actions"><button id="remove-credential" type="button">Quitar clave</button><button id="save-credential" type="submit">Guardar clave</button></div>
+    </form>
+    <div class="actions"><button id="close-settings">Cerrar</button></div>
   </dialog>
 </body>
 </html>

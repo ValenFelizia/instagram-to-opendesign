@@ -20,6 +20,19 @@ details p { color: #515c68; }
 .skip { position: absolute; top: -90px; left: 20px; padding: 12px; background: white; }
 .skip:focus { top: 10px; }
 #error { color: #982629; }
+#workspace-error, #project-error, #credential-error { color: #982629; }
+header .actions { flex-shrink: 0; }
+label { display: block; margin: 16px 0 6px; }
+input, select { width: 100%; min-height: 44px; padding: 9px 10px; border: 1px solid #a6b0ba; border-radius: 5px; background: white; color: inherit; font: inherit; }
+input[aria-invalid="true"] { border: 2px solid #982629; }
+form .actions { margin-top: 20px; }
+.actions.project-actions { justify-content: flex-start; }
+#projects { list-style: none; padding: 0; }
+#projects li { padding: 20px 0; border-bottom: 1px solid #d6dce2; overflow-wrap: anywhere; }
+#projects li strong, #projects li span { display: block; }
+#projects li span { color: #515c68; font-size: 14px; margin: 4px 0 12px; }
+#projects .actions { justify-content: flex-start; }
+@media (max-width: 480px) { header { flex-wrap: wrap; } }
 dialog { width: min(500px, calc(100% - 32px)); max-height: calc(100% - 32px); border: 1px solid #a6b0ba; border-radius: 10px; padding: 24px; }
 dialog::backdrop { background: #20252b66; }
 .actions { display: flex; justify-content: flex-end; gap: 12px; flex-wrap: wrap; }

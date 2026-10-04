@@ -2,11 +2,13 @@
 
 Tracking: [issue 51](https://github.com/ValenFelizia/instagram-to-opendesign/issues/51), [source PR 60](https://github.com/ValenFelizia/instagram-to-opendesign/pull/60), implementation coordinated by VAL-100. DEC-011's selected platform is now an executable shell, not the complete guided app. CLI/core/schema/readiness behavior is unchanged.
 
+The subsequent [managed-project/credential increment](managed-projects.md) adds fixed project/settings operations to the preload and persistence checks to the same harness. The results below describe the original issue 51 baseline; credential and project evidence is recorded separately in that increment's document.
+
 ## Included
 
 - Electron 44.5.1, electron-builder 26.15.3 and Playwright 1.62.1 pinned for reproducible builds/checks.
 - Plain HTML/CSS/JavaScript for this small shell. No UI framework is selected for the future guided product.
-- Isolated sandboxed renderer with a small preload: status, local check, explicit Exit and first-close explanation. No arbitrary channel, path, shell, credential or provider operation is exposed.
+- Isolated sandboxed renderer with a small preload: status, local check, explicit Exit and first-close explanation. No arbitrary channel, path or shell operation is exposed; issue 52 adds only fixed managed-project and write-only credential operations.
 - Main-frame/document/request validation, denied navigation/popups/downloads/permissions and local-resource allowlist/CSP. The worker receives only required Windows temporary/system variables, not parent API keys or NODE_OPTIONS.
 - A utility process imports the real canonical core and validates a generated in-memory PNG using native sharp. The ten-second background check is synthetic; it never ingests or analyzes a profile.
 - Main-owned worker state survives window closure and renderer death. Reopen through the icon, menu or tray reconnects to the same process. A second instance activates the first. Ctrl+Q/menu/tray/button explicitly exit; Alt+F4 follows window-close behavior.
