@@ -1,6 +1,5 @@
 #!/usr/bin/env node
 import { runPipeline } from '../src/pipeline.js';
-import { buildBrandReport } from '../src/report.js';
 import path from 'node:path';
 import { cleanUsername } from '../src/normalize.js';
 import writer from '../src/writer-guard.cjs';
@@ -28,7 +27,7 @@ let release = () => {};
 try {
   release = writer.acquireCliWriters([path.resolve('data', cleanUsername(username))]);
   const result = await runPipeline(username, {
-    refresh: options.refresh, reanalyze: options.reanalyze,
+    refresh: options.refresh, reanalyze: options.reanalyze, includeReport: true, language: options.language,
   });
   console.log(`Local run record: ${result.runRecordPath}`);
   if (result.analysisUsage) console.log(`Analysis API usage: ${result.analysisUsage.input_tokens ?? '?'} input, ${result.analysisUsage.output_tokens ?? '?'} output tokens.`);
@@ -40,7 +39,7 @@ try {
     process.exitCode = 2;
   } else {
     console.log(`OpenDesign package: ${result.outputDir}`);
-    const report = await buildBrandReport(`data/${result.username}`, { language: options.language });
+    const report = result.report;
     console.log(`Brand report: ${report.outputPath}`);
     if (report.translationUsage) console.log(`Translation API usage: ${report.translationUsage.input_tokens ?? '?'} input, ${report.translationUsage.output_tokens ?? '?'} output tokens.`);
     console.log(`Reused existing source: ${!result.ingested}; reused analysis: ${!result.analyzed}; reused color proposal: ${!result.colorProposed}.`);

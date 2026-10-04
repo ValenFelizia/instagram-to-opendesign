@@ -2,7 +2,7 @@
 
 `brand:instagram` writes `data/<profile>/runs/run-<uuid>.json` and prints its path on completion, image-review pause or failure. The Git-ignored history survives ingestion refresh. Each invocation has a distinct record. Run one pipeline process per profile at a time, as required by the existing ingestion replacement flow.
 
-The `brand-run/v1` journal records ingestion, evidence, analysis, colors and compilation phases actually reached. Each has status, start/end times, wall-clock milliseconds and `local`, `cache`, `provider` or `unknown` execution mode. Provider attempts have stable IDs. A phase may fail after its provider completed: invalid analysis retains returned usage and preserves the previous valid analysis.
+The `brand-run/v1` journal records ingestion, evidence, analysis, colors, compilation and optional directions/report/export phases actually reached. Each has status, start/end times, wall-clock milliseconds and `local`, `cache`, `provider` or `unknown` execution mode. Provider attempts have stable IDs. A phase may fail after its provider completed: invalid analysis retains returned usage and preserves the previous valid analysis. The Instagram CLI includes its requested report in the same run, so report failure no longer leaves that run marked complete.
 
 ## Meaning and limits
 
@@ -16,7 +16,7 @@ The `brand-run/v1` journal records ingestion, evidence, analysis, colors and com
 
 No automatic paid retry, pricing lookup or currency conversion is performed. Attempted requests without a readable response retain unknown usage/billing. Journals exclude credentials, headers, prompts, captions, raw provider payloads and error messages. They are private local work; do not publish real-profile records or paths.
 
-Writes are atomic at observation boundaries, before structured-output validation. An abrupt process stop may leave a `running` record; it does not prove final billing or completion. Result review accepts only finished records. Standalone ingestion/analyzer/direction commands, report translation, downstream agent generation and human effort are outside this journal. `compileExisting` remains a local operation without providers.
+Writes are atomic at observation boundaries, before structured-output validation. An abrupt process stop may leave a `running` record; it does not prove final billing or completion. Result review accepts only finished records. Standalone provider commands and translation also keep a separate private actual-request/response ledger; see [recoverable pipeline](recoverable-pipeline.md). Raw response payloads are separate from these redacted run summaries. Do not sum overlapping run summaries/HTTP records or repeated cumulative Apify totals as distinct charges. Downstream agent generation and human effort remain outside automatic capture. `compileExisting` remains a local operation without providers.
 
 ## Import into result review
 

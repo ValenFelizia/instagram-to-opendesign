@@ -4,6 +4,15 @@
 
 ## Ready to Land
 
+- [ ] GitHub #54 — Integrate core stages, recoverable responses and request accounting.
+  - Owner: Valentin Felizia
+  - Agent: Codex
+  - Scope: bounded core stage planning, private actual-request checkpoints, same-attempt recovery, standalone provider accounting and immutable partial/output snapshots. No live paid requests or guided UI.
+  - Updated: 2026-10-04
+  - Depends on: #53 source under review in PR #62; branch codex/recoverable-core-pipeline starts at 726f4e6. Land the prerequisite first.
+  - Verification: final 128/128 synthetic tests, including 16 actual-module recovery/accounting cases; rebuilt Windows NSIS installer, 650-entry source-byte/package audit and actual packaged core/SQLite reopen recovery passed without extra fake requests. No live providers or private case material. CI is separate evidence after execution.
+  - Landing: source review on codex/recoverable-core-pipeline targeting main, after PR #62. Paid renderer controls remain #57; selective authority #55 and delivery/history #56 follow. Native installation/accessibility gates remain open.
+
 - [ ] GitHub #53 — Implement transactional jobs, scoped attempt authorization and immutable snapshots.
   - Owner: Valentin Felizia
   - Agent: Codex
@@ -36,10 +45,6 @@
   - Landed: main c28ef9c through operator-merged PR #60, verified 2026-10-04. Issue stays open for documented manual gates; CI 37183836134 passed at 01d9881.
   - Note: user authorized app implementation. No UI framework chosen; plain HTML shell only. Subsequent managed projects/credentials, durable jobs and paid integration remain #52–#57.
 
-- [ ] GitHub #54 — Integrate core stages, recoverable responses and request accounting.
-  - Owner: Valentin Felizia
-  - Depends on: #53
-  - Scope: no active source-code claim; see docs/app-implementation.md.
 - [ ] GitHub #55 — Implement selective review and task authority contracts.
   - Owner: Valentin Felizia
   - Depends on: #53

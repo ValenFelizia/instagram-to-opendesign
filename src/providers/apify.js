@@ -53,13 +53,14 @@ export class ApifyInstagramProvider {
     } catch (error) { await onProviderEvent?.({ event: 'end', key, status: 'failed' }); throw error; }
   }
 
-  async collect(username, postLimit = 20, { onProviderEvent } = {}) {
+  async collect(username, postLimit = 20, { onProviderEvent, fetchImpl } = {}) {
+    const collector = fetchImpl ? new ApifyInstagramProvider({ ...this, fetchImpl }) : this;
     const directUrls = [`https://www.instagram.com/${username}/`];
-    const details = await this.run({ directUrls, resultsType: 'details', resultsLimit: 1 }, 1, onProviderEvent);
+    const details = await collector.run({ directUrls, resultsType: 'details', resultsLimit: 1 }, 1, onProviderEvent);
     if (!details.items[0] || details.items[0].private === true) {
       throw new Error('Profile was not found or is private. Only public profiles are supported.');
     }
-    const posts = await this.run({ directUrls, resultsType: 'posts', resultsLimit: postLimit }, postLimit, onProviderEvent);
+    const posts = await collector.run({ directUrls, resultsType: 'posts', resultsLimit: postLimit }, postLimit, onProviderEvent);
     return { profile: details.items[0], posts: posts.items, runs: [details.runId, posts.runId] };
   }
 }

@@ -3,6 +3,7 @@ import { readFile, realpath, rename, rm, stat, writeFile } from 'node:fs/promise
 import path from 'node:path';
 import Ajv2020 from 'ajv/dist/2020.js';
 import addFormats from 'ajv-formats';
+import { standaloneRequests } from './request-checkpoints.js';
 import { ANALYSIS_MODEL, ANALYSIS_TOPICS, requestBrandInferences } from './providers/openai.js';
 
 const MAX_IMAGES = 24;
@@ -135,6 +136,7 @@ async function replaceFile(outputPath, content) {
 
 export async function analyzeBrand(prepared, { token = process.env.OPENAI_API_KEY,
   fetchImpl = fetch, provider = requestBrandInferences, onUsage, generatedAt = new Date().toISOString() } = {}) {
+  fetchImpl = standaloneRequests(prepared.root, 'analysis', fetchImpl);
   const { inferences, usage } = await provider(prepared, { token, fetchImpl, onUsage });
   if (!Array.isArray(inferences)) throw new Error('Model output is missing inferences.');
   const analysis = {

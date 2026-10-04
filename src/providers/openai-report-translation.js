@@ -8,7 +8,7 @@ const TRANSLATION_SCHEMA = {
   } } },
 };
 
-export async function requestReportTranslation(entries, { token, fetchImpl = fetch } = {}) {
+export async function requestReportTranslation(entries, { token, fetchImpl = fetch, onUsage } = {}) {
   if (!token) throw new Error('OPENAI_API_KEY is required for the first English report translation.');
   const response = await fetchImpl('https://api.openai.com/v1/responses', {
     method: 'POST',
@@ -31,6 +31,7 @@ export async function requestReportTranslation(entries, { token, fetchImpl = fet
   });
   if (!response.ok) throw new Error(`OpenAI report translation returned HTTP ${response.status}.`);
   const result = await response.json();
+  await onUsage?.({ model: result.model ?? ANALYSIS_MODEL, responseId: result.id, usage: result.usage });
   if (result.status !== 'completed') throw new Error(`OpenAI report translation was ${result.status ?? 'invalid'}.`);
   const messages = result.output?.filter((item) => item.type === 'message') ?? [];
   if (messages.some((item) => item.content?.some((part) => part.type === 'refusal'))) {

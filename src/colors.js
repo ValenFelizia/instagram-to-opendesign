@@ -1,6 +1,7 @@
 import { createHash } from 'node:crypto';
 import { readFile } from 'node:fs/promises';
 import path from 'node:path';
+import { standaloneRequests } from './request-checkpoints.js';
 import { writeJsonAtomically } from './atomic.js';
 import { requestColorCandidates } from './providers/openai-colors.js';
 
@@ -38,7 +39,7 @@ export async function colorInputFingerprint(analysis, graphics) {
 
 export async function getColorProposals(prepared, analysis, {
   force = false, token = process.env.OPENAI_API_KEY, fetchImpl = fetch,
-  provider = requestColorCandidates, onUsage,
+  provider = requestColorCandidates, onUsage, configurationRevision,
 } = {}) {
   const graphics = prepared.images.filter((item) => item.review.classification === 'brand-graphic').slice(0, 4);
   const inputHash = await colorInputFingerprint(analysis, graphics);
@@ -46,20 +47,22 @@ export async function getColorProposals(prepared, analysis, {
   if (!force) {
     try {
       const cached = JSON.parse(await readFile(outputPath, 'utf8'));
-      if (cached.schemaVersion === 'color-proposals/v1' && cached.inputHash === inputHash) {
+      if (cached.schemaVersion === 'color-proposals/v1' && cached.inputHash === inputHash &&
+          (configurationRevision == null || cached.configurationRevision === configurationRevision)) {
         validateColorCandidates(cached.candidates, graphics);
         return { ...cached, outputPath, reused: true, usage: null };
       }
     } catch (error) { if (error.code !== 'ENOENT') throw error; }
   }
   const { candidates, usage } = graphics.length
-    ? await provider(graphics, analysis, { token, fetchImpl, onUsage })
+    ? await provider(graphics, analysis, { token, fetchImpl: standaloneRequests(prepared.root, 'colors', fetchImpl), onUsage })
     : { candidates: {
       primary: emptyCandidate('No hay gráficos propios revisados para proponer colores.'),
       secondary: emptyCandidate('No hay gráficos propios revisados para proponer colores.'),
     }, usage: null };
   validateColorCandidates(candidates, graphics);
-  const result = { schemaVersion: 'color-proposals/v1', inputHash, candidates };
+  const result = { schemaVersion: 'color-proposals/v1', inputHash, candidates,
+    ...(configurationRevision ? { configurationRevision } : {}) };
   await writeJsonAtomically(outputPath, result);
   return { ...result, outputPath, reused: false, usage };
 }

@@ -1,5 +1,6 @@
 import { cp, mkdir, readFile, rename, rm, writeFile } from 'node:fs/promises';
 import path from 'node:path';
+import { standaloneRequests } from './request-checkpoints.js';
 import { ApifyInstagramProvider } from './providers/apify.js';
 import { cleanUsername, normalizeSource } from './normalize.js';
 import { downloadAssets } from './assets.js';
@@ -8,10 +9,12 @@ export async function ingest(usernameInput, { outputRoot = 'data', postLimit = 2
   fixturePath, token = process.env.APIFY_TOKEN, provider, fetchImpl = fetch, onProviderEvent } = {}) {
   const username = cleanUsername(usernameInput);
   if (!Number.isInteger(postLimit) || postLimit < 1 || postLimit > 25) throw new Error('Post limit must be 1–25.');
+  fetchImpl = standaloneRequests(path.resolve(outputRoot, username), 'ingestion', fetchImpl);
   const collector = fixturePath
     ? { collect: async () => JSON.parse(await readFile(fixturePath, 'utf8')) }
     : provider ?? new ApifyInstagramProvider({ token, fetchImpl });
-  const collected = await collector.collect(username, postLimit, { onProviderEvent });
+  const providerFetch = provider?.fetchImpl ? standaloneRequests(path.resolve(outputRoot, username), 'ingestion', provider.fetchImpl) : fetchImpl;
+  const collected = await collector.collect(username, postLimit, { onProviderEvent, fetchImpl: providerFetch });
   const source = normalizeSource(username, collected);
   const finalDir = path.resolve(outputRoot, username);
   const temporaryDir = `${finalDir}.partial-${process.pid}`;

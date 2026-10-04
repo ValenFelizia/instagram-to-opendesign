@@ -32,7 +32,7 @@ class JobStore {
       this.db = open('jobs.sqlite');
       this.db.exec('PRAGMA foreign_keys=ON; PRAGMA journal_mode=DELETE; PRAGMA synchronous=FULL');
       const version = this.db.prepare('PRAGMA user_version').get().user_version;
-      if (version > 1) fail('job-version-unsupported');
+      if (version > 2) fail('job-version-unsupported');
       if (version === 0) this.transaction(() => {
         this.db.exec(`
           CREATE TABLE meta(key TEXT PRIMARY KEY, value TEXT NOT NULL) STRICT;
@@ -47,6 +47,13 @@ class JobStore {
           PRAGMA user_version=1;
         `);
         this.fault('migration-before-commit');
+      });
+      if (version < 2) this.transaction(() => {
+        this.db.exec(`CREATE TABLE pipeline_plans(job TEXT PRIMARY KEY REFERENCES jobs(id), recipe TEXT NOT NULL, hash TEXT NOT NULL) STRICT;
+          CREATE TABLE pipeline_requests(id TEXT PRIMARY KEY, job TEXT NOT NULL REFERENCES jobs(id), record TEXT NOT NULL) STRICT;
+          CREATE TABLE pipeline_stages(job TEXT NOT NULL REFERENCES jobs(id), name TEXT NOT NULL, snapshot TEXT REFERENCES snapshots(id), state TEXT NOT NULL, PRIMARY KEY(job,name)) STRICT;
+          PRAGMA user_version=2;`);
+        this.fault('pipeline-migration-before-commit');
       });
       this.workspaceId = this.db.prepare("SELECT value FROM meta WHERE key='workspace'").get()?.value;
       if (!UUID.test(this.workspaceId)) fail('job-store-unreadable');
@@ -104,6 +111,7 @@ class JobStore {
     this.transaction(() => {
       this.db.exec("UPDATE attempts SET state='uncertain' WHERE state='intent'; UPDATE jobs SET state='interrupted',error='interrupted',epoch=NULL WHERE state='running'; UPDATE authorizations SET consumed=1;");
       this.db.exec("UPDATE jobs SET error='outcome-unknown' WHERE state='interrupted' AND id IN (SELECT job FROM attempts WHERE state='uncertain');");
+      this.db.exec("UPDATE pipeline_requests SET record=json_set(record,'$.state','uncertain') WHERE json_extract(record,'$.state')='intent';");
     });
     // Only an inventoried ready snapshot can finish its recorded DB promotion after a crash.
     for (const row of this.db.prepare("SELECT * FROM snapshots WHERE kind='output' AND state='ready'").all()) {
@@ -169,13 +177,13 @@ class JobStore {
     this.transaction(() => this.db.prepare("UPDATE snapshots SET state='ready',hash=?,inventory=? WHERE id=?").run(row.hash, row.inventory, row.id));
     return row;
   }
-  createJob(projectId, scope) {
+  createJob(projectId, scope, recipe = null) {
     scope = scopeRecord(scope); const token = this.own(projectId);
     try {
       if (this.configuration(scope) !== scope.configRevision) fail('stale-authorization');
       const { input } = this.project(projectId), tree = inventory(input);
       const snapshot = this.prepareSnapshot(projectId, 'input', token, payload => copyInventory(input, payload, tree), () => fingerprint(inventory(input)) === fingerprint(tree));
-      const hash = digest({ projectId, scope, inputHash: snapshot.hash });
+      const hash = digest({ projectId, scope, inputHash: snapshot.hash, ...(recipe ? { recipeHash: digest(recipe) } : {}) });
       return this.transaction(() => {
         this.db.prepare("UPDATE snapshots SET state='committed' WHERE id=?").run(snapshot.id);
         const existing = this.db.prepare('SELECT * FROM jobs WHERE project=? AND task=? AND hash=? ORDER BY rowid DESC').get(projectId, scope.taskId, hash);
@@ -183,6 +191,7 @@ class JobStore {
         if (existing) return this.view(existing.id);
         const id = crypto.randomUUID();
         this.db.prepare("INSERT INTO jobs(id,project,task,scope,hash,input,state) VALUES (?,?,?,?,?,?,'queued')").run(id, projectId, scope.taskId, JSON.stringify(scope), hash, snapshot.id);
+        if (recipe) this.db.prepare('INSERT INTO pipeline_plans VALUES (?,?,?)').run(id, JSON.stringify(recipe), digest(recipe));
         return this.view(id);
       });
     } finally { this.unown(projectId, token); }
@@ -211,6 +220,7 @@ class JobStore {
         this.db.prepare('UPDATE authorizations SET consumed=1 WHERE job IN (SELECT id FROM jobs WHERE project=? AND task=?)').run(job.project, job.task);
         this.db.prepare('UPDATE plans SET hash=? WHERE project=? AND task=?').run(hash, job.project, job.task);
         this.db.prepare("INSERT INTO jobs(id,project,task,scope,hash,input,state) VALUES (?,?,?,?,?,?,'queued')").run(next, job.project, job.task, job.scope, hash, job.input);
+        this.db.prepare('INSERT INTO pipeline_plans SELECT ?,recipe,hash FROM pipeline_plans WHERE job=?').run(next, job.id);
       });
       return this.view(next); // Explicit new plan only; no authorization or dispatch is inherited.
     } finally { this.unown(job.project, token); }
@@ -218,7 +228,7 @@ class JobStore {
   consume(job, authorization, token, attempt = null) {
     this.fence(job.project, token);
     return this.transaction(() => {
-      if (attempt && this.db.prepare("SELECT a.id FROM attempts a JOIN jobs j ON a.job=j.id WHERE a.state='intent' AND j.state='running'").get()) fail('writer-busy');
+      if (attempt && this.db.prepare("SELECT id FROM jobs WHERE state='running'").get()) fail('writer-busy');
       const row = this.db.prepare('SELECT * FROM authorizations WHERE token=?').get(authorization);
       if (!row || row.job !== job.id || row.hash !== job.hash || row.session !== this.session || row.consumed || !this.current(job) || job.state === 'completed' || job.state === 'running') fail('stale-authorization');
       this.db.prepare('UPDATE authorizations SET consumed=1 WHERE token=?').run(authorization);
@@ -275,9 +285,43 @@ class JobStore {
       throw error;
     } finally { this.unown(job.project, token); }
   }
+  async executeLocal(id, authorization, operation) {
+    const job = this.job(id), token = this.own(job.project); let started = false;
+    try {
+      if (JSON.parse(job.scope).provider !== 'local' || typeof operation !== 'function') fail('invalid-job-scope');
+      if (this.db.prepare("SELECT id FROM jobs WHERE state='running'").get()) fail('writer-busy');
+      this.consume(job, authorization, token); started = true;
+      const { directory } = this.project(job.project);
+      const work = ensureDirectory(path.join(directory, 'staging', this.session, crypto.randomUUID()));
+      const input = path.join(this.snapshotPath(this.db.prepare('SELECT * FROM snapshots WHERE id=?').get(job.input)), 'payload');
+      const check = () => { this.fence(job.project, token); if (!this.current(job)) fail('stale-authorization'); };
+      const result = await operation({ input, work, check, token }); check();
+      if (!result || result.validated !== true || !inside(work, result.output)) fail('snapshot-invalid');
+      const tree = inventory(result.output);
+      if (fingerprint(tree) !== result.hash) fail('snapshot-invalid');
+      const snapshot = this.prepareSnapshot(job.project, 'output', token,
+        payload => copyInventory(result.output, payload, tree), payload => fingerprint(inventory(payload)) === result.hash);
+      this.transaction(() => this.db.prepare('UPDATE jobs SET output=? WHERE id=?').run(snapshot.id, id));
+      this.fault('snapshot-before-promotion'); check(); this.promote(this.job(id), snapshot, token);
+      return this.view(id);
+    } catch (error) {
+      if (started && !this.closed && this.job(id).state !== 'completed') this.transaction(() => this.db.prepare("UPDATE jobs SET state='failed',error='pipeline-incomplete',epoch=NULL WHERE id=?").run(id));
+      throw error;
+    } finally { if (!this.closed) this.unown(job.project, token); }
+  }
   promote(job, snapshot, token) {
     this.fence(job.project, token);
     if (!this.current(job) || !this.validSnapshot(snapshot)) fail('snapshot-invalid');
+    const pipeline = this.db.prepare('SELECT recipe FROM pipeline_plans WHERE job=?').get(job.id);
+    if (pipeline) {
+      const expected = JSON.parse(pipeline.recipe).stages;
+      const stages = this.db.prepare('SELECT name,state FROM pipeline_stages WHERE job=?').all(job.id);
+      const file = path.join(this.snapshotPath(snapshot), 'payload', 'pipeline.json'); checked(file);
+      const manifest = JSON.parse(fs.readFileSync(file));
+      if (stages.length !== expected.length || expected.some(name => !stages.some(stage => stage.name === name && stage.state === 'completed'))
+          || manifest.version !== 1 || manifest.job !== job.id || manifest.planHash !== job.hash || manifest.status !== 'complete'
+          || JSON.stringify(manifest.stages) !== JSON.stringify(expected)) fail('pipeline-incomplete');
+    }
     this.transaction(() => {
       this.db.prepare("UPDATE snapshots SET state='committed' WHERE id=?").run(snapshot.id);
       this.db.prepare('INSERT INTO latest VALUES (?,?,?) ON CONFLICT(project,task) DO UPDATE SET snapshot=excluded.snapshot').run(job.project, job.task, snapshot.id);
@@ -302,7 +346,10 @@ class JobStore {
     if (job.state === 'completed' && !this.validSnapshot(this.db.prepare('SELECT * FROM snapshots WHERE id=?').get(job.output))) { job.state = 'failed'; job.error = 'snapshot-unavailable'; }
     let stale = true; try { stale = !this.current(job); } catch { /* Missing inputs/configuration never confer authority. */ }
     const actions = { queued: 'authorize', running: 'wait', 'review-required': 'review', failed: 'repair', interrupted: attempt?.state === 'uncertain' ? 'reconcile-attempt' : 'authorize', completed: 'open-output' };
-    const nextAction = stale && !['completed', 'running'].includes(job.state) && attempt?.state !== 'uncertain' ? 'replan' : actions[job.state];
+    const requestStates = this.db.prepare('SELECT json_extract(record,\'$.state\') AS state FROM pipeline_requests WHERE job=?').all(id);
+    const uncertain = requestStates.some(record => ['uncertain', 'intent', 'observed'].includes(record.state));
+    const nextAction = uncertain && !['completed', 'running'].includes(job.state) ? 'reconcile-attempt'
+      : stale && !['completed', 'running'].includes(job.state) && attempt?.state !== 'uncertain' ? 'replan' : actions[job.state];
     return { id: job.id, project: job.project, task: job.task, state: job.state, stale, planHash: job.hash, input: job.input, output: job.output, error: job.error, attempt: attempt ? { ...attempt } : null, nextAction };
   }
   beforeProjectMutation(id, token) {
@@ -316,7 +363,7 @@ class JobStore {
   close() {
     if (this.closed) return;
     try {
-      this.transaction(() => { this.db.exec("UPDATE attempts SET state='uncertain' WHERE state='intent'; UPDATE authorizations SET consumed=1; UPDATE jobs SET state='interrupted',error='interrupted',epoch=NULL WHERE state='running';"); });
+      this.transaction(() => { this.db.exec("UPDATE attempts SET state='uncertain' WHERE state='intent'; UPDATE authorizations SET consumed=1; UPDATE jobs SET state='interrupted',error='interrupted',epoch=NULL WHERE state='running'; UPDATE pipeline_requests SET record=json_set(record,'$.state','uncertain') WHERE json_extract(record,'$.state')='intent';"); });
       for (const [project, owned] of this.leases) this.unown(project, owned.token);
     } finally {
       this.closed = true;

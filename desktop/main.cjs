@@ -6,6 +6,7 @@ const { Supervisor } = require('./supervisor.cjs');
 const { Workspace } = require('./workspace.cjs');
 const { Credentials } = require('./credentials.cjs');
 const { JobStore, digest } = require('./jobs.cjs');
+const { Pipeline } = require('./pipeline.cjs');
 const { BROKER, Broker } = require('./broker.cjs');
 
 app.setName('Instagram to OpenDesign');
@@ -17,6 +18,7 @@ let window = null;
 let tray = null;
 let supervisor = null;
 let jobs = null;
+let pipeline = null;
 let exiting = false;
 let allowQuit = false;
 let closeExplained = false;
@@ -52,6 +54,7 @@ function openWindow() {
 async function exit() {
   if (exiting) return;
   exiting = true;
+  if (pipeline && jobs && !jobs.closed) for (const row of jobs.db.prepare("SELECT id FROM jobs WHERE state='running'").all()) pipeline.stop(row.id);
   await supervisor?.shutdown();
   try { jobs?.close(); } catch { console.error('JOB_STORE_CLOSE_INCOMPLETE'); }
   allowQuit = true;
@@ -84,6 +87,7 @@ else {
         credential: ['apify', 'openai'].includes(scope.provider) ? credentials.revision(scope.provider) : null })
     });
     workspace.onMove = (id, token) => jobs.beforeProjectMutation(id, token);
+    pipeline = new Pipeline(jobs, { credentials });
     ipcMain.handle(BROKER, (event, request) => {
       const authorized = () => trustedSender(event, window, documentUrl) && !exiting;
       if (!authorized()) return { ok: false, code: 'request-unavailable' };

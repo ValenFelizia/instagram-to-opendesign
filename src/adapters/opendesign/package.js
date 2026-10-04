@@ -177,11 +177,14 @@ async function createMoodboard(images, root) {
   const width = 4 * 300, height = Math.ceil(chosen.length / 4) * 300;
   const composites = [];
   for (const [index, item] of chosen.entries()) {
-    const input = await sharp(item.absolutePath).resize(300, 300, { fit: 'cover' }).jpeg().toBuffer();
+    const input = await sharp(await readFile(item.absolutePath)).resize(300, 300, { fit: 'cover' }).jpeg().toBuffer();
     composites.push({ input, left: index % 4 * 300, top: Math.floor(index / 4) * 300 });
   }
-  await sharp({ create: { width, height, channels: 3, background: '#fffdf8' } })
-    .composite(composites).webp({ quality: 82 }).toFile(path.join(root, 'assets', 'moodboard.webp'));
+  // Node's filesystem supports the long managed staging paths on Windows;
+  // native image output APIs may still apply MAX_PATH.
+  const bytes = await sharp({ create: { width, height, channels: 3, background: '#fffdf8' } })
+    .composite(composites).webp({ quality: 82 }).toBuffer();
+  await writeFile(path.join(root, 'assets', 'moodboard.webp'), bytes);
 }
 
 export async function validateBuiltPackage(root, slug) {

@@ -192,7 +192,7 @@ test('migration rollback and unsupported version fail closed without deleting va
   const f = fixture(t);
   assert.throws(() => f.open({ fault: name => { if (name === 'migration-before-commit') throw new Error('synthetic migration failure'); } }), /migration failure/);
   const store = f.open(), baseline = completed(store, f), snapshot = store.snapshotPath(store.db.prepare('SELECT * FROM snapshots WHERE id=?').get(baseline.output));
-  store.db.exec('PRAGMA user_version=2'); store.close();
+  store.db.exec('PRAGMA user_version=3'); store.close();
   assert.throws(() => f.open(), /job-version-unsupported/);
   assert.equal(fs.readFileSync(path.join(snapshot, 'payload', 'result.txt'), 'utf8'), 'result-1');
 });
