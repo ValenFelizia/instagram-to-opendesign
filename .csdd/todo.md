@@ -11,7 +11,7 @@
   - Updated: 2026-10-04
   - Depends on: #37 (merged PR #41); #45 blueprint merged into main through PR #49 at 86bcf94.
   - Verification: 10 model checks, actual synthetic journal projection and full 79/79 suite passed; Edge walkthrough and desktop/mobile screenshots inspected, keyboard/focus/errors, 390/320px overflow, reduced motion, forced colors and no page network/storage checked. No provider, pricing, Narrator or installed app claim.
-  - Landing: codex/land-progress-plan into main; follow-up integration PR required. VAL-107 remains In Review until main contains the approved prototype.
+  - Landing: PR #59, codex/land-progress-plan into main. VAL-107 remains In Review until main contains the approved prototype.
   - Note: operator merged PR #50 into codex/local-workspace-plan at 391a157 after PR #49 had landed. Main lacks its feature commits; they were cherry-picked without conflicts and the resulting tree matched the approved branch exactly before tracking edits. Implementation gaps are now backlog #51–#58, not active app work.
 
 ## Blocked
