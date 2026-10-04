@@ -21,10 +21,9 @@ PR #38 is merged into main at `34d7d77f490789db8844cc125bc3879979fdc068`, includ
 
 | Issue | Remaining evidence or work |
 | --- | --- |
-| #15 | Synthetic font-rule behavior is covered; the local real-brand rules confirm website colors and product copy, but do not yet register an actually supplied confirmed font source. Keep this verification criterion open. |
 | #17 | Story request, assets and instructions were understood. A new exploratory version received positive user feedback; a user-authorized hero exploration with real repository context is resumed. Final applicable brief/execution review remains pending; matched utility is optional research. |
 | #19 | Declared-use preflight, uncertainty and blockers are implemented. Actual platform overlays/native sticker and final rendered accessibility remain unverified; the rejected Story is not a publication target. |
-| #32 | Export generic task-specific context using canonical inputs, resolvable references and preserved bytes. Additional vendor generation and matched research are not completion gates. |
+| #32 | PR #42 implements the generic entrypoint, byte-verified inventory and portable canonical references; 49 independent/53 combined local tests passed. Merge review remains pending. Additional generation is not a gate. |
 | #33 | Positioning is accepted. Naming remains a lower-priority follow-up after journey/workspace design. Keep repository, package, CLI and schema names. |
 | #37 | Provider accounting implementation is prepared in codex/provider-accounting: 51 local synthetic tests passed for separate usage, failed attempts, cache reuse and idempotent review imports. Pending PR review/merge; no live spending or historical backfill. |
 

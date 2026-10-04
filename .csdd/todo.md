@@ -9,8 +9,8 @@
   - Agent: Codex
   - Scope: canonical brief export entrypoint, inventory/verification, CLI, synthetic tests and generic delivery documentation.
   - Updated: 2026-10-03
-  - Landing: PR pending creation, codex/generic-agent-handoff; human review/merge required.
-  - Verification: 49 local synthetic tests passed on the independent branch, including relocation, byte preservation, pending states and stale-input refusal. No provider calls, private case exports or readiness-gate changes.
+  - Landing: PR #42, codex/generic-agent-handoff onto codex/provider-accounting; merge PR #41 first, then retarget to main.
+  - Verification: 49 local synthetic tests passed independently and 53 with PR #41 integrated, including relocation, byte preservation, pending states and stale-input refusal. No provider calls, private case exports or readiness-gate changes.
 
 - [ ] GitHub #37 â€” Preserve provider usage and phase effort.
   - Owner: Valentin Felizia
@@ -25,10 +25,6 @@
 
 ## Pending
 
-- [ ] GitHub #15 â€” Complete real-brand font-source verification.
-  - Owner: Valentin Felizia
-  - Scope: no active source-code claim; remaining manual provenance verification.
-  - Note: implementation from PR #23 is reachable from main. Real local rules confirm website colors and product copy; font behavior is tested synthetically but an actually supplied brand font has not been registered in the real decision contract.
 - [ ] GitHub #17 â€” Complete human brief/execution review.
   - Owner: Valentin Felizia
   - Scope: no active source-code claim; reviewed hero exploration in a separate design project.
@@ -38,20 +34,37 @@
   - Agent: Codex (P0 worktree)
   - Scope: no active source-code claim; implementation is merged from PR #29/#34.
   - Note: declared-use thresholds, aliases, uncertainty, blockers and manual tasks are implemented. Native composer overlap/sticker and final rendered accessibility remain pending for an accepted future piece; rejected artwork is not a publishing target.
-- [ ] GitHub #33 â€” Evaluate product positioning and naming.
+- [ ] GitHub #43 / VAL-104 — Prototype guided onboarding and an actionable dossier.
   - Owner: Valentin Felizia
-  - Depends on: #31 (completed)
-  - Note: positioning is accepted under DEC-010. Naming is lower priority; keep repository/package/CLI/schema names until a concrete naming decision after journey/workspace design.
-- [ ] VAL-104â€“VAL-107 â€” Design the guided local product increment.
+  - Scope: no active implementation claim; synthetic navigable prototype and state/core mapping before framework selection.
+- [ ] GitHub #44 / VAL-105 — Specify selective review and exploration/approval states.
   - Owner: Valentin Felizia
-  - Scope: no active implementation claim; product planning is tracked in Linear.
-  - Note: start with VAL-104 onboarding (Todo), alongside VAL-105 selective review. VAL-106 local workspace/platform decision and VAL-107 cost/progress remain Backlog. No framework or app implementation is selected. See docs/product-roadmap.md.
+  - Scope: no active implementation claim; authority/transition matrix, interaction examples and compatibility proposal.
+- [ ] GitHub #45 / VAL-106 — Evaluate local app packaging and durable jobs.
+  - Owner: Valentin Felizia
+  - Scope: no active implementation claim; reviewed platform recommendation, local persistence and lifecycle blueprint.
+- [ ] GitHub #46 / VAL-107 — Design paid-action, cache and progress surfaces.
+  - Owner: Valentin Felizia
+  - Depends on: #37 (PR #41 ready for review)
+  - Scope: no active implementation claim; synthetic state/copy prototype and journal-to-UI mapping.
 
 ## Deferred
+
+- [ ] GitHub #33 â€” Evaluate product positioning and naming.
+  - Owner: Valentin Felizia
+  - Reason: accepted product sequencing prioritizes onboarding/workspace design before naming.
+  - Resume when: the journey and local platform/workspace proposal have been reviewed with the user.
+  - Note: positioning is accepted under DEC-010. Naming is lower priority; keep repository/package/CLI/schema names until a concrete naming decision after journey/workspace design.
 
 ## Recently Completed
 
 Retention: 5
+
+- [x] GitHub #15 — Record verified brand decisions and conflicts.
+  - Owner: Valentin Felizia
+  - Scope: released
+  - Landed: implementation through PR #23; source/compilation verification completed and issue closed 2026-10-03.
+  - Verification: supplied storefront font copied unchanged and registered with source-backed website-only rules; two stable compilations preserve palette and model analysis. No font licensing, embedding, rendered-font or production claim.
 
 - [x] GitHub #39 / VAL-100 â€” Reconcile the guided product workflow and backlog.
   - Owner: Valentin Felizia
@@ -77,9 +90,3 @@ Retention: 5
   - Owner: Valentin Felizia
   - Scope: released
   - Verification: issue closed 2026-10-03 under its explicit no-expansion condition. Recipient readback showed no inaccessible-context gap; creative rejection does not justify rich fixtures. No rich implementation/comparison or superiority claim.
-- [x] GitHub #20 â€” Preserve reviewed context in packaged OpenDesign delivery.
-  - Owner: Valentin Felizia
-  - Agent: Codex
-  - Scope: released
-  - Landed: main @ 6e7e8f1 (PR #35, after PR #30)
-  - Verification: 45 previously recorded local tests, actual packaged 0.24.1 runtime, complete local delivery, selector screenshot and concrete recipient readback. Issue closed 2026-10-03; final creative quality is separate.
