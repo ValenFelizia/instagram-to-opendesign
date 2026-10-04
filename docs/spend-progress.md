@@ -2,6 +2,8 @@
 
 **Status: reviewable specification and isolated synthetic prototype.** Tracking: [GitHub issue 46](https://github.com/ValenFelizia/instagram-to-opendesign/issues/46) / [VAL-107](https://linear.app/valenf/issue/VAL-107/make-paid-actions-cache-reuse-and-run-progress-understandable). Open [`prototypes/spend-progress/index.html`](../prototypes/spend-progress/index.html). No provider spending, pricing lookup, production journal changes, durable scheduler or app integration is included.
 
+Review [PR #50](https://github.com/ValenFelizia/instagram-to-opendesign/pull/50), stacked on [PR #49](https://github.com/ValenFelizia/instagram-to-opendesign/pull/49). Land/reconcile the parent first and retarget to main; the scoped issue closes for specification/prototype deliverables, not an implemented app.
+
 The operator accepted the onboarding flow and direct, minimal UI; visual polishing remains deferred. DEC-011 selects Windows-first Electron with managed local projects, background work after closing the view and explicit Exit. This specification follows the [workspace blueprint](local-workspace.md), still under PR #49 review at the start of this work, and preserves existing selected-brief authority.
 
 ## Surfaces
