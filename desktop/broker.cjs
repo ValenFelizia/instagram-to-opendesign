@@ -20,10 +20,10 @@ function validWorkspaceRequest(value) {
   if (value.action === 'export' && value.scope !== 'project-backup' || value.action === 'trash' && value.scope !== 'project') return false;
   return true;
 }
-const codes = new Set(['invalid-request', 'invalid-name', 'invalid-profile', 'profile-mismatch', 'invalid-key', 'protection-unavailable', 'credential-unreadable', 'registry-unreadable', 'project-unavailable', 'unsafe-path', 'unsafe-file', 'duplicate-path', 'import-too-large', 'empty-import', 'import-expired', 'source-changed']);
+const codes = new Set(['invalid-request', 'invalid-name', 'invalid-profile', 'profile-mismatch', 'invalid-key', 'protection-unavailable', 'credential-unreadable', 'registry-unreadable', 'project-unavailable', 'unsafe-path', 'unsafe-file', 'duplicate-path', 'import-too-large', 'empty-import', 'import-expired', 'source-changed', 'writer-busy', 'writer-fenced', 'job-store-unavailable']);
 function diagnostic(error, action) {
   // Never spread arbitrary exceptions, provider payloads, selected paths or keys into a response/log.
-  return { ok: false, code: error instanceof BrokerError && codes.has(error.code) ? error.code : 'storage-unavailable', action: Object.hasOwn(shapes, action) ? action : 'unknown' };
+  return { ok: false, code: error instanceof BrokerError && codes.has(error.code) || error?.code === 'writer-busy' ? error.code : 'storage-unavailable', action: Object.hasOwn(shapes, action) ? action : 'unknown' };
 }
 class Broker {
   constructor(workspace, credentials, dialog, { window, authorized, forbidden = [], importForbidden = [] }) {

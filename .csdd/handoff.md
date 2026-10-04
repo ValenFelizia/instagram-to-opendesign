@@ -1,5 +1,15 @@
 # Handoff
 
+## Current checkpoint — 2026-10-04
+
+The operator reviewed and merged PR #60/#61. Both are verified ancestors of main `dd4a1db`; their prior parent-first/source-review instructions below are consumed. #51/#52 stay open only for the documented native manual gates. CI 37183836134/37186005029 passed at their respective source heads; that does not establish clean installation or Narrator acceptance.
+
+Issue #53 is ready for source review on `codex/transactional-jobs`, based on that main. The app-only bundled SQLite kernel owns persisted jobs/plan hashes/session authorizations/attempt intent and inventoried append-only snapshots. The portable CLI and project backup/trash/restore share an exclusive token marker; unknown markers remain fail-closed and moves revoke approval. Startup never dispatches a provider; uncertain attempts retain their identity, and explicit retries create a new plan requiring new authorization. The main store holds a lifetime SQLite writer transaction; stale workers must only ever write isolated staging, never canonical/latest paths. Real response/schema/accounting/worker-stage orchestration remains #54 and guided IPC/UI #57; no live/private case is authorized by this implementation.
+
+See `docs/transactional-jobs.md` for exact boundaries and fault protocol. The full synthetic suite passed 111/111, followed by 28/28 final storage/broker and 17/17 final job checks including altered metadata. Actual packaged Electron ran SQLite 3.53.4 without external Node, fake acknowledgement/snapshot/store reopen and inherited lifecycle/projects/DPAPI checks. The final unsigned NSIS build and 648-entry package/source-byte audit passed. Process tests cover abrupt intent/snapshot boundaries, actual SQLite lock/FULL, Windows sharing lock, invalid output, migration failure and late response fencing. Prior valid output remains available. CI is separate evidence after execution. No power-loss/exactly-once billing guarantee, automatic unknown-lock repair or retention purge. The whole bounded input tree is frozen; selective dependency invalidation is later integration work.
+
+After source review/merge, #54 is the next implementation slice. Preserve the user merge boundary, direct minimal UI and private local cases. Do not close #51/#52 without their native manual acceptance. Historical dated notes below describe earlier checkpoints, not current implementation status.
+
 ## Product increment boundary — 2026-10-03
 
 The old implementation stack and PR #36/#38/#40 are merged into main @ 96120d8. GitHub #16/#18/#20/#31 are closed with evidence; #22 is closed under its no-expansion gate. #21 closes the implemented review feature under DEC-010, without a matched utility claim. VAL-100 now coordinates the guided local product increment; see docs/product-roadmap.md and the linked Linear document. Real assets, runtime bindings and original feedback remain Git-ignored.

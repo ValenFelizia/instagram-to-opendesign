@@ -5,11 +5,14 @@ import { prepareAnalysis } from '../src/analyze.js';
 import { emptyRequest, validateRequest, suggestDirections, importDirections, compileBrief } from '../src/brief.js';
 import { writeJsonAtomically } from '../src/atomic.js';
 import { readOptionalJson } from '../src/local.js';
+import writer from '../src/writer-guard.cjs';
 
 const usage = 'Usage: pnpm brand:brief data/<username> [--init web-hero|instagram-story|promotional-image|website-change [--width N --height N] | --suggest [--force] | --import file.json | --compile [--out directory]]';
 const [profileDir, mode = '--compile', ...args] = process.argv.slice(2);
 if (!profileDir || ['--help', '-h'].includes(profileDir)) { console.log(usage); process.exit(profileDir ? 0 : 1); }
+let release = () => {};
 try {
+  release = writer.acquireCliWriters([profileDir, ...(mode === '--compile' && args[0] === '--out' && args[1] ? [args[1]] : [])]);
   if (mode === '--init' && (args.length === 1 || args.length === 5 && args[1] === '--width' && args[3] === '--height')) {
     const prepared = await prepareAnalysis(profileDir), file = path.join(prepared.root, 'design-request.json');
     if (await readOptionalJson(file)) throw new Error('Request already exists; initialization never overwrites it.');
@@ -25,4 +28,4 @@ try {
     const result = await compileBrief(profileDir, { outputDir: args[1] });
     console.log(JSON.stringify({ outputDir: result.outputDir, status: result.brief.status, pending: result.brief.pending }, null, 2));
   } else throw new Error(usage);
-} catch (error) { console.error(error.message); process.exitCode = 1; }
+} catch (error) { console.error(error.message); process.exitCode = 1; } finally { release(); }

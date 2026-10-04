@@ -4,33 +4,38 @@
 
 ## Ready to Land
 
-- [ ] GitHub #52 — Implement managed projects and an OS-protected credential broker.
+- [ ] GitHub #53 — Implement transactional jobs, scoped attempt authorization and immutable snapshots.
   - Owner: Valentin Felizia
   - Agent: Codex
-  - Scope: managed-project and credential brokers, native selection, validated IPC, minimal project/settings UI, synthetic security tests, packaging and product tracking. No private imports, live providers or durable jobs.
+  - Scope: packaged SQLite job store, ownership/fencing, revision-bound authorization, intent/uncertainty, snapshot commit/recovery, portable CLI writer interlock and synthetic process/failure verification. No live providers or guided paid UI.
   - Updated: 2026-10-04
-  - Depends on: #51 / PR #60 (under operator review).
-  - Verification: 95/95 suite; actual Electron/packaged project operations, source byte equality, real Windows DPAPI, cleared password input, unavailable-protection UI and fresh-launch persistence; inherited shell checks and package allowlist passed. Synthetic material only; no providers or private projects.
-  - Landing: PR #61, codex/managed-projects-credentials into main; land parent PR #60 first. Keep #52 open for native picker/confirmation and keyboard/Narrator review in docs/managed-projects.md. CI remains separate evidence.
-  - Note: branch starts at PR #60; land #60 first, never merge this work solely into a retired parent branch. Registry persistence is not transactional job recovery; #53 follows.
-
-- [ ] GitHub #51 — Build a Windows Electron shell and verify native core packaging.
-  - Owner: Valentin Felizia
-  - Agent: Codex
-  - Scope: desktop shell/worker/IPC/UI, manifest/lock/build policy, synthetic tests, Windows build verification and tracking; no real project storage, credentials, paid calls or core changes.
-  - Updated: 2026-10-04
-  - Verification: 83/83 suite; actual packaged executable core/sharp, close/reopen/second instance, renderer crash/recovery, explicit Exit/worker termination, sandbox/IPC/navigation, 360px/focus/high contrast; package allowlist audit passed. Local unsigned NSIS installer built. No live providers or private data; CLI/source core unchanged.
-  - Landing: PR #60, codex/windows-app-shell into main; source review pending. Issue remains open after merge for clean Windows install and native tray/keyboard/Narrator acceptance documented in docs/windows-app-shell.md. CI result remains separate.
-  - Note: user authorized app implementation. No UI framework chosen; plain HTML shell only. Subsequent managed projects/credentials, durable jobs and paid integration remain #52–#57.
+  - Depends on: #51/#52 source merged through PR #60/#61; main dd4a1db verified.
+  - Verification: full 111/111 synthetic suite; 28/28 final storage/broker and 17/17 final job checks, including altered metadata; actual packaged bundled SQLite 3.53.4 intent/acknowledgement/snapshot/reopen, inherited shell/projects/DPAPI and 648-entry package/source-byte audit passed. Local unsigned NSIS installer rebuilt from final source. Windows CI is separate evidence after execution.
+  - Landing: source review on codex/transactional-jobs targeting main. No live provider/data, integrated core stages or guided paid controls; #54 follows. #51/#52 remain open for their native manual gates.
 
 ## Blocked
 
 ## Pending
 
-- [ ] GitHub #53 — Implement transactional jobs, scoped authorization and snapshots.
+- [ ] GitHub #52 — Implement managed projects and an OS-protected credential broker.
   - Owner: Valentin Felizia
-  - Depends on: #51, #52
-  - Scope: no active source-code claim; see docs/app-implementation.md.
+  - Agent: Codex
+  - Scope: source claim released; native picker/confirmation and keyboard/Narrator acceptance only.
+  - Updated: 2026-10-04
+  - Depends on: #51 source merged through PR #60.
+  - Verification: 95/95 suite; actual Electron/packaged project operations, source byte equality, real Windows DPAPI, cleared password input, unavailable-protection UI and fresh-launch persistence; inherited shell checks and package allowlist passed. Synthetic material only; no providers or private projects.
+  - Landed: main dd4a1db through operator-merged PR #61, verified 2026-10-04. Issue stays open for the documented native manual gates; CI 37186005029 passed at 08fb256.
+  - Note: registry persistence alone is not transactional job recovery; #53 follows.
+
+- [ ] GitHub #51 — Build a Windows Electron shell and verify native core packaging.
+  - Owner: Valentin Felizia
+  - Agent: Codex
+  - Scope: source claim released; clean install and native tray/keyboard/Narrator acceptance only.
+  - Updated: 2026-10-04
+  - Verification: 83/83 suite; actual packaged executable core/sharp, close/reopen/second instance, renderer crash/recovery, explicit Exit/worker termination, sandbox/IPC/navigation, 360px/focus/high contrast; package allowlist audit passed. Local unsigned NSIS installer built. No live providers or private data; CLI/source core unchanged.
+  - Landed: main c28ef9c through operator-merged PR #60, verified 2026-10-04. Issue stays open for documented manual gates; CI 37183836134 passed at 01d9881.
+  - Note: user authorized app implementation. No UI framework chosen; plain HTML shell only. Subsequent managed projects/credentials, durable jobs and paid integration remain #52–#57.
+
 - [ ] GitHub #54 — Integrate core stages, recoverable responses and request accounting.
   - Owner: Valentin Felizia
   - Depends on: #53

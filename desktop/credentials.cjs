@@ -1,5 +1,6 @@
 const fs = require('node:fs');
 const path = require('node:path');
+const crypto = require('node:crypto');
 const { fail, checked, ensureDirectory, atomicJson } = require('./paths.cjs');
 const PROVIDERS = new Set(['apify', 'openai']);
 class Credentials {
@@ -21,6 +22,13 @@ class Credentials {
     return this.status();
   }
   remove(provider) { const file = this.file(provider); if (fs.existsSync(file)) { checked(file); fs.unlinkSync(file); } }
+  // Revision of the protected record, never of the plaintext key. No renderer accessor.
+  revision(provider) {
+    const file = this.file(provider);
+    if (!fs.existsSync(file)) return crypto.createHash('sha256').update('unconfigured').digest('hex');
+    checked(file);
+    return crypto.createHash('sha256').update(fs.readFileSync(file)).digest('hex');
+  }
   // Only a future privileged provider dispatcher may call this; never expose it over IPC.
   async withKey(provider, operation) {
     if (!await this.available()) fail('protection-unavailable');

@@ -5,10 +5,13 @@ import { prepareAnalysis, validateAnalysis } from '../src/analyze.js';
 import { initializeAssets, pendingAsset, buildAssetCatalog, validateAssetReview } from '../src/asset-catalog.js';
 import { writeJsonAtomically } from '../src/atomic.js';
 import { digest, readOptionalJson } from '../src/local.js';
+import writer from '../src/writer-guard.cjs';
 const usage = 'Usage: pnpm brand:assets data/<username> [--init | --add manual/file.png | --check [--kind web-hero|instagram-story]]';
 const [profileDir, mode = '--check', ...args] = process.argv.slice(2);
 if (!profileDir || ['--help', '-h'].includes(profileDir)) { console.log(usage); process.exit(profileDir ? 0 : 1); }
+let release = () => {};
 try {
+  release = writer.acquireCliWriters([profileDir]);
   const prepared = await prepareAnalysis(profileDir);
   const analysis = JSON.parse(await readFile(path.join(prepared.root, 'brand-analysis.json'), 'utf8'));
   await validateAnalysis(analysis, prepared);
@@ -28,4 +31,4 @@ try {
     const { catalog } = await buildAssetCatalog(prepared, analysis, { kind: args[1] ?? 'web-hero' });
     console.log(JSON.stringify(catalog, null, 2));
   } else throw new Error(usage);
-} catch (error) { console.error(error.message); process.exitCode = 1; }
+} catch (error) { console.error(error.message); process.exitCode = 1; } finally { release(); }

@@ -6,11 +6,14 @@ import { writeJsonAtomically } from '../src/atomic.js';
 import { emptyDecisions, loadDecisions, validateDecisionDocument } from '../src/decisions.js';
 import { digest, profileFile, readOptionalJson } from '../src/local.js';
 import { importReviewFile } from '../src/review.js';
+import writer from '../src/writer-guard.cjs';
 
 const usage = 'Usage: pnpm brand:decisions data/<username> [--init | --check | --import review.json | --source manual/file.md --reviewer "Name" --summary "Purpose"]';
 const [profileDir, mode = '--check', ...args] = process.argv.slice(2);
 if (!profileDir || ['--help', '-h'].includes(profileDir)) { console.log(usage); process.exit(profileDir ? 0 : 1); }
+let release = () => {};
 try {
+  release = writer.acquireCliWriters([profileDir]);
   const prepared = await prepareAnalysis(profileDir);
   const analysis = JSON.parse(await readFile(path.join(prepared.root, 'brand-analysis.json'), 'utf8'));
   await validateAnalysis(analysis, prepared);
@@ -40,4 +43,4 @@ try {
     await writeJsonAtomically(target, review.document);
     console.log(`Registered ${id}. Add rules referencing this source; no inference was verified.`);
   } else throw new Error(usage);
-} catch (error) { console.error(error.message); process.exitCode = 1; }
+} catch (error) { console.error(error.message); process.exitCode = 1; } finally { release(); }

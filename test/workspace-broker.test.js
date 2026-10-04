@@ -140,21 +140,26 @@ test('credential broker fails closed and never returns saved values or raw excep
   const key = `synthetic-${crypto.randomUUID()}`;
   const fake = { isAsyncEncryptionAvailable: async () => false, encryptStringAsync: async () => { throw new Error(key); } };
   const credentials = new Credentials(path.join(workspace.root, 'credentials'), fake, 'win32');
+  const unconfigured = credentials.revision('apify');
   await assert.rejects(credentials.save('apify', key), blocked('protection-unavailable'));
   assert.equal(fs.existsSync(credentials.root), false);
   fake.isAsyncEncryptionAvailable = async () => true;
   fake.encryptStringAsync = async () => Buffer.from('opaque-protected-test-data');
   const result = await credentials.save('apify', key);
+  assert.notEqual(credentials.revision('apify'), unconfigured);
   assert.deepEqual(result, { available: true, providers: { apify: true, openai: false } });
   assert.equal(fs.readFileSync(credentials.file('apify'), 'utf8').includes(key), false);
   const retained = fs.readFileSync(credentials.file('apify'));
+  const retainedRevision = credentials.revision('apify');
   fake.encryptStringAsync = async () => { throw new Error(key); };
   await assert.rejects(credentials.save('apify', `replacement-${crypto.randomUUID()}`));
   assert.deepEqual(fs.readFileSync(credentials.file('apify')), retained);
+  assert.equal(credentials.revision('apify'), retainedRevision);
   fake.decryptStringAsync = async () => { throw new Error(key); };
   await assert.rejects(credentials.withKey('apify', () => {}), blocked('credential-unreadable'));
   assert.equal(JSON.stringify(diagnostic(new Error(key), 'credential-save')).includes(key), false);
   credentials.remove('apify'); assert.equal((await credentials.status()).providers.apify, false);
+  assert.equal(credentials.revision('apify'), unconfigured);
 });
 
 test('IPC rejects arbitrary paths, scope injection, IDs, extra fields and foreign actions', () => {

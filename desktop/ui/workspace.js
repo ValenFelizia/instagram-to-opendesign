@@ -14,6 +14,8 @@
     'import-too-large': 'La carpeta supera el límite: 2000 archivos, 32 MB por archivo o 256 MB en total.',
     'empty-import': 'La carpeta no contiene archivos para importar.', 'import-expired': 'La selección venció. Elegí otra vez la carpeta.',
     'source-changed': 'El original cambió durante la importación. No se guardó el proyecto. Elegí nuevamente la carpeta.',
+    'writer-busy': 'El proyecto está en uso o conserva un bloqueo. Terminá el trabajo activo antes de moverlo o copiarlo. No borres un bloqueo activo.',
+    'writer-fenced': 'Cambió quién controla el proyecto. Cerrá la app y revisá el bloqueo local antes de continuar.',
     'storage-unavailable': 'No se pudo guardar o leer. Tus proyectos existentes se conservan. Revisá espacio y permisos y reintentá.',
     'invalid-request': 'La acción no está disponible. Cerrá y volvé a abrir la ventana.', 'request-unavailable': 'Volvé a abrir la ventana para continuar.'
   };
