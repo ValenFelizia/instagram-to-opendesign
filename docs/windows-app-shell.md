@@ -1,6 +1,6 @@
 # Windows app shell
 
-Tracking: [issue 51](https://github.com/ValenFelizia/instagram-to-opendesign/issues/51), implementation coordinated by VAL-100. DEC-011's selected platform is now an executable shell, not the complete guided app. CLI/core/schema/readiness behavior is unchanged.
+Tracking: [issue 51](https://github.com/ValenFelizia/instagram-to-opendesign/issues/51), [source PR 60](https://github.com/ValenFelizia/instagram-to-opendesign/pull/60), implementation coordinated by VAL-100. DEC-011's selected platform is now an executable shell, not the complete guided app. CLI/core/schema/readiness behavior is unchanged.
 
 ## Included
 

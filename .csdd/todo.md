@@ -10,7 +10,7 @@
   - Scope: desktop shell/worker/IPC/UI, manifest/lock/build policy, synthetic tests, Windows build verification and tracking; no real project storage, credentials, paid calls or core changes.
   - Updated: 2026-10-04
   - Verification: 83/83 suite; actual packaged executable core/sharp, close/reopen/second instance, renderer crash/recovery, explicit Exit/worker termination, sandbox/IPC/navigation, 360px/focus/high contrast; package allowlist audit passed. Local unsigned NSIS installer built. No live providers or private data; CLI/source core unchanged.
-  - Landing: codex/windows-app-shell into main; source review pending. Issue remains open after merge for clean Windows install and native tray/keyboard/Narrator acceptance documented in docs/windows-app-shell.md. CI result remains separate.
+  - Landing: PR #60, codex/windows-app-shell into main; source review pending. Issue remains open after merge for clean Windows install and native tray/keyboard/Narrator acceptance documented in docs/windows-app-shell.md. CI result remains separate.
   - Note: user authorized app implementation. No UI framework chosen; plain HTML shell only. Subsequent managed projects/credentials, durable jobs and paid integration remain #52–#57.
 
 ## Blocked
