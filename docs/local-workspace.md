@@ -2,7 +2,7 @@
 
 Tracking: [GitHub #45](https://github.com/ValenFelizia/instagram-to-opendesign/issues/45) / [VAL-106](https://linear.app/valenf/issue/VAL-106/define-a-contained-local-app-workspace-for-evidence-and-deliverables).
 
-Review: [PR #49](https://github.com/ValenFelizia/instagram-to-opendesign/pull/49). VAL-106 is In Review for the scoped blueprint; production app work remains separate.
+The operator merged [PR #49](https://github.com/ValenFelizia/instagram-to-opendesign/pull/49), verified on main at `86bcf94` on 2026-10-04. VAL-106 is Done for the scoped blueprint; production app work remains separate.
 
 **Status:** architecture blueprint; no packaged app or production scheduler exists. In the joint interview, the operator selected an installable Windows-first app, closing the window keeps work running, explicit **Exit** stops work, projects default to an app-managed local folder, and Electron is accepted for the first version. See DEC-011. UI library, storage binding, recovery and implementation details below are proposals unless explicitly recorded as accepted. Existing CLI, schemas and selected-brief gates remain unchanged.
 
@@ -153,7 +153,7 @@ Keyboard can reach project creation/open/resume, settings, recovery, export and 
 
 ## Bounded implementation backlog
 
-These are proposed follow-up slices, not created/adopted issues or work implemented by #45. Follow #46's spend/progress design before integrating paid controls. Reuse #43's accepted flow and #44's reviewed authority proposal; their production contract work is still outstanding.
+The operator reviewed the #45/#46 proposals; the slices below now map to [bounded implementation issues #51–#58](app-implementation.md). They remain backlog, not work implemented by #45. Follow #46's spend/progress design before integrating paid controls. Reuse #43's accepted flow and #44's reviewed authority proposal; their production contract work is still outstanding.
 
 | Slice | Deliverable | Acceptance gate |
 | --- | --- | --- |
