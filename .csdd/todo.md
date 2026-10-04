@@ -8,7 +8,7 @@
   - Owner: Valentin Felizia
   - Agent: Codex
   - Scope: pipeline, provider observation hooks, local run records, result-review import, synthetic tests and accounting documentation.
-  - Landing: PR pending creation, codex/provider-accounting into main; human review/merge required.
+  - Landing: PR #41, codex/provider-accounting into main; human review/merge required.
   - Verification: all 51 local synthetic tests passed; no live provider call.
   - Updated: 2026-10-03
   - Note: branch codex/provider-accounting from main @ 96120d8. No live provider calls or private case exports.

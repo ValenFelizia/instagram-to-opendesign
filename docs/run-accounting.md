@@ -29,7 +29,7 @@ Add local paths to the existing `result-review-input/v1` JSON (fragment below):
 }
 ```
 
-Use the existing `brand:result` command with its selected brief, artifacts and remaining required fields. Imported events retain stable attempt/phase IDs, usage, billing and wall time. Human `minutes` stay null. Unknown costs also stay null, including local/cache phases. Totals cover only supplied observations; they are incomplete until remaining effort is recorded.
+Use the existing `brand:result` command with its selected brief, artifacts and remaining required fields. Imported events retain stable attempt/phase IDs, usage, billing and wall time. Human `minutes` stay null. Unknown costs also stay null, including local/cache phases. Totals cover only supplied observations. Import does not complete an effort comparison: unmeasured human minutes and unavailable bills remain unknown, even if separate manual work events are supplied.
 
 Repeated import in the same or subsequent revision is idempotent. Changed data for an imported event fails instead of rewriting history. Billed currencies must match the review currency. The archive preserves original run JSON and SHA-256. Manually supplied events retain the existing duplicate-ID guard.
 
