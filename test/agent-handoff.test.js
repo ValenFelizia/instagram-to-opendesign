@@ -5,6 +5,7 @@ import path from 'node:path';
 import { spawnSync } from 'node:child_process';
 import { briefFixture, fixtureDirections } from './helpers/brief.js';
 import { exportAgentHandoff, verifyAgentHandoff, importDirections, prepareBrief } from '../src/core.js';
+import { digest } from '../src/local.js';
 
 test('generic handoff preserves exact canonical inputs and resolves references after moving without an adapter', async () => {
   const fixture = await briefFixture('instagram-story'), moved = `${fixture.root}-moved`;
@@ -35,6 +36,9 @@ test('generic handoff preserves exact canonical inputs and resolves references a
     assert.equal(cli.status, 0, cli.stderr);
     await writeFile(path.join(moved, asset.path), 'changed bytes');
     await assert.rejects(() => verifyAgentHandoff(moved), /bytes changed/);
+    inventory.files[asset.path] = digest('changed bytes');
+    await writeFile(path.join(moved, 'handoff.json'), JSON.stringify(inventory));
+    await assert.rejects(() => verifyAgentHandoff(moved), /Canonical asset\/source bytes changed/);
   } finally { await rm(moved, { recursive: true, force: true }); await rm(fixture.root, { recursive: true, force: true }); }
 });
 

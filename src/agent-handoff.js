@@ -2,6 +2,12 @@ import { lstat, readFile, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { fileDigests, json, profileFile } from './local.js';
 
+function verifyCanonicalBytes(brief, files) {
+  for (const entry of [...brief.assets, ...brief.sources.filter(source => !source.stale)]) {
+    if (files[entry.path] !== entry.sha256) throw new Error(`Canonical asset/source bytes changed: ${entry.path}`);
+  }
+}
+
 export async function writeAgentHandoff(root, brief) {
   const approved = brief.status === 'ready-for-execution';
   await writeFile(path.join(root, 'START.md'), `# Creative-agent handoff\n\n` +
@@ -21,6 +27,7 @@ export async function writeAgentHandoff(root, brief) {
     (brief.codeContext ? `## Existing code access\n\nThe brief identifies an authorized local repository and selected file hashes. Give the agent explicit access separately and check those hashes before editing; repository code is not copied into this handoff.\n\n` : '') +
     `## Deliver and review\n\nPreserve the first output, proposed choices and pending checks. Compare the render with the exact copy/assets, review accessibility and obtain human acceptance before publication. This folder does not install a runtime, send messages, call providers or certify creative quality.\n`);
   const files = await fileDigests(root, '', { excludePackageContext: false });
+  verifyCanonicalBytes(brief, files);
   const inventory = { schemaVersion: 'agent-handoff/v1', status: brief.status,
     mode: approved ? 'selected-execution' : 'exploration-only', briefInputHash: brief.inputHash,
     entrypoint: 'START.md', files };
@@ -43,6 +50,7 @@ export async function verifyAgentHandoff(root) {
   const brief = JSON.parse(await readFile(await profileFile(root, 'design-brief.json'), 'utf8'));
   if (brief.schemaVersion !== 'design-brief/v1' || inventory.briefInputHash !== brief.inputHash || inventory.status !== brief.status ||
       inventory.mode !== (brief.status === 'ready-for-execution' ? 'selected-execution' : 'exploration-only')) throw new Error('Handoff status does not match its canonical brief.');
+  verifyCanonicalBytes(brief, inventory.files);
   for (const file of [...brief.assets.map(a => a.path), ...brief.sources.map(s => s.path), ...brief.evidence.map(e => e.sourcePath)]) {
     if (!inventory.files[file]) throw new Error(`Unresolved handoff reference: ${file}`);
     await profileFile(root, file);
