@@ -1,6 +1,7 @@
 import { createHash } from 'node:crypto';
 import { readFile } from 'node:fs/promises';
 import path from 'node:path';
+import { standaloneRequests } from './request-checkpoints.js';
 import { writeJsonAtomically } from './atomic.js';
 import { requestReportTranslation } from './providers/openai-report-translation.js';
 
@@ -36,10 +37,10 @@ export function validateReportTranslation(translations, entries) {
 }
 
 export async function translateReport(prepared, analysis, colors, {
-  token = process.env.OPENAI_API_KEY, fetchImpl = fetch, provider = requestReportTranslation,
+  token = process.env.OPENAI_API_KEY, fetchImpl = fetch, provider = requestReportTranslation, configurationRevision,
 } = {}) {
   const entries = textEntries(prepared, analysis, colors);
-  const inputHash = createHash('sha256').update(VERSION).update(JSON.stringify(entries)).digest('hex');
+  const inputHash = createHash('sha256').update(VERSION).update(JSON.stringify(entries)).update(configurationRevision ?? '').digest('hex');
   const cachePath = path.join(prepared.root, 'report-translation.en.json');
   let cached;
   try { cached = JSON.parse(await readFile(cachePath, 'utf8')); }
@@ -49,7 +50,7 @@ export async function translateReport(prepared, analysis, colors, {
     translations = cached.translations;
     reused = true;
   } else {
-    const result = await provider(entries, { token, fetchImpl });
+    const result = await provider(entries, { token, fetchImpl: standaloneRequests(prepared.root, 'translation', fetchImpl) });
     translations = result.translations;
     usage = result.usage ?? null;
   }

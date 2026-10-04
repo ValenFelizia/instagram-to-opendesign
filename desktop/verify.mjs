@@ -7,6 +7,7 @@ import { tmpdir } from 'node:os';
 import { spawn } from 'node:child_process';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { profileFixture } from '../test/helpers/profile.js';
 
 const require = createRequire(import.meta.url);
 const { _electron } = require(process.env.PLAYWRIGHT_MODULE || 'playwright');
@@ -95,6 +96,51 @@ try {
   }, imported.id);
   assert.equal(jobProof.state, 'completed'); assert.equal(jobProof.outputRetained, true);
   results.push(`Bundled node:sqlite ${jobProof.version}: intent/acknowledgement, inventoried snapshot and fresh-store recovery without external Node or network`);
+  const pipelineFixture = await profileFixture();
+  const pipelineSource = JSON.parse(await readFile(path.join(pipelineFixture.root, 'instagram-source.json'), 'utf8'));
+  pipelineSource.profile.externalUrls = [];
+  pipelineSource.profile.avatar = { kind: 'image', assetPath: 'assets/avatar.png' };
+  pipelineSource.posts[0].media = [{ id: 'media-1', kind: 'image', assetPath: 'assets/product.jpg' }];
+  await writeFile(path.join(pipelineFixture.root, 'instagram-source.json'), JSON.stringify(pipelineSource));
+  const pipelineProof = await electronApp.evaluate(async ({ app }, fixture) => {
+    const path = process.getBuiltinModule('path'), fs = process.getBuiltinModule('fs'), crypto = process.getBuiltinModule('crypto');
+    const packagedRequire = process.getBuiltinModule('module').createRequire(path.join(app.getAppPath(), 'package.json'));
+    const { Workspace } = packagedRequire('./desktop/workspace.cjs');
+    const { JobStore } = packagedRequire('./desktop/jobs.cjs');
+    const { Pipeline } = packagedRequire('./desktop/pipeline.cjs');
+    const workspace = new Workspace(path.join(app.getPath('userData'), 'pipeline-proof'));
+    const project = workspace.create('Pipeline synthetic', 'https://www.instagram.com/example_studio/').active;
+    const input = path.join(workspace.project(project).directory, 'data', 'example_studio');
+    fs.cpSync(fixture.directory, input, { recursive: true });
+    const root = path.join(app.getPath('userData'), 'pipeline-database');
+    const options = { resolveProject: id => workspace.project(id) };
+    let store = new JobStore(root, options), calls = 0, failReport = true;
+    const integration = {
+      credentials: { revision: () => 'synthetic', withKey: async (_provider, operation) => operation('synthetic-no-live-key') },
+      fault: point => { if (point === 'stage-report-before-checkpoint' && failReport) throw new Error('synthetic-report-fault'); },
+      fetchImpl: async (_url, request) => {
+        calls++; const name = JSON.parse(request.body).text.format.name;
+        const output = name === 'brand_inferences' ? { inferences: fixture.inferences } : fixture.colors;
+        return Response.json({ id: `resp_synthetic_${calls}`, model: 'gpt-6-luna', status: 'completed', usage: { input_tokens: 7, output_tokens: 2 },
+          output: [{ type: 'message', content: [{ type: 'output_text', text: JSON.stringify(output) }] }] });
+      }
+    };
+    try {
+      let pipeline = new Pipeline(store, integration);
+      const job = pipeline.plan(project, { taskId: crypto.randomUUID(), includePackage: true });
+      try { await pipeline.run(job.id, pipeline.authorize(job.id, job.planHash)); throw new Error('Expected fault'); }
+      catch (error) { if (error.message !== 'synthetic-report-fault') throw error; }
+      const failed = store.view(job.id).state, ids = pipeline.requests(job.id).map(record => record.id);
+      store.close(); store = new JobStore(root, options); failReport = false;
+      pipeline = new Pipeline(store, integration);
+      const recovered = await pipeline.run(job.id, pipeline.authorize(job.id, job.planHash), { recovery: true });
+      return { failed, recovered: recovered.state, calls, stableRequests: JSON.stringify(ids) === JSON.stringify(pipeline.requests(job.id).map(record => record.id)),
+        stages: pipeline.stages(job.id).map(stage => stage.name) };
+    } finally { store.close(); }
+  }, { directory: pipelineFixture.root, inferences: pipelineFixture.analysis.inferences.map(({ id, ...item }) => item), colors: pipelineFixture.colors.candidates });
+  assert.equal(pipelineProof.failed, 'failed'); assert.equal(pipelineProof.recovered, 'completed');
+  assert.equal(pipelineProof.calls, 2); assert.equal(pipelineProof.stableRequests, true); assert.ok(pipelineProof.stages.includes('report'));
+  results.push('Packaged core analysis/colors/compiler/report: private responses and stable request IDs survive report failure and database reopen, without another provider attempt');
   const syntheticKey = `synthetic-${randomUUID()}`;
   await page.locator('#settings').click();
   await page.locator('#credential-key').fill(syntheticKey);
@@ -139,7 +185,9 @@ try {
   await poll(() => page.evaluate(() => document.activeElement.id), value => value === 'exit');
   assert.equal(await page.evaluate(() => document.activeElement.id), 'exit');
   await electronApp.evaluate(({ BrowserWindow }) => BrowserWindow.getAllWindows()[0].close());
-  await page.locator('#confirm-close').click();
+  const closedView = page.waitForEvent('close');
+  await page.locator('#confirm-close').click().catch(error => { if (!page.isClosed()) throw error; });
+  await closedView;
   await poll(() => electronApp.evaluate(({ BrowserWindow }) => BrowserWindow.getAllWindows().length), value => value === 0);
   await new Promise(resolve => setTimeout(resolve, 1100));
   assert.equal(await workerPid(), pid);

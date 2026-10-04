@@ -4,7 +4,7 @@ import { ANALYSIS_MODEL } from './openai.js';
 export const DIRECTIONS_MODEL = ANALYSIS_MODEL;
 export const DIRECTIONS_SCHEMA = JSON.parse(await readFile(new URL('../../schemas/creative-directions.schema.json', import.meta.url), 'utf8'));
 
-export async function requestCreativeDirections(context, { token = process.env.OPENAI_API_KEY, fetchImpl = fetch } = {}) {
+export async function requestCreativeDirections(context, { token = process.env.OPENAI_API_KEY, fetchImpl = fetch, onUsage } = {}) {
   if (!token) throw new Error('OPENAI_API_KEY is required only for explicit creative generation.');
   const response = await fetchImpl('https://api.openai.com/v1/responses', {
     method: 'POST', headers: { authorization: `Bearer ${token}`, 'content-type': 'application/json' },
@@ -17,6 +17,7 @@ export async function requestCreativeDirections(context, { token = process.env.O
   });
   if (!response.ok) throw new Error(`Creative provider returned HTTP ${response.status}.`);
   const result = await response.json();
+  await onUsage?.({ model: result.model ?? DIRECTIONS_MODEL, responseId: result.id, usage: result.usage });
   if (result.status !== 'completed') throw new Error(`Creative provider was ${result.status ?? 'invalid'}.`);
   const messages = result.output?.filter((item) => item.type === 'message') ?? [];
   if (messages.some((item) => item.content?.some((part) => part.type === 'refusal'))) throw new Error('Creative provider refused the request.');

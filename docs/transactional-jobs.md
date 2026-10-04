@@ -6,7 +6,7 @@ Tracking: [issue 53](https://github.com/ValenFelizia/instagram-to-opendesign/iss
 
 The app uses Electron's bundled `node:sqlite` `DatabaseSync`, not an external native binding. The CLI keeps its Node >=20 contract: its portable filesystem interlock does not import SQLite. Development/tests use Node 24. The binding is tested inside the packaged executable without an external Node executable on PATH. [Node SQLite API](https://nodejs.org/api/sqlite.html).
 
-`workspace/jobs/jobs.sqlite` has schema version 1, foreign keys, strict tables, rollback journaling and FULL synchronous mode. Migration is one transaction; a newer version or unreadable database fails closed without replacing the database. The existing bounded JSON project registry and protected credentials remain separate. Large files live in inventoried project snapshots, not database blobs.
+`workspace/jobs/jobs.sqlite` has schema version 2, foreign keys, strict tables, rollback journaling and FULL synchronous mode. Each migration is one transaction; a newer version or unreadable database fails closed without replacing the database. Version 2 adds the [pipeline recipe/request/stage records](recoverable-pipeline.md); the version 1 kernel tables retain their contracts. The existing bounded JSON project registry and protected credentials remain separate. Large files live in inventoried project snapshots, not database blobs.
 
 | Record | Authority |
 | --- | --- |
@@ -17,7 +17,7 @@ The app uses Electron's bundled `node:sqlite` `DatabaseSync`, not an external na
 | Snapshot | Unique owner/session, input/output kind, preparing/ready/committed state, exact inventory and SHA-256 |
 | Latest | Project/task pointer advanced only with a validated committed snapshot |
 
-No keys, request/response text, URLs, arbitrary error payloads or prices are copied into these records. `brand-run/v1` and accounting contracts are unchanged. Issue 54 must checkpoint actual responses/observations and perform canonical schema validation; an acknowledged fake response is not a real recoverable provider response.
+No keys, request/response text, URLs or arbitrary error payloads are copied into the kernel records above. Version 2's separate pipeline request metadata retains returned usage/billing and phase provenance; private raw payloads live in project files. `brand-run/v1` remains compatible. Issue 54 integrates response checkpoints and canonical schema validation; an acknowledged fake response alone is not a recoverable provider response.
 
 ## Authorization and ownership
 

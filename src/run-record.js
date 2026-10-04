@@ -105,7 +105,7 @@ export function runEffortEvents(record, currency = null) {
       !['complete', 'review-required', 'failed'].includes(record.status) || !record.endedAt) {
     throw new Error('Invalid brand-run/v1 record.');
   }
-  const types = { ingestion: 'ingestion', evidence: 'asset-preparation', analysis: 'analysis', colors: 'analysis', compilation: 'asset-preparation' };
+  const types = { ingestion: 'ingestion', evidence: 'asset-preparation', analysis: 'analysis', colors: 'analysis', compilation: 'asset-preparation', directions: 'analysis', report: 'asset-preparation', export: 'asset-preparation' };
   const events = [];
   for (const phase of record.phases) {
     if (!types[phase.name] || phase.id !== `${record.id}-${phase.name}` || !Array.isArray(phase.attempts)) throw new Error('Invalid run phase.');

@@ -1,5 +1,6 @@
 import { copyFile, lstat, mkdir, readFile, realpath, writeFile } from 'node:fs/promises';
 import path from 'node:path';
+import { standaloneRequests } from './request-checkpoints.js';
 import Ajv2020 from 'ajv/dist/2020.js';
 import { prepareAnalysis, validateAnalysis } from './analyze.js';
 import { buildAssetCatalog } from './asset-catalog.js';
@@ -119,18 +120,20 @@ export async function prepareBrief(profileDir) {
   return { prepared, analysis, request, decisions, selected, catalog, context, inputHash, blockers, codeContext, channel };
 }
 
-export async function suggestDirections(profileDir, { provider = requestCreativeDirections, token, fetchImpl, force = false } = {}) {
+export async function suggestDirections(profileDir, { provider = requestCreativeDirections, token, fetchImpl, force = false, configurationRevision } = {}) {
   const state = await prepareBrief(profileDir);
   if (state.blockers.length) throw new Error(`Resolve the request before paid generation: ${state.blockers.join(' ')}`);
   const cacheFile = path.join(state.prepared.root, 'creative-directions.json');
   const cached = await readOptionalJson(cacheFile);
-  if (!force && cached?.schemaVersion === 'creative-directions/v1' && cached.inputHash === state.inputHash) {
+  if (!force && cached?.schemaVersion === 'creative-directions/v1' && cached.inputHash === state.inputHash &&
+      (configurationRevision == null || cached.configurationRevision === configurationRevision)) {
     validateDirections(cached.directions, state.context); return { ...cached, reused: true };
   }
-  const result = await provider(state.context, { token, fetchImpl });
+  const result = await provider(state.context, { token, fetchImpl: standaloneRequests(state.prepared.root, 'directions', fetchImpl) });
   validateDirections(result.directions, state.context);
   const cache = { schemaVersion: 'creative-directions/v1', inputHash: state.inputHash, model: DIRECTIONS_MODEL,
-    generatedAt: new Date().toISOString(), directions: result.directions, usage: result.usage ?? null };
+    generatedAt: new Date().toISOString(), directions: result.directions, usage: result.usage ?? null,
+    ...(configurationRevision ? { configurationRevision } : {}) };
   await writeJsonAtomically(cacheFile, cache);
   return { ...cache, reused: false };
 }

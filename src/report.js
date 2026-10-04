@@ -24,7 +24,7 @@ function safeProfileUrl(value) {
 }
 
 async function thumbnail(file) {
-  const buffer = await sharp(file).rotate().resize(420, 420, { fit: 'inside', withoutEnlargement: true })
+  const buffer = await sharp(await readFile(file)).rotate().resize(420, 420, { fit: 'inside', withoutEnlargement: true })
     .jpeg({ quality: 72, mozjpeg: true }).toBuffer();
   return `data:image/jpeg;base64,${buffer.toString('base64')}`;
 }
@@ -113,7 +113,7 @@ async function replaceFile(file, content) {
 }
 
 export async function buildBrandReport(profileDir, { outputPath, language = 'es', token = process.env.OPENAI_API_KEY,
-  fetchImpl = fetch, translationProvider } = {}) {
+  fetchImpl = fetch, translationProvider, configurationRevision } = {}) {
   reportCopy(language);
   const prepared = await prepareAnalysis(profileDir);
   const analysis = JSON.parse(await readFile(path.join(prepared.root, 'brand-analysis.json'), 'utf8'));
@@ -126,7 +126,7 @@ export async function buildBrandReport(profileDir, { outputPath, language = 'es'
   const interactive = reviewHtml(await reviewSnapshot(prepared, analysis), language);
   const colors = await loadColors(prepared, analysis);
   const translated = language === 'en'
-    ? await translateReport(prepared, analysis, colors, { token, fetchImpl, provider: translationProvider })
+    ? await translateReport(prepared, analysis, colors, { token, fetchImpl, provider: translationProvider, configurationRevision })
     : null;
   const thumbs = new Map(await Promise.all(prepared.images.map(async (image) =>
     [image.evidenceId, await thumbnail(image.absolutePath)])));
