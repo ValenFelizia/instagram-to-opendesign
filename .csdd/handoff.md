@@ -1,5 +1,9 @@
 # Handoff
 
+## Delivery/history source review — 2026-10-04
+
+Issue #56 is ready for review on codex/task-deliveries-history, stacked on PR #64/#55 head 9b4945e while the operator reviews it. Land #64 first, then retarget the #56 PR to main; do not treat pending parent source as integrated. Use docs/task-deliveries.md and DEC-014 for the explicit disclosure, immutable packet/result/feedback, orphan handling and supplied attempt/charge contracts. Existing v1 exporters and native manual gates stay separate. Unknown project identities are not silently rebound; no full-backup restore wizard was added. Local verification passed 155/155 plus 15/15 final delivery/legacy checks, 657-entry audit and actual packaged export/feedback/effort/store-reopen proof. No live providers, private cases, rendered/publication acceptance or release. Next implementation slice is #57 guided UI; preserve direct minimal labels and the scoped privileged APIs rather than adding arbitrary renderer paths. Prior #55 checkpoint below remains its dated source-review state.
+
 ## Task authority checkpoint — 2026-10-04
 
 The operator merged PR #62/#63. Their merge commits a6c3d5f/c7739d7 are verified ancestors of origin/main c7739d7; issues #53/#54 are closed. Their earlier parent-first/source-review instructions below are consumed. Windows CI 37220147076/37227598539 passed at source heads 726f4e6/1427b07; native #51/#52/#58 gates remain separate.

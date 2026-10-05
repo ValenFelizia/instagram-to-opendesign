@@ -35,7 +35,7 @@ V2 binds only explicitly selected inference IDs and sources used by the request,
 - `correctionPreview(project, command)` shows old/new rule values, base document hash and affected tasks. `correct(project, command, acknowledgment)` requires that exact preview hash and affected-task list.
 - `acceptPublication(project, taskId, revision, input)` records human acceptance of exact artifact bytes for a specific platform/use. It returns `publicationOperationAuthorized: false`; sending, merging, deploying or uploading remains a separate operation.
 
-The local task document uses optimistic revisions, retained original requests/directions and before/after history. Atomic checked writes flush the staged file before replacing the previous record. Bounds are 100 tasks, 1,000 history events and 16 MiB per authority document. No automatic history purge is introduced. Explicit project backups include this private history, but relocating/rebinding it to another project identity is later issue-56 work; unknown identities fail closed.
+The local task document uses optimistic revisions, retained original requests/directions and before/after history. Atomic checked writes flush the staged file before replacing the previous record. Bounds are 100 tasks, 1,000 history events and 16 MiB per authority document. No automatic history purge is introduced. Explicit project backups include this private history under its original identity; unknown/rebound identities fail closed. Issue #56's [delivery/history broker](task-deliveries.md) keeps that boundary and does not silently migrate authority to a new project identity.
 
 ## Sourced corrections
 

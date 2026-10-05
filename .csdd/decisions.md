@@ -1,5 +1,14 @@
 # Decisions
 
+## DEC-014 — Keep portable disclosure separate from private delivery and effort history
+
+- Status: implementation decision for issue #56, pending operator source review; builds on PR #64/#55.
+- Date: 2026-10-04
+- Context: a machine-local approved request contains repository locations and source history that should not travel by default. External agents may return results and incomplete observations independently of OpenDesign.
+- Decision: add explicit agent-handoff v2 projection/inventory and a main-owned append-only delivery ledger. Bind explicit disclosure selection to preview/revision/key; retain exact original selected bytes and withheld citation metadata. Archive returned revisions/original feedback without acceptance. Import explicitly supplied source/attempt/charge identities, reject conflicts and retain unknown/mixed measurements. Reuse the generic verifier and existing optional OpenDesign token adapter; preserve v1 CLI contracts.
+- Rationale: useful portable context and local durable provenance have different privacy/authority boundaries. Exact history must remain inspectable without inferring permission, creative quality or instrumentation from an exported artifact.
+- Consequence: uniquely promoted directories and the ledger are separate commits; unindexed orphans are visible, not ready. No automatic publication, provider dispatch, purge, full-project identity migration or vendor capture. See docs/task-deliveries.md for canonical behavior and limits. Renderer integration is #57.
+
 ## DEC-013 — Version task exploration, execution review and exact publication acceptance separately
 
 - Status: implementation decision for issue #55, pending operator source review; reviewed proposal #44 is the product basis.

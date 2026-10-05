@@ -2,7 +2,17 @@
 
 ## In Progress
 
+
 ## Ready to Land
+
+- [ ] GitHub #56 — Integrate generic handoff, result history and external effort records.
+  - Owner: Valentin Felizia
+  - Agent: Codex
+  - Scope: source review of the privileged delivery broker, explicit portable disclosure, immutable result/feedback revisions and supplied effort source/attempt/charge records. No UI, providers or private cases.
+  - Updated: 2026-10-04
+  - Depends on: #55 at 9b4945e (PR #64 open); #53/#54 merged on main c7739d7.
+  - Verification: 155/155 full synthetic suite, followed by 15/15 final delivery/legacy handoff checks; unsigned NSIS rebuild, 657-entry package/source audit and actual packaged export/history/feedback/effort/reopen passed. Windows CI is separate evidence after execution.
+  - Landing: codex/task-deliveries-history targets codex/selective-task-authority for isolated #56 review; merge #64 first and retarget to main. Operator controls merge. Guided UI follows #57; native #51/#52/#58 gates remain open.
 
 - [ ] GitHub #55 — Implement selective review and task authority contracts.
   - Owner: Valentin Felizia
@@ -37,10 +47,6 @@
   - Landed: main c28ef9c through operator-merged PR #60, verified 2026-10-04. Issue stays open for documented manual gates; CI 37183836134 passed at 01d9881.
   - Note: user authorized app implementation. No UI framework chosen; plain HTML shell only. Subsequent managed projects/credentials, durable jobs and paid integration remain #52–#57.
 
-- [ ] GitHub #56 — Integrate generic handoff, result history and external effort records.
-  - Owner: Valentin Felizia
-  - Depends on: #52, #53, #54, #55
-  - Scope: no active source-code claim; see docs/app-implementation.md.
 - [ ] GitHub #57 — Wire guided onboarding and accessible progress to actual jobs.
   - Owner: Valentin Felizia
   - Depends on: #51–#56
