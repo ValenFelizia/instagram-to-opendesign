@@ -11,7 +11,7 @@
   - Scope: source review of the privileged delivery broker, explicit portable disclosure, immutable result/feedback revisions and supplied effort source/attempt/charge records. No UI, providers or private cases.
   - Updated: 2026-10-04
   - Depends on: #55 at 9b4945e (PR #64 open); #53/#54 merged on main c7739d7.
-  - Verification: 155/155 full synthetic suite, followed by 15/15 final delivery/legacy handoff checks; unsigned NSIS rebuild, 657-entry package/source audit and actual packaged export/history/feedback/effort/reopen passed. Windows CI is separate evidence after execution.
+  - Verification: 155/155 full synthetic suite, followed by 30/30 final authority/delivery/legacy checks including safe original names and exact artifact acceptance; unsigned NSIS rebuild, 657-entry package/source audit and actual packaged export/history/feedback/effort/reopen passed. Final Windows CI is separate evidence after execution.
   - Landing: codex/task-deliveries-history targets codex/selective-task-authority for isolated #56 review; merge #64 first and retarget to main. Operator controls merge. Guided UI follows #57; native #51/#52/#58 gates remain open.
 
 - [ ] GitHub #55 — Implement selective review and task authority contracts.

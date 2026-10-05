@@ -42,7 +42,7 @@ Existing explicit project backups include this private ledger and original feedb
 
 `result(project, deliveryId, {sourceRoot, files, feedback, previousId})` reads only explicitly supplied relative files and verifies their hashes; unrelated files in a Downloads directory are not scanned. File kinds are html/screenshot/feedback/supporting. Each `task-result/v1` revision binds the delivery's immutable context/inventory hash, predecessor and first output. Originals are copied without modification into `results/<id>/artifacts/`. Original feedback files and attributed review notes are distinct; notes require a preserved feedback file, reviewer and explicit or unknown request-specific cause.
 
-An incorrect predecessor or source hash refuses the write. Existing revisions are never overwritten; changed return files require another revision. Result history keeps `needs-human-review`, never infers quality, legal rights, rendered accessibility or acceptance from a screenshot. It is destination-neutral and does not require model/vendor/version information for an unknown external generation.
+An incorrect predecessor or source hash refuses the write. Existing revisions are never overwritten; changed return files require another revision. Safe original names with spaces/Unicode remain intact and are supported by #55's exact artifact review; case aliases remain rejected. Result history keeps `needs-human-review`, never infers quality, legal rights, rendered accessibility or acceptance from a screenshot. It is destination-neutral and does not require model/vendor/version information for an unknown external generation.
 
 ## Explicit supplied effort
 

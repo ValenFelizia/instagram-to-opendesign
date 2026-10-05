@@ -8,6 +8,7 @@ import { briefFixture, fixtureDirections } from './helpers/brief.js';
 import { prepareBrief } from '../src/brief.js';
 import { verifyAgentHandoff } from '../src/agent-handoff.js';
 import { digest } from '../src/local.js';
+import { publicationChecks } from '../src/task-authority.js';
 const require = createRequire(import.meta.url);
 const { Workspace } = require('../desktop/workspace.cjs');
 const { JobStore } = require('../desktop/jobs.cjs');
@@ -206,4 +207,20 @@ test('history contention and input detachment retain the explicitly selected dis
   const broken = new Deliveries(f.store, { fault: point => { if (point === 'history-before-commit') f.store.close(); } });
   await assert.rejects(() => f.deliver('generic', undefined, broken), /job-store-unavailable/);
   const reopened = new Deliveries(f.open()); assert.equal((await reopened.history(f.project)).deliveries.length, 1);
+});
+
+test('returned names with spaces and Unicode bind exact publication review; case aliases are refused', async t => {
+  const f = await fixture(t), delivered = await f.deliver(), sourceRoot = path.join(f.root, 'returned'); fs.mkdirSync(sourceRoot);
+  const name = 'historia versión final.html'; write(path.join(sourceRoot, name), '<h1>Fictional reviewed output</h1>');
+  const sha256 = digest(fs.readFileSync(path.join(sourceRoot, name))), result = await f.broker.result(f.project, delivered.id,
+    { sourceRoot, files: [{ path: name, sha256, kind: 'html' }], feedback: [], previousId: null });
+  const prepared = await f.authority.preview(f.project, f.task.id), files = [{ path: `results/${result.id}/artifacts/${name}`, sha256 }];
+  const reviewer = { reviewer: 'Synthetic operator', reviewedAt: '2026-01-03T00:00:00Z' };
+  const input = { executionId: prepared.execution.id, target: { platform: 'instagram-story', use: 'public-publication' }, files,
+    grant: { ...reviewer, sourceId: 'S-REQUEST', assetIds: prepared.brief.assets.map(row => row.id), platform: 'instagram-story', use: 'public-publication' },
+    review: { ...reviewer, sourceId: 'S-REQUEST', executionId: prepared.execution.id, artifactHash: digest(JSON.stringify(files)), checks: publicationChecks('instagram-story') } };
+  await assert.rejects(() => f.authority.acceptPublication(f.project, f.task.id, prepared.revision,
+    { ...input, files: [files[0], { ...files[0], path: files[0].path.toUpperCase() }] }), /invalid-artifact/);
+  const accepted = await f.authority.acceptPublication(f.project, f.task.id, prepared.revision, input);
+  assert.equal(accepted.publicationOperationAuthorized, false); assert.equal((await f.broker.history(f.project)).results.length, 1);
 });

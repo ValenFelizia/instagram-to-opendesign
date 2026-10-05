@@ -2,7 +2,7 @@ const fs = require('node:fs');
 const path = require('node:path');
 const { randomUUID } = require('node:crypto');
 const { pathToFileURL } = require('node:url');
-const { fail, UUID, checked, inside, inventory, fingerprint, atomicJson } = require('./paths.cjs');
+const { fail, UUID, checked, inside, safeName, inventory, fingerprint, atomicJson } = require('./paths.cjs');
 const core = () => import(pathToFileURL(path.join(__dirname, '../src/task-authority.js')).href);
 const clone = value => structuredClone(value);
 const keys = (value, allowed) => value && typeof value === 'object' && !Array.isArray(value) && Object.keys(value).length === allowed.length && allowed.every(key => Object.hasOwn(value, key));
@@ -125,10 +125,10 @@ class TaskAuthority {
     });
   }
   artifact(env, files) {
-    if (!Array.isArray(files) || !files.length || files.length > 100 || new Set(files.map(file => file.path)).size !== files.length) fail('invalid-artifact');
+    if (!Array.isArray(files) || !files.length || files.length > 100 || files.some(file => typeof file?.path !== 'string') || new Set(files.map(file => file.path.toLowerCase())).size !== files.length) fail('invalid-artifact');
     let total = 0;
     const recorded = files.map(file => {
-      if (!keys(file, ['path', 'sha256']) || typeof file.path !== 'string' || !/^results\/[A-Za-z0-9._/-]+$/.test(file.path) || !HASH.test(file.sha256) || file.path.split('/').some(part => part === '..' || part.startsWith('.'))) fail('invalid-artifact');
+      if (!keys(file, ['path', 'sha256']) || !file.path.startsWith('results/') || file.path.includes('\\') || !HASH.test(file.sha256) || file.path.split('/').some(part => !safeName(part) || part.startsWith('.'))) fail('invalid-artifact');
       const absolute = path.resolve(env.directory, file.path); if (!inside(env.directory, absolute)) fail('invalid-artifact'); checked(absolute);
       if (!fs.statSync(absolute).isFile() || fs.statSync(absolute).size > 32 * 1024 * 1024) fail('invalid-artifact');
       total += fs.statSync(absolute).size; if (total > 256 * 1024 * 1024) fail('invalid-artifact');
