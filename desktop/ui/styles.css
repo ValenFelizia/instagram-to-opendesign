@@ -3,27 +3,31 @@
 body { margin: 0; font-size: 16px; line-height: 1.55; }
 header { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 16px 28px; border-bottom: 1px solid #d6dce2; background: white; }
 header span { font-weight: 600; }
-main { max-width: 700px; margin: 40px auto; padding: 0 24px; }
+main { max-width: 960px; margin: 40px auto; padding: 0 24px; }
 h1 { font-size: clamp(25px, 4vw, 34px); line-height: 1.2; margin: 8px 0 16px; letter-spacing: -.02em; }
 h2 { font-size: 18px; margin: 0; }
+h3 { font-size: 16px; margin: 0 0 10px; }
 .eyebrow, .muted { color: #515c68; font-size: 14px; }
 section { padding: 24px; background: white; border: 1px solid #d6dce2; border-radius: 10px; margin: 28px 0 20px; }
+.guided > .guided-layout > div > section,
+.guided aside > section { margin: 0 0 16px; }
 dl { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin: 24px 0; }
 dt { color: #515c68; font-size: 14px; }
 dd { margin: 6px 0 0; font-weight: 600; }
 button { min-height: 44px; padding: 9px 18px; border: 1px solid #a6b0ba; border-radius: 7px; background: white; font: inherit; cursor: pointer; }
-#start, #confirm-close { background: #263e31; color: white; border-color: #263e31; }
+#start, #confirm-close, .primary, #confirm-consent { background: #263e31; color: white; border-color: #263e31; }
 button:disabled { background: #e6e9ec !important; color: #545f69 !important; border-color: #c3cbd2 !important; cursor: default; }
 :focus-visible { outline: 3px solid #1765bf; outline-offset: 4px; }
 summary { cursor: pointer; min-height: 44px; padding: 8px 0; }
 details p { color: #515c68; }
 .skip { position: absolute; top: -90px; left: 20px; padding: 12px; background: white; }
 .skip:focus { top: 10px; }
-#error { color: #982629; }
+#error, #guided-error, #consent-error { color: #982629; }
 #workspace-error, #project-error, #credential-error { color: #982629; }
 header .actions { flex-shrink: 0; }
 label { display: block; margin: 16px 0 6px; }
 input, select { width: 100%; min-height: 44px; padding: 9px 10px; border: 1px solid #a6b0ba; border-radius: 5px; background: white; color: inherit; font: inherit; }
+input[type="checkbox"] { width: auto; min-height: 24px; margin-right: 8px; }
 input[aria-invalid="true"] { border: 2px solid #982629; }
 form .actions { margin-top: 20px; }
 .actions.project-actions { justify-content: flex-start; }
@@ -32,9 +36,18 @@ form .actions { margin-top: 20px; }
 #projects li strong, #projects li span { display: block; }
 #projects li span { color: #515c68; font-size: 14px; margin: 4px 0 12px; }
 #projects .actions { justify-content: flex-start; }
-@media (max-width: 480px) { header { flex-wrap: wrap; } }
+.statusbar { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; justify-content: space-between; margin-bottom: 16px; }
+.guided-layout { display: grid; grid-template-columns: 1.4fr .9fr; gap: 16px; }
+.timeline { list-style: none; padding: 0; margin: 0; }
+.timeline li { display: flex; justify-content: space-between; gap: 12px; padding: 10px 0; border-bottom: 1px solid #e4e8ec; }
+.totals { font-size: 22px; font-weight: 600; margin: 8px 0 12px; }
+.attempt { padding: 12px 0; border-bottom: 1px solid #e4e8ec; }
+.attempt h3 { font-size: 14px; margin: 0 0 6px; }
+.visually-hidden { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0; }
+@media (max-width: 800px) { .guided-layout { grid-template-columns: 1fr; } }
+@media (max-width: 480px) { header { flex-wrap: wrap; padding: 12px 16px; } main { margin-top: 24px; padding: 0 16px; } section { padding: 18px; } dl { grid-template-columns: 1fr; gap: 12px; } }
 dialog { width: min(500px, calc(100% - 32px)); max-height: calc(100% - 32px); border: 1px solid #a6b0ba; border-radius: 10px; padding: 24px; }
 dialog::backdrop { background: #20252b66; }
 .actions { display: flex; justify-content: flex-end; gap: 12px; flex-wrap: wrap; }
-@media (max-width: 480px) { header { padding: 12px 16px; } main { margin-top: 24px; padding: 0 16px; } section { padding: 18px; } dl { grid-template-columns: 1fr; gap: 12px; } }
 @media (forced-colors: active) { button, section, dialog { border: 1px solid CanvasText; } :focus-visible { outline-color: Highlight; } }
+@media (prefers-reduced-motion: reduce) { * { scroll-behavior: auto !important; animation: none !important; transition: none !important; } }

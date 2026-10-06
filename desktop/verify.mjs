@@ -199,6 +199,65 @@ try {
   assert.equal(authorityProof.delivery, 'verified'); assert.equal(authorityProof.deliveryCurrent, true); assert.equal(authorityProof.resultRetained, true);
   assert.equal(authorityProof.attempts, 1); assert.equal(authorityProof.unknownCost, null); assert.equal(authorityProof.exported, true);
   results.push('Packaged generic/OpenDesign task handoff: explicit inventory, portable export, immutable result/feedback and idempotent supplied effort survive store reopen; unknown billing stays null');
+  const guidedProof = await electronApp.evaluate(async ({ app }, fixture) => {
+    const fs = process.getBuiltinModule('fs'), path = process.getBuiltinModule('path'), crypto = process.getBuiltinModule('crypto');
+    const packagedRequire = process.getBuiltinModule('module').createRequire(path.join(app.getAppPath(), 'package.json'));
+    const { Workspace } = packagedRequire('./desktop/workspace.cjs');
+    const { JobStore } = packagedRequire('./desktop/jobs.cjs');
+    const { Pipeline } = packagedRequire('./desktop/pipeline.cjs');
+    const { TaskAuthority } = packagedRequire('./desktop/task-authority.cjs');
+    const { Deliveries } = packagedRequire('./desktop/deliveries.cjs');
+    const { GuidedBroker } = packagedRequire('./desktop/guided.cjs');
+    const workspace = new Workspace(path.join(app.getPath('userData'), 'guided-proof'));
+    const project = workspace.create('Guided synthetic', 'https://www.instagram.com/example_studio/').active;
+    const input = path.join(workspace.project(project).directory, 'data', 'example_studio');
+    fs.cpSync(fixture.directory, input, { recursive: true });
+    const database = path.join(app.getPath('userData'), 'guided-database');
+    const options = { resolveProject: id => workspace.project(id) };
+    let store = new JobStore(database, options);
+    try {
+      const pipeline = new Pipeline(store, {
+        credentials: { revision: () => 'synthetic', withKey: async (_provider, operation) => operation('synthetic-no-live-key') },
+        fetchImpl: async (_url, request) => {
+          const name = JSON.parse(request.body).text.format.name;
+          const output = name === 'brand_inferences' ? { inferences: fixture.inferences } : fixture.colors;
+          return Response.json({ id: 'resp_guided', model: 'gpt-6-luna', status: 'completed', usage: { input_tokens: 4, output_tokens: 1 },
+            output: [{ type: 'message', content: [{ type: 'output_text', text: JSON.stringify(output) }] }] });
+        },
+      });
+      const guided = new GuidedBroker({
+        store, pipeline, authority: new TaskAuthority(store), deliveries: new Deliveries(store),
+        dialog: { showOpenDialog: async () => ({ canceled: true, filePaths: [] }) },
+        window: () => ({}), authorized: () => true,
+      });
+      const planned = await guided.handle({ action: 'plan', projectId: project, taskId: crypto.randomUUID(), taskRevision: 1, options: { includePackage: true, includeReport: true } });
+      const denied = await guided.handle({ action: 'authorize', projectId: project, jobId: planned.job.id, planHash: planned.job.planHash, consent: false });
+      const authorized = await guided.handle({ action: 'authorize', projectId: project, jobId: planned.job.id, planHash: planned.job.planHash, consent: true });
+      const ran = await guided.handle({ action: 'run', projectId: project, jobId: planned.job.id, planHash: planned.job.planHash, authorization: authorized.authorization, recovery: false });
+      store.close(); store = new JobStore(database, options);
+      const reopened = new GuidedBroker({
+        store, pipeline: new Pipeline(store, { credentials: { revision: () => 'synthetic', withKey: async (_p, op) => op('x') }, fetchImpl: async () => { throw new Error('reopen-dispatch'); } }),
+        authority: new TaskAuthority(store), deliveries: new Deliveries(store),
+        dialog: { showOpenDialog: async () => ({ canceled: true, filePaths: [] }) }, window: () => ({}), authorized: () => true,
+      });
+      const status = await reopened.handle({ action: 'status', projectId: project });
+      return {
+        denied: denied.code, completed: ran.job.state, reopenDispatches: status.progress.reopenDispatches,
+        percentage: status.progress.spend.percentage, cancellationSupported: status.progress.cancellationSupported,
+        stages: status.progress.stages.filter(stage => stage.status === 'completed').length,
+        available: status.progress.available.length, serialized: JSON.stringify(status.progress),
+      };
+    } finally { store.close(); }
+  }, { directory: pipelineFixture.root, inferences: pipelineFixture.analysis.inferences.map(({ id, ...item }) => item), colors: pipelineFixture.colors.candidates });
+  assert.equal(guidedProof.denied, 'consent-required');
+  assert.equal(guidedProof.completed, 'completed');
+  assert.equal(guidedProof.reopenDispatches, false);
+  assert.equal(guidedProof.percentage, null);
+  assert.equal(guidedProof.cancellationSupported, false);
+  assert.ok(guidedProof.stages >= 1);
+  assert.ok(guidedProof.available >= 1);
+  assert.equal(guidedProof.serialized.includes('synthetic-no-live-key'), false);
+  results.push('Packaged guided broker: scoped consent, real stages/partial inventory and spend projection survive reopen without dispatch, percentage or cancellation claims');
   const syntheticKey = `synthetic-${randomUUID()}`;
   await page.locator('#settings').click();
   await page.locator('#credential-key').fill(syntheticKey);
