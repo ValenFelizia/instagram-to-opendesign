@@ -2,16 +2,17 @@
 
 ## In Progress
 
+
 ## Ready to Land
 
-- [ ] GitHub #55 — Implement selective review and task authority contracts.
+- [ ] GitHub #56 — Integrate generic handoff, result history and external effort records.
   - Owner: Valentin Felizia
   - Agent: Codex
-  - Scope: source review of versioned exploration/selection, sourced correction/history, scoped invalidation and exact output acceptance. Legacy CLI gates retained; no UI/live/private cases.
-  - Updated: 2026-10-04
-  - Depends on: #53/#54 merged through PR #62/#63, verified main c7739d7.
-  - Verification: 141/141 full synthetic suite followed by 14/14 final authority checks, including detached input during asynchronous validation; final Windows NSIS rebuild, 655-entry package/source audit and actual packaged review/SQLite reopen/source revocation passed. CI is separate evidence after execution.
-  - Landing: codex/selective-task-authority targets main; operator controls merge. New delivery/history #56 and guided controls #57 follow; native #51/#52/#58 gates stay open.
+  - Scope: source review of the privileged delivery broker, explicit portable disclosure, immutable result/feedback revisions and supplied effort source/attempt/charge records. No UI, providers or private cases.
+  - Updated: 2026-10-06
+  - Depends on: #55 landed through PR #64 at main 3da3d81; #53/#54 merged through PR #62/#63.
+  - Verification: 155/155 full synthetic suite, followed by 30/30 final authority/delivery/legacy checks including safe original names and exact artifact acceptance; unsigned NSIS rebuild, 657-entry package/source audit and actual packaged export/history/feedback/effort/reopen passed. Final Windows CI is separate evidence after execution.
+  - Landing: codex/task-deliveries-history rebased onto main 3da3d81 (PR #65); operator controls merge. Next is guided UI #57; native #51/#52/#58 gates remain open.
 
 
 ## Blocked
@@ -37,10 +38,6 @@
   - Landed: main c28ef9c through operator-merged PR #60, verified 2026-10-04. Issue stays open for documented manual gates; CI 37183836134 passed at 01d9881.
   - Note: user authorized app implementation. No UI framework chosen; plain HTML shell only. Subsequent managed projects/credentials, durable jobs and paid integration remain #52–#57.
 
-- [ ] GitHub #56 — Integrate generic handoff, result history and external effort records.
-  - Owner: Valentin Felizia
-  - Depends on: #52, #53, #54, #55
-  - Scope: no active source-code claim; see docs/app-implementation.md.
 - [ ] GitHub #57 — Wire guided onboarding and accessible progress to actual jobs.
   - Owner: Valentin Felizia
   - Depends on: #51–#56
@@ -72,6 +69,13 @@
 
 Retention: 5
 
+- [x] GitHub #55 — Implement selective review and task authority contracts.
+  - Owner: Valentin Felizia
+  - Agent: Codex
+  - Scope: released
+  - Landed: main 3da3d81 through operator-merged PR #64, verified 2026-10-06; GitHub issue closed.
+  - Verification: 141/141 full synthetic suite followed by 14/14 final authority checks; Windows NSIS rebuild, 655-entry package/source audit and actual packaged review/SQLite reopen/source revocation passed. Windows CI 37240698128 passed at 9b4945e. Delivery/history #56 lands next; native #51/#52/#58 gates stay open.
+
 - [x] GitHub #54 — Integrate core stages, recoverable responses and request accounting.
   - Owner: Valentin Felizia
   - Agent: Codex
@@ -99,10 +103,3 @@ Retention: 5
   - Scope: released
   - Landed: main @ 86bcf94 (PR #49), verified 2026-10-04; GitHub issue closed, VAL-106 Done after operator merge.
   - Verification: previously passed 7 synthetic lifecycle tests and 69/69 full suite. DEC-011 selects Electron/Windows/background close/explicit Exit/managed projects; no installed app, secure store or production scheduler claim.
-
-- [x] GitHub #44 / VAL-105 — Specify selective review and exploration/approval states.
-  - Owner: Valentin Felizia
-  - Agent: Codex
-  - Scope: released
-  - Landed: main @ 4b50917 (PR #48), verified 2026-10-03; GitHub issue closed, VAL-105 Done after operator merge.
-  - Verification: 62 synthetic tests and Edge walkthrough previously passed. Proposal/prototype deliverables complete; production contracts and actual authority remain unchanged.

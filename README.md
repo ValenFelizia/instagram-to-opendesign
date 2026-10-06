@@ -33,7 +33,7 @@ The implemented review stage supports [declared-use accessibility checks](docs/a
 
 The end-to-end command preserves [local run accounting](docs/run-accounting.md): provider usage, returned billing when available, phase wall time, cache reuse and failed attempts. Finished records import into result review without counting the same event twice. Unknown costs and human effort remain unknown.
 
-The app's [versioned task authority](docs/task-authority.md) separates goal-only exploration, explicit selected execution review and exact output acceptance. Sourced corrections retain original rules/evidence and history; task-specific dependencies preserve unrelated approvals. Existing v1 CLI gates stay unchanged. Guided renderer controls and new delivery integration follow separately.
+The app's [versioned task authority](docs/task-authority.md) separates goal-only exploration, explicit selected execution review and exact output acceptance. Sourced corrections retain original rules/evidence and history; task-specific dependencies preserve unrelated approvals. The [delivery/history broker](docs/task-deliveries.md) adds explicit portable disclosure, immutable result/feedback revisions and supplied external effort with provenance and unknown coverage. Existing v1 CLI gates stay unchanged; guided renderer controls follow separately.
 
 Node 20+ and `pnpm install` run the project. The package compiler uses Sharp to create a local WebP moodboard; the report generator uses it for portable thumbnails. See the guides above and [CONTRIBUTING.md](CONTRIBUTING.md).
 

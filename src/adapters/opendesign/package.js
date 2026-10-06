@@ -25,6 +25,24 @@ export function packageSlug(username) {
   return slug;
 }
 
+// Optional file adapter for an explicitly selected portable task, not catalog installation.
+// Reuse the pinned token renderer/allowlist; never copy an unrelated profile package.
+export async function adaptTaskHandoff(root, brief) {
+  const overrides = Object.fromEntries(brief.verifiedRules.filter(rule => ['token', 'font'].includes(rule.kind)).map(rule => [rule.target, rule.value]));
+  const tokens = await renderTokens({ primary: { hex: null }, secondary: { hex: null } }, overrides);
+  await mkdir(path.join(root, 'source'), { recursive: true });
+  await write(root, 'source/token-origins.json', json(tokens.origins));
+  await write(root, 'tokens.css', tokens.css);
+  const { briefMarkdown } = await import('../../brief.js');
+  await write(root, 'DESIGN.md', briefMarkdown(brief) + '\n## Token authority\n\nOnly explicitly confirmed token rules override functional defaults. A selectable local system does not confirm inferred identity or authorize publication.\n');
+  await write(root, 'manifest.json', json({ schemaVersion: 'od-design-system-project/v1', id: packageSlug(brief.request.username),
+    name: `${brief.request.username} (task draft)`, category: 'Experimental', description: 'Selected portable task context; review is still required.',
+    source: { type: 'local', path: '.' }, files: { design: 'DESIGN.md', tokens: 'tokens.css' }, assetsDir: 'assets' }));
+  // Keep the package a draft: do not install/publish a catalog entry or start generation.
+  await write(root, 'adapter.json', json({ schemaVersion: 'task-adapter/v1', recipient: 'opendesign',
+    entrypoint: 'START.md', design: 'DESIGN.md', tokens: 'tokens.css', installationPerformed: false, generationStarted: false }));
+}
+
 function contrastRatio(a, b) {
   const luminance = (hex) => {
     const channels = hex.slice(1).match(/../g).map((part) => parseInt(part, 16) / 255);

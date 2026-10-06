@@ -8,6 +8,7 @@ const { Credentials } = require('./credentials.cjs');
 const { JobStore, digest } = require('./jobs.cjs');
 const { Pipeline } = require('./pipeline.cjs');
 const { TaskAuthority } = require('./task-authority.cjs');
+const { Deliveries } = require('./deliveries.cjs');
 const { BROKER, Broker } = require('./broker.cjs');
 
 app.setName('Instagram to OpenDesign');
@@ -91,6 +92,7 @@ else {
     pipeline = new Pipeline(jobs, { credentials });
     // Main-owned authority API; guided review/paid IPC remains issue 57.
     const taskAuthority = new TaskAuthority(jobs);
+    const deliveries = new Deliveries(jobs);
     ipcMain.handle(BROKER, (event, request) => {
       const authorized = () => trustedSender(event, window, documentUrl) && !exiting;
       if (!authorized()) return { ok: false, code: 'request-unavailable' };

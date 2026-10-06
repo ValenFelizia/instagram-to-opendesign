@@ -153,6 +153,7 @@ try {
     const { Workspace } = packagedRequire('./desktop/workspace.cjs');
     const { JobStore } = packagedRequire('./desktop/jobs.cjs');
     const { TaskAuthority } = packagedRequire('./desktop/task-authority.cjs');
+    const { Deliveries } = packagedRequire('./desktop/deliveries.cjs');
     const workspace = new Workspace(path.join(app.getPath('userData'), 'authority-proof'));
     const project = workspace.create('Synthetic task authority', 'https://www.instagram.com/example_studio/').active;
     const input = path.join(workspace.project(project).directory, 'data', 'example_studio');
@@ -164,12 +165,29 @@ try {
       const draft = await authority.create(project, fixture.exploration);
       const selected = await authority.select(project, draft.taskId, draft.revision, fixture.request, fixture.directions);
       const execution = await authority.reviewExecution(project, draft.taskId, selected.revision, selected.key, fixture.reviewer);
+      let deliveries = new Deliveries(store);
+      const preview = await deliveries.preview(project, draft.taskId, execution.revision, 'opendesign');
+      const delivery = await deliveries.create(project, draft.taskId, execution.revision, { recipient: 'opendesign', previewHash: preview.previewHash, paths: preview.files.filter(file => file.required).map(file => file.path) });
+      const shared = path.join(app.getPath('userData'), 'shared-proof'); fs.mkdirSync(shared);
+      const exported = await deliveries.export(project, delivery.id, shared);
+      const returned = path.join(app.getPath('userData'), 'returned-proof'); fs.mkdirSync(returned);
+      fs.writeFileSync(path.join(returned, 'feedback.txt'), 'Synthetic original feedback.');
+      const crypto = process.getBuiltinModule('crypto'), hashFile = file => crypto.createHash('sha256').update(fs.readFileSync(file)).digest('hex');
+      const result = await deliveries.result(project, delivery.id, { sourceRoot: returned, files: [{ path: 'feedback.txt', kind: 'feedback', sha256: hashFile(path.join(returned, 'feedback.txt')) }],
+        feedback: [{ sourcePath: 'feedback.txt', reviewer: 'Synthetic operator', note: 'Retain the original.', cause: 'unknown' }], previousId: null });
+      fs.writeFileSync(path.join(returned, 'effort.json'), JSON.stringify({ schemaVersion: 'external-effort/v1', sourceId: 'packaged-source', records: [{ provider: 'fictional', attemptId: 'request-1', kind: 'generation', wallMs: 100, humanMinutes: null, usage: null, billing: null }] }));
+      const effort = { sourceRoot: returned, sourcePath: 'effort.json', sourceId: 'packaged-source', sha256: hashFile(path.join(returned, 'effort.json')) };
+      await deliveries.importEffort(project, delivery.id, effort); await deliveries.importEffort(project, delivery.id, effort);
       store.close(); store = new JobStore(database, options); authority = new TaskAuthority(store);
+      deliveries = new Deliveries(store);
+      const retained = await deliveries.readback(project, delivery.id), history = await deliveries.history(project);
       const recovered = await authority.preview(project, draft.taskId);
       fs.appendFileSync(path.join(input, 'manual/request.md'), '\nSynthetic source change.');
       const changed = await authority.preview(project, draft.taskId);
       return { stableExecution: recovered.execution.id === execution.id, currentAfterReopen: recovered.executionCurrent,
-        publicationCurrent: recovered.publicationCurrent, changedCurrent: changed.executionCurrent, version: recovered.brief.schemaVersion };
+        publicationCurrent: recovered.publicationCurrent, changedCurrent: changed.executionCurrent, version: recovered.brief.schemaVersion,
+        delivery: retained.integrity, deliveryCurrent: retained.executionCurrent, resultRetained: history.results[0].id === result.id,
+        attempts: history.summary.attempts, unknownCost: history.summary.totalCost, exported: fs.existsSync(path.join(shared, exported.folder, 'START.md')) };
     } finally { store.close(); }
   }, { directory: authorityFixture.root, request: authorityRequest,
     directions: { schemaVersion: 'creative-directions/v1', inputHash: authorityState.inputHash, directions: fixtureDirections(authorityState.context) },
@@ -178,6 +196,9 @@ try {
   assert.equal(authorityProof.stableExecution, true); assert.equal(authorityProof.currentAfterReopen, true);
   assert.equal(authorityProof.publicationCurrent, false); assert.equal(authorityProof.changedCurrent, false); assert.equal(authorityProof.version, 'design-brief/v2');
   results.push('Packaged task authority: explicit v2 selection/review survives database reopen; changed confirmation revokes execution without granting publication');
+  assert.equal(authorityProof.delivery, 'verified'); assert.equal(authorityProof.deliveryCurrent, true); assert.equal(authorityProof.resultRetained, true);
+  assert.equal(authorityProof.attempts, 1); assert.equal(authorityProof.unknownCost, null); assert.equal(authorityProof.exported, true);
+  results.push('Packaged generic/OpenDesign task handoff: explicit inventory, portable export, immutable result/feedback and idempotent supplied effort survive store reopen; unknown billing stays null');
   const syntheticKey = `synthetic-${randomUUID()}`;
   await page.locator('#settings').click();
   await page.locator('#credential-key').fill(syntheticKey);

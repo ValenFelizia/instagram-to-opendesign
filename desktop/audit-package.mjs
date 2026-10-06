@@ -22,7 +22,7 @@ assert.ok(files.some(file => file.endsWith('/desktop/jobs.cjs')));
 assert.ok(files.some(file => file.endsWith('/src/writer-guard.cjs')));
 assert.ok(files.some(file => file.endsWith('/src/core.js')));
 assert.ok(files.some(file => file.includes('/@img/sharp-win32-x64/')));
-for (const module of ['desktop/jobs.cjs', 'desktop/pipeline.cjs', 'desktop/task-authority.cjs', 'src/task-authority.js', 'src/brief.js', 'src/decisions.js', 'src/writer-guard.cjs', 'src/pipeline.js', 'src/request-checkpoints.js']) {
-  assert.ok(extractFile(path.join(root, 'dist/app/win-unpacked/resources/app.asar'), module).equals(fs.readFileSync(path.join(root, module))), 'Packaged job modules must match current source');
+for (const module of ['desktop/jobs.cjs', 'desktop/pipeline.cjs', 'desktop/task-authority.cjs', 'desktop/deliveries.cjs', 'src/task-delivery.js', 'src/agent-handoff.js', 'src/adapters/opendesign/package.js', 'src/task-authority.js', 'src/brief.js', 'src/decisions.js', 'src/writer-guard.cjs', 'src/pipeline.js', 'src/request-checkpoints.js']) {
+  assert.ok(extractFile(path.join(root, 'dist/app/win-unpacked/resources/app.asar'), path.normalize(module)).equals(fs.readFileSync(path.join(root, module))), 'Packaged job modules must match current source');
 }
 console.log(JSON.stringify({ packageInventory: 'pass', entries: files.length, privateData: 'excluded', nativeTarget: 'win32-x64' }));

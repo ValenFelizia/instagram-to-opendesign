@@ -1,8 +1,17 @@
 # Decisions
 
+## DEC-014 — Keep portable disclosure separate from private delivery and effort history
+
+- Status: implementation decision for issue #56, pending operator source review; builds on #55 merged through PR #64 at main 3da3d81.
+- Date: 2026-10-04
+- Context: a machine-local approved request contains repository locations and source history that should not travel by default. External agents may return results and incomplete observations independently of OpenDesign.
+- Decision: add explicit agent-handoff v2 projection/inventory and a main-owned append-only delivery ledger. Bind explicit disclosure selection to preview/revision/key; retain exact original selected bytes and withheld citation metadata. Archive returned revisions/original feedback without acceptance. Import explicitly supplied source/attempt/charge identities, reject conflicts and retain unknown/mixed measurements. Reuse the generic verifier and existing optional OpenDesign token adapter; preserve v1 CLI contracts.
+- Rationale: useful portable context and local durable provenance have different privacy/authority boundaries. Exact history must remain inspectable without inferring permission, creative quality or instrumentation from an exported artifact.
+- Consequence: uniquely promoted directories and the ledger are separate commits; unindexed orphans are visible, not ready. No automatic publication, provider dispatch, purge, full-project identity migration or vendor capture. See docs/task-deliveries.md for canonical behavior and limits. Renderer integration is #57.
+
 ## DEC-013 — Version task exploration, execution review and exact publication acceptance separately
 
-- Status: implementation decision for issue #55, pending operator source review; reviewed proposal #44 is the product basis.
+- Status: source reviewed and operator-merged through PR #64, verified main 3da3d81; no new product scope.
 - Date: 2026-10-04
 - Context: legacy design-request/design-brief v1 requires concrete selected copy/assets and must not be reinterpreted as goal-only context. Prototype choices are not shipped authority, and site-editing/publication prerequisites need explicit contracts.
 - Decision: add exploration-request/exploratory-context v1 and explicitly opted-in design-request/design-brief v2. V2 adds bounded conceptual pages, required authorized code for editing and selected inference bindings; `inputs-ready` is distinct from recorded human execution review. Retain v1 CLI gates unchanged. Explicit sourced corrections write brand-decisions v2 with retained typed history; no automatic migration. Main-owned task records bind revision/key and exact output inventory/platform/use with current human rights/render sources. Acceptance never performs publication.
@@ -17,7 +26,7 @@
 - Context: issue #53 requires transactions, revision-bound single-use authorization, writer fencing and inventory-based recovery. The CLI supports Node >=20, while the selected Electron app bundles a newer Node runtime.
 - Decision: use the bundled `node:sqlite` DatabaseSync API only in privileged desktop code. Keep a versioned strict job database and a separate lifetime SQLite writer transaction, plus an exclusive token-based project filesystem interlock shared by app operations and the provided CLI. Keep the bounded JSON registry and OS-protected credentials separate. Freeze bounded input trees; publish only validated append-only snapshots through a fenced metadata transaction.
 - Rationale: actual packaged Electron 44.5.1 executed SQLite 3.53.4, fake intent/acknowledgement, snapshot promotion and store restart with no external Node on PATH. No additional native ABI dependency is needed; importing the core/CLI does not import SQLite.
-- Consequence: no PID/time-based automatic lock removal, remote replay, exactly-once billing or power-loss guarantee. Unknown/incomplete/CLI markers fail closed. Fresh retry requires a new plan and authorization. Issue #54 core stages/response/accounting is operator-merged through PR #63 at main c7739d7; selective authority #55 and guided controls #57 are separate increments. Native manual gates from #51/#52 remain open.
+- Consequence: no PID/time-based automatic lock removal, remote replay, exactly-once billing or power-loss guarantee. Unknown/incomplete/CLI markers fail closed. Fresh retry requires a new plan and authorization. Issue #54 core stages/response/accounting is operator-merged through PR #63 at main c7739d7; selective authority #55 is operator-merged through PR #64 at main 3da3d81; delivery/history #56 and guided controls #57 are separate increments. Native manual gates from #51/#52 remain open.
 - Evidence: `test/jobs.test.js` actual process termination, SQLite contention/FULL, Windows file sharing locks and migration failure checks; `desktop/verify.mjs` actual bundled runtime proof; [protocol and limits](../docs/transactional-jobs.md).
 
 ## DEC-011 — Windows-first Electron app with managed local projects
