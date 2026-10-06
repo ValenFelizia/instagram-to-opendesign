@@ -1,5 +1,6 @@
 import { readFile } from 'node:fs/promises';
 import path from 'node:path';
+import { randomUUID } from 'node:crypto';
 import { emptyDecisions, inferenceFingerprint, loadDecisions, validateDecisionDocument } from './decisions.js';
 import { digest, json } from './local.js';
 import { writeJsonAtomically } from './atomic.js';
@@ -31,6 +32,9 @@ export async function importReview(prepared, analysis, incoming) {
     if (baseRevision !== decisionRevision(previous)) throw new Error('Decisions changed since the report was opened. Rebuild and review again.');
     if (decision.fingerprint !== await inferenceFingerprint(inference, prepared)) throw new Error('Review evidence changed. Rebuild the report before importing.');
     const index = document.inferenceDecisions.findIndex((item) => item.inferenceId === decision.inferenceId);
+    if (document.schemaVersion === 'brand-decisions/v2') document.history.push({ id: randomUUID(), kind: 'inference-review',
+      reviewer: decision.reviewer ?? 'Local operator', reviewedAt: decision.reviewedAt ?? new Date().toISOString(),
+      reason: decision.note ?? 'Explicitly revisit inference', before: previous, after: decision });
     if (index < 0) document.inferenceDecisions.push(decision); else document.inferenceDecisions[index] = decision;
   }
   validateDecisionDocument(document);

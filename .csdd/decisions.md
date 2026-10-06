@@ -1,13 +1,23 @@
 # Decisions
 
+## DEC-013 — Version task exploration, execution review and exact publication acceptance separately
+
+- Status: implementation decision for issue #55, pending operator source review; reviewed proposal #44 is the product basis.
+- Date: 2026-10-04
+- Context: legacy design-request/design-brief v1 requires concrete selected copy/assets and must not be reinterpreted as goal-only context. Prototype choices are not shipped authority, and site-editing/publication prerequisites need explicit contracts.
+- Decision: add exploration-request/exploratory-context v1 and explicitly opted-in design-request/design-brief v2. V2 adds bounded conceptual pages, required authorized code for editing and selected inference bindings; `inputs-ready` is distinct from recorded human execution review. Retain v1 CLI gates unchanged. Explicit sourced corrections write brand-decisions v2 with retained typed history; no automatic migration. Main-owned task records bind revision/key and exact output inventory/platform/use with current human rights/render sources. Acceptance never performs publication.
+- Rationale: incomplete creative inputs remain useful without granting facts, rights or code mutation. Scoped dependencies preserve unrelated approvals; new identity/history and persisted observed revocations prevent silently reviving old authority.
+- Consequence: the correction's canonical document and separate task history are independent durable commits; dependency checks remain fail-closed after a partial write. No cross-file/SQLite atomicity, authenticated reviewer identity, legal verification or power-loss guarantee. Existing v1 exporters refuse new request fields/enum values; new delivery integration is #56, guided controls #57. No paid calls, private fixtures, UI polishing or release.
+- Evidence: [contracts and limits](../docs/task-authority.md), `test/task-authority.test.js`, actual packaged API verification in `desktop/verify.mjs`.
+
 ## DEC-012 — Use bundled SQLite for app coordination and a portable project interlock
 
-- Status: implementation choice for issue #53, pending operator source review; no new product scope.
+- Status: source reviewed and operator-merged through PR #62, verified main a6c3d5f; no new product scope.
 - Date: 2026-10-04
 - Context: issue #53 requires transactions, revision-bound single-use authorization, writer fencing and inventory-based recovery. The CLI supports Node >=20, while the selected Electron app bundles a newer Node runtime.
 - Decision: use the bundled `node:sqlite` DatabaseSync API only in privileged desktop code. Keep a versioned strict job database and a separate lifetime SQLite writer transaction, plus an exclusive token-based project filesystem interlock shared by app operations and the provided CLI. Keep the bounded JSON registry and OS-protected credentials separate. Freeze bounded input trees; publish only validated append-only snapshots through a fenced metadata transaction.
 - Rationale: actual packaged Electron 44.5.1 executed SQLite 3.53.4, fake intent/acknowledgement, snapshot promotion and store restart with no external Node on PATH. No additional native ABI dependency is needed; importing the core/CLI does not import SQLite.
-- Consequence: no PID/time-based automatic lock removal, remote replay, exactly-once billing or power-loss guarantee. Unknown/incomplete/CLI markers fail closed. Fresh retry requires a new plan and authorization. Whole-tree invalidation is conservative; real stage/schema/response/accounting integration stays #54, selective authority #55 and guided controls #57. Native manual gates from #51/#52 remain open after their operator-merged source PRs.
+- Consequence: no PID/time-based automatic lock removal, remote replay, exactly-once billing or power-loss guarantee. Unknown/incomplete/CLI markers fail closed. Fresh retry requires a new plan and authorization. Issue #54 core stages/response/accounting is operator-merged through PR #63 at main c7739d7; selective authority #55 and guided controls #57 are separate increments. Native manual gates from #51/#52 remain open.
 - Evidence: `test/jobs.test.js` actual process termination, SQLite contention/FULL, Windows file sharing locks and migration failure checks; `desktop/verify.mjs` actual bundled runtime proof; [protocol and limits](../docs/transactional-jobs.md).
 
 ## DEC-011 — Windows-first Electron app with managed local projects

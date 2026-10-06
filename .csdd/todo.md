@@ -4,23 +4,15 @@
 
 ## Ready to Land
 
-- [ ] GitHub #54 — Integrate core stages, recoverable responses and request accounting.
+- [ ] GitHub #55 — Implement selective review and task authority contracts.
   - Owner: Valentin Felizia
   - Agent: Codex
-  - Scope: bounded core stage planning, private actual-request checkpoints, same-attempt recovery, standalone provider accounting and immutable partial/output snapshots. No live paid requests or guided UI.
+  - Scope: source review of versioned exploration/selection, sourced correction/history, scoped invalidation and exact output acceptance. Legacy CLI gates retained; no UI/live/private cases.
   - Updated: 2026-10-04
-  - Depends on: #53 source under review in PR #62; branch codex/recoverable-core-pipeline starts at 726f4e6. Land the prerequisite first.
-  - Verification: final 128/128 synthetic tests, including 16 actual-module recovery/accounting cases; rebuilt Windows NSIS installer, 650-entry source-byte/package audit and actual packaged core/SQLite reopen recovery passed without extra fake requests. No live providers or private case material. CI is separate evidence after execution.
-  - Landing: source review on codex/recoverable-core-pipeline targeting main, after PR #62. Paid renderer controls remain #57; selective authority #55 and delivery/history #56 follow. Native installation/accessibility gates remain open.
+  - Depends on: #53/#54 merged through PR #62/#63, verified main c7739d7.
+  - Verification: 141/141 full synthetic suite followed by 14/14 final authority checks, including detached input during asynchronous validation; final Windows NSIS rebuild, 655-entry package/source audit and actual packaged review/SQLite reopen/source revocation passed. CI is separate evidence after execution.
+  - Landing: codex/selective-task-authority targets main; operator controls merge. New delivery/history #56 and guided controls #57 follow; native #51/#52/#58 gates stay open.
 
-- [ ] GitHub #53 — Implement transactional jobs, scoped attempt authorization and immutable snapshots.
-  - Owner: Valentin Felizia
-  - Agent: Codex
-  - Scope: packaged SQLite job store, ownership/fencing, revision-bound authorization, intent/uncertainty, snapshot commit/recovery, portable CLI writer interlock and synthetic process/failure verification. No live providers or guided paid UI.
-  - Updated: 2026-10-04
-  - Depends on: #51/#52 source merged through PR #60/#61; main dd4a1db verified.
-  - Verification: full 111/111 synthetic suite; 28/28 final storage/broker and 17/17 final job checks, including altered metadata; actual packaged bundled SQLite 3.53.4 intent/acknowledgement/snapshot/reopen, inherited shell/projects/DPAPI and 648-entry package/source-byte audit passed. Local unsigned NSIS installer rebuilt from final source. Windows CI is separate evidence after execution.
-  - Landing: source review on codex/transactional-jobs targeting main. No live provider/data, integrated core stages or guided paid controls; #54 follows. #51/#52 remain open for their native manual gates.
 
 ## Blocked
 
@@ -45,10 +37,6 @@
   - Landed: main c28ef9c through operator-merged PR #60, verified 2026-10-04. Issue stays open for documented manual gates; CI 37183836134 passed at 01d9881.
   - Note: user authorized app implementation. No UI framework chosen; plain HTML shell only. Subsequent managed projects/credentials, durable jobs and paid integration remain #52–#57.
 
-- [ ] GitHub #55 — Implement selective review and task authority contracts.
-  - Owner: Valentin Felizia
-  - Depends on: #53
-  - Scope: no active source-code claim; contract decisions remain explicit before implementation.
 - [ ] GitHub #56 — Integrate generic handoff, result history and external effort records.
   - Owner: Valentin Felizia
   - Depends on: #52, #53, #54, #55
@@ -84,6 +72,20 @@
 
 Retention: 5
 
+- [x] GitHub #54 — Integrate core stages, recoverable responses and request accounting.
+  - Owner: Valentin Felizia
+  - Agent: Codex
+  - Scope: released
+  - Landed: main c7739d7 through operator-merged PR #63, verified 2026-10-04; GitHub issue closed.
+  - Verification: 128/128 synthetic tests, 650-entry package audit and packaged SQLite/core recovery; Windows CI 37227598539 passed at 1427b07. No live paid requests, private cases or release; guided controls remain #57.
+
+- [x] GitHub #53 — Implement transactional jobs, scoped authorization and immutable snapshots.
+  - Owner: Valentin Felizia
+  - Agent: Codex
+  - Scope: released
+  - Landed: main a6c3d5f through operator-merged PR #62, verified 2026-10-04; GitHub issue closed.
+  - Verification: Windows CI 37220147076 passed at 726f4e6 with 112/112 tests, 648-entry package audit and actual bundled SQLite checks. Native gates #51/#52 stay open; no power-loss or exactly-once billing claim.
+
 - [x] GitHub #46 / VAL-107 — Design paid-action, cache and progress surfaces.
   - Owner: Valentin Felizia
   - Agent: Codex
@@ -104,17 +106,3 @@ Retention: 5
   - Scope: released
   - Landed: main @ 4b50917 (PR #48), verified 2026-10-03; GitHub issue closed, VAL-105 Done after operator merge.
   - Verification: 62 synthetic tests and Edge walkthrough previously passed. Proposal/prototype deliverables complete; production contracts and actual authority remain unchanged.
-
-- [x] GitHub #43 / VAL-104 — Prototype guided onboarding and an actionable dossier.
-  - Owner: Valentin Felizia
-  - Agent: Codex
-  - Scope: released
-  - Landed: main @ 55eb220 (PR #47), verified 2026-10-03; GitHub issue closed, VAL-104 Done.
-  - Verification: 56 synthetic tests and local Edge walkthrough; user accepted idea/flow and authorized merge. Future UI should be minimal with useful information and direct titles; visual/copy polishing explicitly deferred. No integrated app or assistive-technology certification.
-
-- [x] GitHub #37 — Preserve provider usage and phase effort.
-  - Owner: Valentin Felizia
-  - Agent: Codex
-  - Scope: released
-  - Landed: main @ 92723b5 through PR #41, verified 2026-10-03; GitHub issue is closed.
-  - Verification: previously recorded 53 combined synthetic tests; returned usage/billing, phase effort and idempotent import remain separate. No live provider run or historical backfill.

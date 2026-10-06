@@ -1,0 +1,15 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object", "additionalProperties": false,
+  "required": ["schemaVersion", "username", "kind", "objective", "candidateCopy", "assetIds", "inferenceIds"],
+  "properties": {
+    "schemaVersion": {"const": "exploration-request/v1"},
+    "username": {"type": "string", "pattern": "^[A-Za-z0-9._]{1,30}$"},
+    "kind": {"enum": ["web-hero", "instagram-story", "promotional-image", "conceptual-landing", "website-change"]},
+    "objective": {"type": "string", "minLength": 1, "maxLength": 2000},
+    "candidateCopy": {"type": "array", "maxItems": 20, "items": {"type": "object", "additionalProperties": false, "required": ["id", "text"], "properties": {
+      "id": {"type": "string", "pattern": "^[A-Za-z0-9-]+$"}, "text": {"type": "string", "minLength": 1, "maxLength": 4000}}}},
+    "assetIds": {"type": "array", "maxItems": 24, "uniqueItems": true, "items": {"type": "string", "pattern": "^[A-Za-z0-9-]+$"}},
+    "inferenceIds": {"type": "array", "maxItems": 10, "uniqueItems": true, "items": {"type": "string", "pattern": "^[A-Za-z0-9-]+$"}}
+  }
+}

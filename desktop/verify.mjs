@@ -8,6 +8,8 @@ import { spawn } from 'node:child_process';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { profileFixture } from '../test/helpers/profile.js';
+import { briefFixture, fixtureDirections } from '../test/helpers/brief.js';
+import { prepareBrief } from '../src/brief.js';
 
 const require = createRequire(import.meta.url);
 const { _electron } = require(process.env.PLAYWRIGHT_MODULE || 'playwright');
@@ -141,6 +143,41 @@ try {
   assert.equal(pipelineProof.failed, 'failed'); assert.equal(pipelineProof.recovered, 'completed');
   assert.equal(pipelineProof.calls, 2); assert.equal(pipelineProof.stableRequests, true); assert.ok(pipelineProof.stages.includes('report'));
   results.push('Packaged core analysis/colors/compiler/report: private responses and stable request IDs survive report failure and database reopen, without another provider attempt');
+  const authorityFixture = await briefFixture('instagram-story');
+  const authorityRequest = { ...authorityFixture.request, schemaVersion: 'design-request/v2', pageScope: null, inferenceIds: [] };
+  const authorityState = await prepareBrief(authorityFixture.root, { requestDocument: authorityRequest });
+  authorityRequest.selectedDirectionId = 'D-1';
+  const authorityProof = await electronApp.evaluate(async ({ app }, fixture) => {
+    const fs = process.getBuiltinModule('fs'), path = process.getBuiltinModule('path');
+    const packagedRequire = process.getBuiltinModule('module').createRequire(path.join(app.getAppPath(), 'package.json'));
+    const { Workspace } = packagedRequire('./desktop/workspace.cjs');
+    const { JobStore } = packagedRequire('./desktop/jobs.cjs');
+    const { TaskAuthority } = packagedRequire('./desktop/task-authority.cjs');
+    const workspace = new Workspace(path.join(app.getPath('userData'), 'authority-proof'));
+    const project = workspace.create('Synthetic task authority', 'https://www.instagram.com/example_studio/').active;
+    const input = path.join(workspace.project(project).directory, 'data', 'example_studio');
+    fs.cpSync(fixture.directory, input, { recursive: true });
+    const database = path.join(app.getPath('userData'), 'authority-database'), options = { resolveProject: id => workspace.project(id) };
+    let store = new JobStore(database, options);
+    try {
+      let authority = new TaskAuthority(store);
+      const draft = await authority.create(project, fixture.exploration);
+      const selected = await authority.select(project, draft.taskId, draft.revision, fixture.request, fixture.directions);
+      const execution = await authority.reviewExecution(project, draft.taskId, selected.revision, selected.key, fixture.reviewer);
+      store.close(); store = new JobStore(database, options); authority = new TaskAuthority(store);
+      const recovered = await authority.preview(project, draft.taskId);
+      fs.appendFileSync(path.join(input, 'manual/request.md'), '\nSynthetic source change.');
+      const changed = await authority.preview(project, draft.taskId);
+      return { stableExecution: recovered.execution.id === execution.id, currentAfterReopen: recovered.executionCurrent,
+        publicationCurrent: recovered.publicationCurrent, changedCurrent: changed.executionCurrent, version: recovered.brief.schemaVersion };
+    } finally { store.close(); }
+  }, { directory: authorityFixture.root, request: authorityRequest,
+    directions: { schemaVersion: 'creative-directions/v1', inputHash: authorityState.inputHash, directions: fixtureDirections(authorityState.context) },
+    exploration: { schemaVersion: 'exploration-request/v1', username: 'example_studio', kind: 'instagram-story', objective: 'Explore a synthetic Story.', candidateCopy: [], assetIds: [], inferenceIds: [] },
+    reviewer: { reviewer: 'Synthetic operator', reviewedAt: '2026-01-03T00:00:00Z' } });
+  assert.equal(authorityProof.stableExecution, true); assert.equal(authorityProof.currentAfterReopen, true);
+  assert.equal(authorityProof.publicationCurrent, false); assert.equal(authorityProof.changedCurrent, false); assert.equal(authorityProof.version, 'design-brief/v2');
+  results.push('Packaged task authority: explicit v2 selection/review survives database reopen; changed confirmation revokes execution without granting publication');
   const syntheticKey = `synthetic-${randomUUID()}`;
   await page.locator('#settings').click();
   await page.locator('#credential-key').fill(syntheticKey);
