@@ -2,13 +2,17 @@
 
 ## In Progress
 
+
+## Ready to Land
+
 - [ ] GitHub #57 — Wire guided onboarding and accessible progress to actual jobs.
   - Owner: Valentin Felizia
   - Agent: Cursor Cloud
   - Scope: guided broker IPC, read-only spend projection, scoped paid confirmation, authority/delivery renderer actions; synthetic acceptance only. Packaged Narrator/zoom/high-contrast remain manual.
   - Updated: 2026-10-06
   - Depends on: #53–#56 landed on main 2bcb190; #51/#52 native manual gates still open and isolated.
-  - Verification: in progress on cursor/guided-onboarding-progress-c10b.
+  - Verification: 171/171 local synthetic suite (1 skipped unrelated), 16 guided acceptance cases; Windows CI green at head b9b4237. Screenshots attached to PR. Narrator/picker/clean-install remain manual.
+  - Landing: cursor/guided-onboarding-progress-c10b draft PR #66 targets main; operator controls merge.
 
 ## Ready to Land
 
