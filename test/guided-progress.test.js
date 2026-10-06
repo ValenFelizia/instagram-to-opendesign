@@ -18,13 +18,6 @@ const { Deliveries } = require('../desktop/deliveries.cjs');
 const { GuidedBroker, validGuidedRequest, notificationCopy, availableInventory } = require('../desktop/guided.cjs');
 
 const rootPath = () => fs.mkdtempSync(path.join(fs.realpathSync.native(tmpdir()), 'guided-test-'));
-function cleanup(t, root) {
-  t.after(() => {
-    assert.equal(path.dirname(root), fs.realpathSync.native(tmpdir()));
-    assert.ok(path.basename(root).startsWith('guided-test-') || path.basename(root).startsWith('brand-p0-test-'));
-    fs.rmSync(root, { recursive: true, force: true });
-  });
-}
 function openai(value) {
   return Response.json({
     id: 'resp_synthetic', model: 'gpt-6-luna', status: 'completed',
@@ -53,14 +46,14 @@ function record(id, phases, status = 'complete') {
 }
 
 async function appFixture(t) {
-  const f = await profileFixture(); cleanup(t, f.root);
+  const f = await profileFixture();
   const sourceFile = path.join(f.root, 'instagram-source.json');
   const source = JSON.parse(fs.readFileSync(sourceFile));
   source.profile.avatar = { kind: 'image', assetPath: 'assets/avatar.png', remoteUrl: 'https://scontent.cdninstagram.com/avatar.png' };
   source.profile.externalUrls = [];
   source.posts[0].media = [{ id: 'media-1', kind: 'image', assetPath: 'assets/product.jpg', remoteUrl: 'https://scontent.cdninstagram.com/product.jpg' }];
   fs.writeFileSync(sourceFile, JSON.stringify(source));
-  const root = rootPath(); cleanup(t, root);
+  const root = rootPath();
   const workspace = new Workspace(path.join(root, 'workspace'));
   const id = workspace.create('Example Studio', 'https://www.instagram.com/example_studio/').active;
   const input = path.join(workspace.project(id).directory, 'data', 'example_studio');
@@ -72,8 +65,22 @@ async function appFixture(t) {
     if (schema === 'brand_color_candidates') return openai(f.colors.candidates);
     throw new Error('Unexpected request');
   };
-  const store = new JobStore(path.join(root, 'jobs'), { resolveProject: projectId => workspace.project(projectId) });
-  t.after(() => { try { store.close(); } catch { /* Closed earlier for reopen proofs. */ } });
+  const stores = [];
+  const open = () => {
+    const store = new JobStore(path.join(root, 'jobs'), { resolveProject: projectId => workspace.project(projectId) });
+    stores.push(store);
+    return store;
+  };
+  const store = open();
+  // Close every SQLite writer before deleting fixtures so Windows does not EPERM the directory.
+  t.after(() => {
+    for (const item of stores) { try { item.close(); } catch { /* Already closed for reopen proofs. */ } }
+    assert.equal(path.dirname(root), fs.realpathSync.native(tmpdir()));
+    assert.ok(path.basename(root).startsWith('guided-test-'));
+    fs.rmSync(root, { recursive: true, force: true });
+    assert.ok(path.basename(f.root).startsWith('brand-p0-test-'));
+    fs.rmSync(f.root, { recursive: true, force: true });
+  });
   const pipeline = new Pipeline(store, {
     credentials: { revision: () => revision, withKey: async (_provider, operation) => operation('synthetic-private-token') },
     fetchImpl,
@@ -89,7 +96,7 @@ async function appFixture(t) {
     notify: payload => { notifications.push(payload); },
   });
   return {
-    root, workspace, id, input, store, pipeline, authority, deliveries, guided, notifications,
+    root, workspace, id, input, store, stores, open, pipeline, authority, deliveries, guided, notifications,
     changeConfiguration: () => { revision = 'changed'; },
     plan: options => pipeline.plan(id, { taskId: randomUUID(), includePackage: true, includeReport: true, ...options }),
   };
@@ -162,7 +169,12 @@ test('conflicting IDs and malformed amounts or usage reject aggregation', () => 
 });
 
 test('wall time and human effort stay separate; unfinished journals still project for UI', async t => {
-  const root = rootPath(); cleanup(t, root);
+  const root = rootPath();
+  t.after(() => {
+    assert.equal(path.dirname(root), fs.realpathSync.native(tmpdir()));
+    assert.ok(path.basename(root).startsWith('guided-test-'));
+    fs.rmSync(root, { recursive: true, force: true });
+  });
   const journal = await createRunRecord(root, { refresh: false, reanalyze: false, postLimit: 20 });
   await assert.rejects(journal.phase('analysis', async ({ observe }) => {
     await observe({ event: 'start', key: 'request', provider: 'synthetic', model: 'synthetic-model' });
@@ -226,8 +238,7 @@ test('worker interrupt and store reopen show interrupted state with partial inve
   // Simulate abrupt writer end: close marks running intent uncertain and jobs interrupted on next open.
   f.store.db.prepare("UPDATE jobs SET state='running',epoch=? WHERE id=?").run('synthetic-epoch', job.id);
   f.store.close();
-  const store = new JobStore(path.join(f.root, 'jobs'), { resolveProject: id => f.workspace.project(id) });
-  t.after(() => { try { store.close(); } catch {} });
+  const store = f.open();
   const recovered = store.view(job.id);
   assert.equal(recovered.state, 'interrupted');
   const pipeline = new Pipeline(store, {
