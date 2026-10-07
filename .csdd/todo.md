@@ -5,14 +5,16 @@
 
 ## Ready to Land
 
-- [ ] GitHub #56 — Integrate generic handoff, result history and external effort records.
+- [ ] GitHub #57 — Wire guided onboarding and accessible progress to actual jobs.
   - Owner: Valentin Felizia
-  - Agent: Codex
-  - Scope: source review of the privileged delivery broker, explicit portable disclosure, immutable result/feedback revisions and supplied effort source/attempt/charge records. No UI, providers or private cases.
+  - Agent: Cursor Cloud
+  - Scope: guided broker IPC, read-only spend projection, scoped paid confirmation, authority/delivery renderer actions; synthetic acceptance only. Packaged Narrator/zoom/high-contrast remain manual.
   - Updated: 2026-10-06
-  - Depends on: #55 landed through PR #64 at main 3da3d81; #53/#54 merged through PR #62/#63.
-  - Verification: 155/155 full synthetic suite, followed by 30/30 final authority/delivery/legacy checks including safe original names and exact artifact acceptance; unsigned NSIS rebuild, 657-entry package/source audit and actual packaged export/history/feedback/effort/reopen passed. Final Windows CI is separate evidence after execution.
-  - Landing: codex/task-deliveries-history rebased onto main 3da3d81 (PR #65); operator controls merge. Next is guided UI #57; native #51/#52/#58 gates remain open.
+  - Depends on: #53–#56 landed on main 2bcb190; #51/#52 native manual gates still open and isolated.
+  - Verification: 171/171 local synthetic suite (1 skipped unrelated), 16 guided acceptance cases; Windows CI green at head b9b4237. Screenshots attached to PR. Narrator/picker/clean-install remain manual.
+  - Landing: cursor/guided-onboarding-progress-c10b draft PR #66 targets main; operator controls merge.
+
+## Ready to Land
 
 
 ## Blocked
@@ -38,10 +40,6 @@
   - Landed: main c28ef9c through operator-merged PR #60, verified 2026-10-04. Issue stays open for documented manual gates; CI 37183836134 passed at 01d9881.
   - Note: user authorized app implementation. No UI framework chosen; plain HTML shell only. Subsequent managed projects/credentials, durable jobs and paid integration remain #52–#57.
 
-- [ ] GitHub #57 — Wire guided onboarding and accessible progress to actual jobs.
-  - Owner: Valentin Felizia
-  - Depends on: #51–#56
-  - Scope: no active source-code claim; packaged Windows accessibility remains acceptance work.
 - [ ] GitHub #58 — Verify Windows install, upgrade and retained local data.
   - Owner: Valentin Felizia
   - Depends on: #51, #57
@@ -68,6 +66,13 @@
 ## Recently Completed
 
 Retention: 5
+
+- [x] GitHub #56 — Integrate generic handoff, result history and external effort records.
+  - Owner: Valentin Felizia
+  - Agent: Codex
+  - Scope: released
+  - Landed: main 2bcb190 through operator-merged PR #65, verified 2026-10-06; GitHub issue closed.
+  - Verification: 155/155 synthetic tests plus authority/delivery checks, 657-entry package audit and packaged export/feedback/effort/reopen. Guided renderer controls remain #57.
 
 - [x] GitHub #55 — Implement selective review and task authority contracts.
   - Owner: Valentin Felizia

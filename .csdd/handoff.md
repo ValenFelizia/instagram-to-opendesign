@@ -1,10 +1,16 @@
 # Handoff
 
-## Delivery/history source review — 2026-10-06
+## Guided progress source review — 2026-10-06
+
+The operator squash-merged PR #65 (issue #56) into main at 2bcb190; the issue is closed. PR #60–#64 remain landed on main; native #51/#52/#58 gates stay open.
+
+Issue #57 is ready for source review on `cursor/guided-onboarding-progress-c10b`, based on that main. Use `docs/guided-progress.md` for the guided broker IPC, read-only spend projection, scoped consent binding and allowlisted notifications. Direct Spanish labels only; no fake percentages, fabricated invoices or unsupported cancellation claims. Errors never include secrets, profile identifiers, raw payloads or private paths. Packaged Narrator/zoom/high-contrast and real native picker/tray review remain manual gates shared with open #51/#52. No live providers, private fixtures, publication or release.
+
+## Delivery/history checkpoint — 2026-10-06
 
 The operator squash-merged PR #64 (issue #55) into main at 3da3d81; the issue is closed. PR #60–#63 remain landed on main; native #51/#52/#58 gates stay open. Earlier stacked-parent/retarget instructions for #65 are consumed.
 
-Issue #56 is ready for source review on codex/task-deliveries-history, rebased onto that main (PR #65). Use docs/task-deliveries.md and DEC-014 for the explicit disclosure, immutable packet/result/feedback, orphan handling and supplied attempt/charge contracts. Existing v1 exporters and native manual gates stay separate. Unknown project identities are not silently rebound; no full-backup restore wizard was added. Local verification passed 155/155 plus 30/30 final authority/delivery/legacy checks, 657-entry audit and actual packaged export/feedback/effort/store-reopen proof. No live providers, private cases, rendered/publication acceptance or release. Next implementation slice is #57 guided UI wired to real jobs; preserve direct minimal labels and the scoped privileged APIs rather than adding arbitrary renderer paths. Prior #55 checkpoint below remains its dated source-review state.
+Issue #56 landed through operator-merged PR #65 at main 2bcb190. Use docs/task-deliveries.md and DEC-014 for the explicit disclosure, immutable packet/result/feedback, orphan handling and supplied attempt/charge contracts. Existing v1 exporters and native manual gates stay separate. Unknown project identities are not silently rebound; no full-backup restore wizard was added. Local verification passed 155/155 plus 30/30 final authority/delivery/legacy checks, 657-entry audit and actual packaged export/feedback/effort/store-reopen proof. No live providers, private cases, rendered/publication acceptance or release. Next implementation slice is #57 guided UI wired to real jobs.
 
 ## Task authority checkpoint — 2026-10-04
 

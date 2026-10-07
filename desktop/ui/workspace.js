@@ -39,7 +39,11 @@
       li.append(title, status, actions); $('projects').append(li);
     }
     $('workspace-status').textContent = state.projects.length ? `${state.projects.filter(item => item.status === 'active').length} proyectos guardados.` : 'No hay proyectos guardados.';
-    $('project-next').textContent = state.active ? 'Proyecto abierto. El análisis y el informe se conectarán en el siguiente paso.' : 'Guardar un proyecto no inicia un análisis ni usa APIs.';
+    $('project-next').textContent = state.active
+      ? 'Proyecto abierto. Planificá la preparación desde Trabajo del proyecto; reabrir no reintenta pedidos.'
+      : 'Guardar un proyecto no inicia un análisis ni usa APIs.';
+    if (state.active && window.guidedPanel) void window.guidedPanel.show(state.active);
+    else if (window.guidedPanel) window.guidedPanel.hide();
     const next = document.getElementById(focused);
     if (next) next.focus(); else if (focused.startsWith('project-')) $('reload-projects').focus();
   }

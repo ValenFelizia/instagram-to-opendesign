@@ -8,6 +8,7 @@
   <link rel="stylesheet" href="styles.css">
   <script src="app.js" defer></script>
   <script src="workspace.js" defer></script>
+  <script src="guided.js" defer></script>
 </head>
 <body>
   <a class="skip" href="#main">Ir al contenido</a>
@@ -19,6 +20,42 @@
     <p id="workspace-error" role="alert" hidden></p>
     <ul id="projects" aria-label="Proyectos locales"></ul>
     <p id="project-next" class="muted">Guardar un proyecto no inicia un análisis ni usa APIs.</p>
+
+    <section id="guided-panel" class="guided" hidden aria-labelledby="guided-heading">
+      <div class="statusbar">
+        <h2 id="guided-heading">Trabajo del proyecto</h2>
+        <strong id="guided-status" tabindex="-1">Sin trabajo planificado</strong>
+        <button type="button" id="guided-refresh">Actualizar estado</button>
+      </div>
+      <p id="guided-announcement" class="visually-hidden" aria-live="polite"></p>
+      <p id="guided-error" role="alert" hidden></p>
+      <div class="guided-layout">
+        <div>
+          <section aria-labelledby="next-title">
+            <h3 id="next-title">Próxima acción</h3>
+            <div id="guided-next"></div>
+          </section>
+          <section aria-labelledby="progress-title">
+            <h3 id="progress-title">Etapas</h3>
+            <p class="muted">Último estado guardado. Sin porcentaje ni tiempo restante estimado.</p>
+            <ol id="guided-stages" class="timeline"></ol>
+          </section>
+          <section aria-labelledby="outputs-title">
+            <h3 id="outputs-title">Disponible</h3>
+            <div id="guided-available"></div>
+          </section>
+        </div>
+        <aside>
+          <section aria-labelledby="cost-title">
+            <h3 id="cost-title">Gasto registrado</h3>
+            <p class="muted">Proyecto · cada intento se cuenta una vez</p>
+            <div id="guided-spend"></div>
+            <p id="guided-limits" class="muted"></p>
+          </section>
+        </aside>
+      </div>
+    </section>
+
     <section aria-labelledby="state-label">
       <h2 id="state-label">Estado</h2>
       <p id="status" role="status">Preparando el proceso local…</p>
@@ -27,12 +64,21 @@
       <button id="start" type="button" disabled aria-describedby="scope">Iniciar prueba local</button>
       <p id="scope" class="muted">Dura unos 10 segundos. No usa APIs ni analiza un perfil.</p>
     </section>
-    <details><summary>Detalles de la prueba</summary><p id="ticks">0 pasos locales</p><p>La prueba vive mientras la app está abierta. «Salir» termina el proceso. Los proyectos se guardan; los trabajos recuperables se implementan después.</p></details>
+    <details><summary>Detalles de la prueba</summary><p id="ticks">0 pasos locales</p><p>La prueba vive mientras la app está abierta. «Salir» termina el proceso. El trabajo de proyecto se recupera desde el estado guardado; reabrir no reintenta pedidos.</p></details>
   </main>
   <dialog id="close-dialog" aria-labelledby="close-title" aria-describedby="close-description">
     <h2 id="close-title">La app sigue abierta</h2>
     <p id="close-description">Cerrar esta ventana deja el trabajo en segundo plano. Podés volver desde el icono o «Abrir» en la bandeja. Para detener la app, elegí «Salir».</p>
     <div class="actions"><button id="keep-open" autofocus>Volver</button><button id="confirm-close">Cerrar ventana</button></div>
+  </dialog>
+  <dialog id="consent-dialog" aria-labelledby="consent-title">
+    <form id="consent-form">
+      <h2 id="consent-title">Revisar pedido</h2>
+      <div id="consent-scope"></div>
+      <label><input id="authorize" type="checkbox"> Confirmó el alcance, los límites y que el importe final puede ser desconocido.</label>
+      <p id="consent-error" role="alert" hidden></p>
+      <div class="actions"><button id="cancel-consent" type="button">Cancelar</button><button id="confirm-consent" type="submit">Confirmar pedido</button></div>
+    </form>
   </dialog>
   <dialog id="project-dialog" aria-labelledby="project-title">
     <form id="project-form">

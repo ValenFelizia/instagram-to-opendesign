@@ -1,4 +1,4 @@
-const { app, BrowserWindow, ipcMain, Menu, Tray, nativeImage, utilityProcess, session, dialog, safeStorage } = require('electron');
+const { app, BrowserWindow, ipcMain, Menu, Tray, nativeImage, utilityProcess, session, dialog, safeStorage, Notification } = require('electron');
 const path = require('node:path');
 const { pathToFileURL } = require('node:url');
 const { CHANNEL, UPDATES, validRequest, trustedSender, workerEnvironment } = require('./protocol.cjs');
@@ -10,6 +10,7 @@ const { Pipeline } = require('./pipeline.cjs');
 const { TaskAuthority } = require('./task-authority.cjs');
 const { Deliveries } = require('./deliveries.cjs');
 const { BROKER, Broker } = require('./broker.cjs');
+const { CHANNEL: GUIDED, GuidedBroker } = require('./guided.cjs');
 
 app.setName('Instagram to OpenDesign');
 // Test launches isolate Chromium files; this argument is not exposed through renderer IPC.
@@ -26,7 +27,7 @@ let allowQuit = false;
 let closeExplained = false;
 let startupStep = 'ready';
 const documentUrl = pathToFileURL(path.join(__dirname, 'ui', 'index.html')).href;
-const allowedFiles = new Set(['index.html', 'app.js', 'workspace.js', 'styles.css'].map(name => pathToFileURL(path.join(__dirname, 'ui', name)).href));
+const allowedFiles = new Set(['index.html', 'app.js', 'workspace.js', 'guided.js', 'styles.css'].map(name => pathToFileURL(path.join(__dirname, 'ui', name)).href));
 
 function openWindow() {
   if (exiting) return;
@@ -90,7 +91,6 @@ else {
     });
     workspace.onMove = (id, token) => jobs.beforeProjectMutation(id, token);
     pipeline = new Pipeline(jobs, { credentials });
-    // Main-owned authority API; guided review/paid IPC remains issue 57.
     const taskAuthority = new TaskAuthority(jobs);
     const deliveries = new Deliveries(jobs);
     ipcMain.handle(BROKER, (event, request) => {
@@ -99,6 +99,20 @@ else {
       const broker = new Broker(workspace, credentials, dialog, { window: () => window, authorized,
         forbidden: [path.join(localRoot, 'credentials'), app.getAppPath()], importForbidden: [localRoot] });
       return broker.handle(request);
+    });
+    ipcMain.handle(GUIDED, (event, request) => {
+      const authorized = () => trustedSender(event, window, documentUrl) && !exiting;
+      if (!authorized()) return { ok: false, code: 'request-unavailable' };
+      const guided = new GuidedBroker({
+        store: jobs, pipeline, authority: taskAuthority, deliveries, dialog,
+        window: () => window, authorized,
+        notify: payload => {
+          if (!Notification.isSupported()) return;
+          // Allowlisted title/body only; never include profile, paths, keys or payloads.
+          new Notification({ title: payload.title, body: payload.body, silent: true }).show();
+        },
+      });
+      return guided.handle(request);
     });
     startupStep = 'supervisor';
     supervisor = new Supervisor(() => utilityProcess.fork(path.join(__dirname, 'worker.cjs'), [], {
