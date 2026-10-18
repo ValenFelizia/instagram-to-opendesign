@@ -2,16 +2,16 @@ name: Windows app shell
 on:
   workflow_dispatch:
   pull_request:
-    paths: ['desktop/**', 'bin/**', 'src/**', 'schemas/**', 'test/**', 'package.json', 'pnpm-lock.yaml', 'pnpm-workspace.yaml', '.github/workflows/windows-app.yml']
+    paths: ['desktop/**', 'bin/**', 'src/**', 'schemas/**', 'test/**', 'docs/manual-acceptance-debt.md', 'package.json', 'pnpm-lock.yaml', 'pnpm-workspace.yaml', '.github/workflows/windows-app.yml']
   push:
     branches: [main]
-    paths: ['desktop/**', 'bin/**', 'src/**', 'schemas/**', 'test/**', 'package.json', 'pnpm-lock.yaml', 'pnpm-workspace.yaml', '.github/workflows/windows-app.yml']
+    paths: ['desktop/**', 'bin/**', 'src/**', 'schemas/**', 'test/**', 'docs/manual-acceptance-debt.md', 'package.json', 'pnpm-lock.yaml', 'pnpm-workspace.yaml', '.github/workflows/windows-app.yml']
 permissions:
   contents: read
 jobs:
   shell:
     runs-on: windows-latest
-    timeout-minutes: 20
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -29,17 +29,21 @@ jobs:
           "TEMP=$appCiTemp" | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding utf8
           "TMP=$appCiTemp" | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding utf8
       - run: pnpm test
+      - run: pnpm app:cite
       - run: pnpm app:build
         env:
           CSC_IDENTITY_AUTO_DISCOVERY: 'false'
       - run: node desktop/audit-package.mjs
-      - run: pnpm app:verify --packaged
+      # The packaged child PATH is System32 only. This job's Node stays on the runner PATH.
+      - name: Verify packaged app (child PATH is System32 only)
+        run: pnpm app:verify --packaged
+      - run: pnpm app:guided
       - uses: actions/upload-artifact@v4
-        if: success()
+        if: always()
         with:
-          name: windows-app-shell-review
+          name: windows-app-shell-qa
           path: |
             dist/app/*setup.exe
-            tmp/app-shell-qa/packaged-verification.json
-            tmp/app-shell-qa/packaged.png
+            tmp/app-shell-qa/**
+          if-no-files-found: warn
           retention-days: 7
