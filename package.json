@@ -27,6 +27,7 @@
     "app:build": "electron-builder --config desktop/builder.json --win nsis --x64 --publish never",
     "app:verify": "node desktop/verify.mjs",
     "app:guided": "node desktop/acceptance/guided-ui.mjs",
+    "app:install": "node desktop/acceptance/install.mjs",
     "app:cite": "node desktop/acceptance/cite.mjs"
   },
   "license": "MIT",

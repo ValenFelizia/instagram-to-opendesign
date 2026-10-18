@@ -1,12 +1,12 @@
 # Manual acceptance debt
 
-This file lists every acceptance bullet from issues 51, 52, and 57. The bullet text is copied from the Acceptance section of each issue. `pnpm app:cite` checks this file against `desktop/acceptance/registry.mjs`. It does not read GitHub, and it does not mark a manual row passed.
+This file lists every acceptance bullet from issues 51, 52, 57, and 58. The bullet text is copied from the Acceptance section of each issue. `pnpm app:cite` checks this file against `desktop/acceptance/registry.mjs`. It does not read GitHub, and it does not mark a manual row passed.
 
 A row is automated when it has evidence or unit tests and an empty manual list. A row is partial when it has both. A row is manual when it has limits and no evidence or tests. Partial and manual rows still need a person.
 
 ## Commands
 
-The Windows workflow runs these commands on `windows-latest`, in this order.
+The Windows workflow runs two jobs on `windows-latest`. The shell job runs these commands in this order.
 
 ```powershell
 pnpm test
@@ -19,14 +19,27 @@ pnpm app:guided
 
 `pnpm app:verify --packaged` launches `dist/app/win-unpacked/Instagram to OpenDesign.exe`. The packaged child `PATH` is `System32` only. The job that starts the script still has Node. `pnpm app:guided` uses that same unpacked executable in the same job.
 
+The installer job needs the shell job and starts on a fresh runner where the app has never run. It downloads the audited shell setup into `dist/app` as the upgrade target. Then it runs these commands in this order.
+
+```powershell
+pnpm app:build "-c.extraMetadata.version=0.0.1" "-c.directories.output=dist/app-prior"
+pnpm app:install
+```
+
+The first command rebuilds the same commit as version 0.0.1 into `dist/app-prior`, which is the version the run installs first. `pnpm app:install` runs the issue 58 phases below against the two setups and writes `tmp/app-install-qa/installer-report.json`. The job uploads the report and both setups.
+
 ## Limits
 
 | Limit | Why it stays manual |
 | --- | --- |
-| clean-machine | The runner that starts the script has Node. The packaged child PATH is System32 only, and that child is not an NSIS install on a machine without Node. |
+| clean-machine | The runner that starts the scripts has Node. The packaged and installed children see a System32-only PATH, but the machine is not clean. |
+| windows-client | windows-latest is Windows Server. Windows 10 and Windows 11 client editions, the declared support floor, are not exercised by CI. |
+| smartscreen | CI runs an unsigned installer from disk without a download mark, so SmartScreen and unknown-publisher prompts are not exercised. |
+| real-upgrade | CI upgrades between two builds of one commit with synthetic data. A person upgrading a real installation with real projects is not exercised. |
 | native-shell | The harness stubs file dialogs and keeps the window hidden. It does not drive the tray, the native folder picker, foreground activation, or Alt+F4. |
 | assistive-technology | Keyboard Tab and axe run in the packaged renderer. They do not run Narrator, 200% zoom, or a person reading the status announcements. |
-| release-decision | Signing, the Windows version floor, and install or upgrade retention stay on issue 58. This harness does not decide a release. |
+| network-observation | The harness does not capture network traffic from the installer, the uninstaller or the app. Absence of cloud or telemetry calls rests on configuration review and the blocked renderer requests. |
+| release-decision | Signing, the Windows version floor, distribution and the uninstall data scope are an operator release decision on issue 58 (DEC-015, pending). This harness does not decide a release. |
 
 ## Criteria
 
@@ -49,10 +62,64 @@ pnpm app:guided
 | 57.accessibility | [#57](https://github.com/ValenFelizia/instagram-to-opendesign/issues/57) | partial | Keyboard, focus, linked errors, status announcements, Narrator, zoom, high contrast and reduced motion are reviewed in the packaged Windows app. | guided-keyboard-and-axe; External navigation, popup, fetch blocked; narrow layout and high contrast focus; notification copy and accessibility contracts stay allowlisted | assistive-technology |
 | 57.redaction | [#57](https://github.com/ValenFelizia/instagram-to-opendesign/issues/57) | automated | Errors/notifications contain no secret, profile identifier, raw payload or private path. | Packaged guided broker: scoped consent, real stages/partial inventory and spend projection survive reopen without dispatch, percentage or cancellation claims; diagnostic responses never include secrets, paths or raw payloads; notification copy and accessibility contracts stay allowlisted | None |
 | 57.no-fake-progress | [#57](https://github.com/ValenFelizia/instagram-to-opendesign/issues/57) | automated | No fake percentage, fabricated invoice or unsupported cancellation claim. | Packaged guided broker: scoped consent, real stages/partial inventory and spend projection survive reopen without dispatch, percentage or cancellation claims; Packaged generic/OpenDesign task handoff: explicit inventory, portable export, immutable result/feedback and idempotent supplied effort survive store reopen; unknown billing stays null; projectStages never invent percentages and mark unreached stages; stop does not claim remote cancellation; notifications stay allowlisted; local completed run projects stages and available inventory without fake progress | None |
+| 58.clean-install | [#58](https://github.com/ValenFelizia/instagram-to-opendesign/issues/58) | partial | Install/open works on a clean supported Windows machine without external Node. | Silent per-user NSIS install registers a current-user uninstaller, starts nothing, writes no user data and ships no update metadata; Installed app finishes a rolled-back v1 to v2 job store migration keeping prior evidence, then writes a managed project, a DPAPI-protected credential and an unconfirmed queued job under the real per-user data roots; Installed app relaunch with a System32-only PATH lists the project, decrypts the credential and leaves the queued job undispatched | clean-machine, windows-client, smartscreen |
+| 58.upgrade-retention | [#58](https://github.com/ValenFelizia/instagram-to-opendesign/issues/58) | partial | Upgrade/migration failure preserves prior recoverable projects and credentials; cannot erase evidence or automatically retry uncertain remote requests. | Installed app finishes a rolled-back v1 to v2 job store migration keeping prior evidence, then writes a managed project, a DPAPI-protected credential and an unconfirmed queued job under the real per-user data roots; Silent N to N+1 upgrade over a crashed paid attempt replaces the install, starts nothing and leaves the workspace and Chromium profile byte-identical; Upgraded app reports N+1, keeps projects, the DPAPI credential and the queued job, and marks the crashed paid attempt uncertain and interrupted without retrying it; Installed app refuses a job store newer than it supports with job-version-unsupported and changes no workspace byte; migration rollback and unsupported version fail closed without deleting valid snapshots; explicit shutdown fences a late fake response and restart never repeats the call; authorization expires on restart and project moves revoke approval while backups omit control locks | real-upgrade, windows-client |
+| 58.shell-guarantees | [#58](https://github.com/ValenFelizia/instagram-to-opendesign/issues/58) | partial | Window/tray/Exit, crash recovery and restart are verified against their separate documented guarantees. | Packaged core/sharp, isolated renderer, keyboard close dialog and background worker/second instance; Renderer crash, menu reopen and observed completion retain the same worker; Explicit Exit terminates the worker; Fresh app launch retains projects and protected credential configuration; explicit key removal; Upgraded app reports N+1, keeps projects, the DPAPI credential and the queued job, and marks the crashed paid attempt uncertain and interrupted without retrying it; explicit Exit rejects new work and kills a worker after a bounded grace period | native-shell |
+| 58.uninstall | [#58](https://github.com/ValenFelizia/instagram-to-opendesign/issues/58) | partial | Uninstall clearly identifies retained versus explicitly removed local data; no unintended deletion or cloud/telemetry behavior. | Default silent uninstall removes the install and its registration and leaves the workspace and Chromium profile byte-identical; Reinstall over retained data reopens the same project, credential, queued job and uncertain attempt without a reset or retry; Uninstall with --delete-app-data removes only the Chromium profile and leaves the workspace byte-identical | network-observation, release-decision |
+| 58.support-matrix | [#58](https://github.com/ValenFelizia/instagram-to-opendesign/issues/58) | manual | Signing/update limitations and actual support matrix are documented without implying untested OS guarantees. | None | release-decision, windows-client |
+| 58.packaged-checks | [#58](https://github.com/ValenFelizia/instagram-to-opendesign/issues/58) | partial | Packaged security/accessibility checks pass before distribution. | Packaged core/sharp, isolated renderer, keyboard close dialog and background worker/second instance; External navigation, popup, fetch blocked; narrow layout and high contrast focus; guided-keyboard-and-axe; shell IPC accepts fixed actions only and refuses foreign frames; IPC rejects arbitrary paths, scope injection, IDs, extra fields and foreign actions | assistive-technology |
 
 ## Issue 58
 
-`runInstallerAcceptance` in `desktop/acceptance/install.mjs` validates an installer spec and then throws `not implemented`. The Windows workflow does not call it. Install, upgrade, and uninstall remain open on [issue 58](https://github.com/ValenFelizia/instagram-to-opendesign/issues/58).
+`runInstallerAcceptance` in `desktop/acceptance/install.mjs` runs these phases once, in this order, and stops at the first failure. Each phase declares its effect on three roots: the install directory, the Local workspace root `%LOCALAPPDATA%\Instagram to OpenDesign` and the Roaming profile root `%APPDATA%\Instagram to OpenDesign`. The machine snapshots every root after each phase and fails the phase when a root does not match its declared effect. The uninstall rows are the documented retention policy.
+
+| Phase | Install directory | Local workspace | Roaming profile | Evidence |
+| --- | --- | --- | --- | --- |
+| preflight | absent | absent | absent | None |
+| install | created | absent | absent | Silent per-user NSIS install registers a current-user uninstaller, starts nothing, writes no user data and ships no update metadata |
+| plant-v1-store | byte-identical | created | absent | None |
+| seed | byte-identical | present | created | Installed app finishes a rolled-back v1 to v2 job store migration keeping prior evidence, then writes a managed project, a DPAPI-protected credential and an unconfirmed queued job under the real per-user data roots |
+| verify-installed | byte-identical | kept | present | Installed app relaunch with a System32-only PATH lists the project, decrypts the credential and leaves the queued job undispatched |
+| plant-crashed-attempt | byte-identical | present | byte-identical | None |
+| upgrade | replaced | byte-identical | byte-identical | Silent N to N+1 upgrade over a crashed paid attempt replaces the install, starts nothing and leaves the workspace and Chromium profile byte-identical |
+| verify-upgraded | byte-identical | recovered | present | Upgraded app reports N+1, keeps projects, the DPAPI credential and the queued job, and marks the crashed paid attempt uncertain and interrupted without retrying it |
+| refuse-newer-store | byte-identical | kept | present | Installed app refuses a job store newer than it supports with job-version-unsupported and changes no workspace byte |
+| uninstall-keep | removed | byte-identical | byte-identical | Default silent uninstall removes the install and its registration and leaves the workspace and Chromium profile byte-identical |
+| reinstall | created | byte-identical | byte-identical | None |
+| verify-reinstalled | byte-identical | kept | present | Reinstall over retained data reopens the same project, credential, queued job and uncertain attempt without a reset or retry |
+| uninstall-remove | removed | byte-identical | removed | Uninstall with --delete-app-data removes only the Chromium profile and leaves the workspace byte-identical |
+
+- plant-v1-store: The harness opens the job store with a fault that rolls back the version 2 migration, then adds a prior-evidence file. The installed app must finish the migration and keep that file.
+- plant-crashed-attempt: The harness dispatches a fake paid attempt and kills the process after the intent is recorded. The upgraded app must mark that attempt uncertain and its job interrupted, and must not retry it.
+- refuse-newer-store: The harness stamps the store one version ahead, starts the app, then restores the version. Downgrade across a store version is refused; reinstalling the newer build is the recovery.
+- uninstall-remove: Saved provider keys are encrypted with a key held in the Roaming profile. After this removal the encrypted files stay in the workspace but may no longer decrypt.
+
+### Effects
+
+| Effect | Meaning |
+| --- | --- |
+| absent | Does not exist after the step. |
+| created | Did not exist before the step and exists after it. |
+| byte-identical | Every file has the same bytes before and after the step. |
+| kept | Every file other than the SQLite databases has the same bytes, and the job store version, job states and attempt states are unchanged. |
+| recovered | As kept, except that running jobs become interrupted and intent attempts become uncertain. No job or attempt is added or acknowledged. The only files that may change are writer locks left by the stopped process, and they must be released. |
+| present | Exists before and after the step. Contents may change. |
+| replaced | Exists before and after the step with different bytes. |
+| removed | Existed before the step and does not exist after it. |
+
+### Install support
+
+These statements are DEC-015 in `.csdd/decisions.md`, pending operator review. `docs/windows-app-shell.md` repeats them, and `pnpm app:cite` fails when either copy drifts.
+
+| Topic | Statement |
+| --- | --- |
+| floor | Windows 10 and Windows 11, x64 only |
+| tested | CI installs on GitHub windows-latest, which is Windows Server; Windows 10 and Windows 11 client editions are not exercised |
+| installer | Assisted NSIS installer with a current-user default (oneClick false, perMachine false) |
+| signing | Unsigned builds; SmartScreen and Mark-of-the-Web warnings are a known limitation |
+| updates | Manual updates only; there is no auto-updater and no publish target |
+| uninstall | Default uninstall keeps the Local workspace and the Roaming profile; --delete-app-data removes only the Roaming profile, and the Local workspace and chosen project folders stay |
+| downgrade | A job store newer than user_version 2 is refused with job-version-unsupported; there is no downward migration |
 
 ## Hosted runner risks
 
@@ -65,3 +132,7 @@ pnpm app:guided
 - Verify and guided share one job, so the workflow does not upload the unpacked app between jobs. The job timeout is 30 minutes. A slow install plus the packaged launches can still hit that limit.
 - The packaged-default launch uses the app user-data directory rather than `--shell-test-data`. A leftover process from an earlier run on the same machine can make that launch exit immediately.
 - Chromium profiles are written under `tmp/app-shell-profiles` and are not part of the uploaded artifact. Reports, screenshots, and axe JSON are under `tmp/app-shell-qa`.
+- Installer preflight fails when the install directory, the Local workspace root, or the Roaming profile root already exists. The shell job writes both data roots, so the installer phases cannot run in that job.
+- The installer job installs a setup it downloaded as an artifact, which carries no Mark of the Web. SmartScreen never runs, so the smartscreen limit stays open.
+- `pnpm app:install` resolves `LOCALAPPDATA` and `APPDATA` to their long paths before the run. The installed app reads `LOCALAPPDATA` as given, and its path guards refuse an 8.3 short name.
+- The installer job timeout is 30 minutes. It installs dependencies, builds the prior setup, and then runs two installs, two uninstalls, and several app launches. Each phase also has its own timeout.

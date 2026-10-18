@@ -2,10 +2,10 @@ name: Windows app shell
 on:
   workflow_dispatch:
   pull_request:
-    paths: ['desktop/**', 'bin/**', 'src/**', 'schemas/**', 'test/**', 'docs/manual-acceptance-debt.md', 'package.json', 'pnpm-lock.yaml', 'pnpm-workspace.yaml', '.github/workflows/windows-app.yml']
+    paths: ['desktop/**', 'bin/**', 'src/**', 'schemas/**', 'test/**', 'docs/manual-acceptance-debt.md', 'docs/windows-app-shell.md', '.csdd/decisions.md', 'package.json', 'pnpm-lock.yaml', 'pnpm-workspace.yaml', '.github/workflows/windows-app.yml']
   push:
     branches: [main]
-    paths: ['desktop/**', 'bin/**', 'src/**', 'schemas/**', 'test/**', 'docs/manual-acceptance-debt.md', 'package.json', 'pnpm-lock.yaml', 'pnpm-workspace.yaml', '.github/workflows/windows-app.yml']
+    paths: ['desktop/**', 'bin/**', 'src/**', 'schemas/**', 'test/**', 'docs/manual-acceptance-debt.md', 'docs/windows-app-shell.md', '.csdd/decisions.md', 'package.json', 'pnpm-lock.yaml', 'pnpm-workspace.yaml', '.github/workflows/windows-app.yml']
 permissions:
   contents: read
 jobs:
@@ -45,5 +45,45 @@ jobs:
           path: |
             dist/app/*setup.exe
             tmp/app-shell-qa/**
+          if-no-files-found: warn
+          retention-days: 7
+  # The shell job has already run the app on its runner. Installer preflight needs a runner where it never ran.
+  installer:
+    needs: shell
+    runs-on: windows-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - uses: pnpm/action-setup@v4
+        with:
+          version: '11.19.0'
+      - run: pnpm install --frozen-lockfile
+      - uses: actions/download-artifact@v4
+        with:
+          name: windows-app-shell-qa
+          path: tmp/shell-artifact
+      - name: Use the audited shell setup as the upgrade target
+        shell: pwsh
+        run: |
+          $setups = @(Get-ChildItem -Path tmp/shell-artifact -Recurse -File -Filter '*-setup.exe')
+          if ($setups.Count -ne 1) { throw "expected one shell setup, found $($setups.Count)" }
+          New-Item -ItemType Directory -Force -Path dist/app | Out-Null
+          Copy-Item -LiteralPath $setups[0].FullName -Destination dist/app
+      - name: Rebuild this commit as the prior version
+        run: pnpm app:build "-c.extraMetadata.version=0.0.1" "-c.directories.output=dist/app-prior"
+        env:
+          CSC_IDENTITY_AUTO_DISCOVERY: 'false'
+      - run: pnpm app:install
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: windows-app-install-qa
+          path: |
+            dist/app/*setup.exe
+            dist/app-prior/*setup.exe
+            tmp/app-install-qa/**
           if-no-files-found: warn
           retention-days: 7

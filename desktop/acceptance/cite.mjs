@@ -2,8 +2,17 @@ import { readdir, readFile } from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { CRITERIA, LIMITS, disposition } from './registry.mjs';
+import { INSTALLER_ACCEPTANCE, INSTALLER_EVIDENCE, INSTALL_SUPPORT } from './install.mjs';
 
 const GUIDED_NAME = 'guided-keyboard-and-axe';
+const SUPPORT_START = '<!-- install-support -->';
+const SUPPORT_END = '<!-- /install-support -->';
+const PRIOR_BUILD = 'pnpm app:build "-c.extraMetadata.version=0.0.1" "-c.directories.output=dist/app-prior"';
+const WORKFLOW = Object.freeze({
+  shell: ['pnpm test', 'pnpm app:cite', 'pnpm app:build', 'node desktop/audit-package.mjs', 'pnpm app:verify --packaged', 'pnpm app:guided'],
+  installer: [PRIOR_BUILD, 'pnpm app:install'],
+});
+const WATCHED = ['docs/manual-acceptance-debt.md', 'docs/windows-app-shell.md', '.csdd/decisions.md'];
 
 function normalize(text) {
   return text.replace(/\r\n/g, '\n').replace(/\r/g, '\n');
@@ -13,32 +22,48 @@ function proofCell(criterion) {
   return [...criterion.evidence, ...criterion.tests].join('; ') || 'None';
 }
 
+function series(items) {
+  return items.length < 3 ? items.join(' and ') : `${items.slice(0, -1).join(', ')}, and ${items.at(-1)}`;
+}
+
+/** @param {string} text @param {string} start @param {string} [end] */
+function between(text, start, end) {
+  const from = text.indexOf(start);
+  if (from < 0) return null;
+  const to = end ? text.indexOf(end, from + start.length) : -1;
+  return to < 0 ? text.slice(from) : text.slice(from, to);
+}
+
 /**
  * @param {typeof CRITERIA} criteria
  * @returns {string}
  */
 export function renderDebtDoc(criteria = CRITERIA) {
+  const issues = [...new Set(criteria.map(criterion => criterion.issue))];
   const lines = [
     '# Manual acceptance debt',
     '',
-    'This file lists every acceptance bullet from issues 51, 52, and 57. The bullet text is copied from the Acceptance section of each issue. `pnpm app:cite` checks this file against `desktop/acceptance/registry.mjs`. It does not read GitHub, and it does not mark a manual row passed.',
+    `This file lists every acceptance bullet from issues ${series(issues.map(String))}. The bullet text is copied from the Acceptance section of each issue. \`pnpm app:cite\` checks this file against \`desktop/acceptance/registry.mjs\`. It does not read GitHub, and it does not mark a manual row passed.`,
     '',
     'A row is automated when it has evidence or unit tests and an empty manual list. A row is partial when it has both. A row is manual when it has limits and no evidence or tests. Partial and manual rows still need a person.',
     '',
     '## Commands',
     '',
-    'The Windows workflow runs these commands on `windows-latest`, in this order.',
+    'The Windows workflow runs two jobs on `windows-latest`. The shell job runs these commands in this order.',
     '',
     '```powershell',
-    'pnpm test',
-    'pnpm app:cite',
-    'pnpm app:build',
-    'node desktop/audit-package.mjs',
-    'pnpm app:verify --packaged',
-    'pnpm app:guided',
+    ...WORKFLOW.shell,
     '```',
     '',
     '`pnpm app:verify --packaged` launches `dist/app/win-unpacked/Instagram to OpenDesign.exe`. The packaged child `PATH` is `System32` only. The job that starts the script still has Node. `pnpm app:guided` uses that same unpacked executable in the same job.',
+    '',
+    'The installer job needs the shell job and starts on a fresh runner where the app has never run. It downloads the audited shell setup into `dist/app` as the upgrade target. Then it runs these commands in this order.',
+    '',
+    '```powershell',
+    ...WORKFLOW.installer,
+    '```',
+    '',
+    'The first command rebuilds the same commit as version 0.0.1 into `dist/app-prior`, which is the version the run installs first. `pnpm app:install` runs the issue 58 phases below against the two setups and writes `tmp/app-install-qa/installer-report.json`. The job uploads the report and both setups.',
     '',
     '## Limits',
     '',
@@ -62,7 +87,38 @@ export function renderDebtDoc(criteria = CRITERIA) {
     '',
     '## Issue 58',
     '',
-    '`runInstallerAcceptance` in `desktop/acceptance/install.mjs` validates an installer spec and then throws `not implemented`. The Windows workflow does not call it. Install, upgrade, and uninstall remain open on [issue 58](https://github.com/ValenFelizia/instagram-to-opendesign/issues/58).',
+    '`runInstallerAcceptance` in `desktop/acceptance/install.mjs` runs these phases once, in this order, and stops at the first failure. Each phase declares its effect on three roots: the install directory, the Local workspace root `%LOCALAPPDATA%\\Instagram to OpenDesign` and the Roaming profile root `%APPDATA%\\Instagram to OpenDesign`. The machine snapshots every root after each phase and fails the phase when a root does not match its declared effect. The uninstall rows are the documented retention policy.',
+    '',
+    '| Phase | Install directory | Local workspace | Roaming profile | Evidence |',
+    '| --- | --- | --- | --- | --- |',
+  );
+  for (const phase of INSTALLER_ACCEPTANCE.phases) {
+    const { install, local, roaming } = phase.effects;
+    lines.push(`| ${phase.name} | ${install} | ${local} | ${roaming} | ${phase.evidence || 'None'} |`);
+  }
+  lines.push('');
+  for (const phase of INSTALLER_ACCEPTANCE.phases) {
+    if (phase.note) lines.push(`- ${phase.name}: ${phase.note}`);
+  }
+  lines.push(
+    '',
+    '### Effects',
+    '',
+    '| Effect | Meaning |',
+    '| --- | --- |',
+  );
+  for (const [effect, meaning] of Object.entries(INSTALLER_ACCEPTANCE.effects)) lines.push(`| ${effect} | ${meaning} |`);
+  lines.push(
+    '',
+    '### Install support',
+    '',
+    'These statements are DEC-015 in `.csdd/decisions.md`, pending operator review. `docs/windows-app-shell.md` repeats them, and `pnpm app:cite` fails when either copy drifts.',
+    '',
+    '| Topic | Statement |',
+    '| --- | --- |',
+  );
+  for (const [topic, statement] of Object.entries(INSTALL_SUPPORT)) lines.push(`| ${topic} | ${statement} |`);
+  lines.push(
     '',
     '## Hosted runner risks',
     '',
@@ -75,6 +131,10 @@ export function renderDebtDoc(criteria = CRITERIA) {
     '- Verify and guided share one job, so the workflow does not upload the unpacked app between jobs. The job timeout is 30 minutes. A slow install plus the packaged launches can still hit that limit.',
     '- The packaged-default launch uses the app user-data directory rather than `--shell-test-data`. A leftover process from an earlier run on the same machine can make that launch exit immediately.',
     '- Chromium profiles are written under `tmp/app-shell-profiles` and are not part of the uploaded artifact. Reports, screenshots, and axe JSON are under `tmp/app-shell-qa`.',
+    '- Installer preflight fails when the install directory, the Local workspace root, or the Roaming profile root already exists. The shell job writes both data roots, so the installer phases cannot run in that job.',
+    '- The installer job installs a setup it downloaded as an artifact, which carries no Mark of the Web. SmartScreen never runs, so the smartscreen limit stays open.',
+    '- `pnpm app:install` resolves `LOCALAPPDATA` and `APPDATA` to their long paths before the run. The installed app reads `LOCALAPPDATA` as given, and its path guards refuse an 8.3 short name.',
+    '- The installer job timeout is 30 minutes. It installs dependencies, builds the prior setup, and then runs two installs, two uninstalls, and several app launches. Each phase also has its own timeout.',
     '',
   );
   return lines.join('\n');
@@ -112,7 +172,9 @@ export async function checkDebt(repoRoot) {
   const packagePath = path.join(repoRoot, 'package.json');
   const auditPath = path.join(repoRoot, 'desktop', 'audit-package.mjs');
   const builderPath = path.join(repoRoot, 'desktop', 'builder.json');
-  const [verify, guided, doc, workflow, packageJson, audit, builder, testFiles] = await Promise.all([
+  const decisionsPath = path.join(repoRoot, '.csdd', 'decisions.md');
+  const shellDocPath = path.join(repoRoot, 'docs', 'windows-app-shell.md');
+  const [verify, guided, doc, workflow, packageJson, audit, builder, decisions, shellDoc, testFiles] = await Promise.all([
     readFile(verifyPath, 'utf8'),
     readFile(guidedPath, 'utf8'),
     readFile(docPath, 'utf8').catch(() => ''),
@@ -120,6 +182,8 @@ export async function checkDebt(repoRoot) {
     readFile(packagePath, 'utf8'),
     readFile(auditPath, 'utf8'),
     readFile(builderPath, 'utf8'),
+    readFile(decisionsPath, 'utf8'),
+    readFile(shellDocPath, 'utf8'),
     readdir(path.join(repoRoot, 'test')).then(names => Promise.all(
       names.filter(name => name.endsWith('.test.js')).map(name => readFile(path.join(repoRoot, 'test', name), 'utf8')),
     )),
@@ -130,7 +194,7 @@ export async function checkDebt(repoRoot) {
   if (!guidedName) errors.push('desktop/acceptance/guided-ui.mjs is missing GUIDED_EVIDENCE_NAME');
   else if (guidedName[1] !== GUIDED_NAME) errors.push(`guided evidence name is ${guidedName[1]}`);
   if (!guided.includes('name: GUIDED_EVIDENCE_NAME')) errors.push('guided report must use GUIDED_EVIDENCE_NAME');
-  const evidence = new Set(scanned.names);
+  const evidence = new Set([...scanned.names, ...Object.values(INSTALLER_EVIDENCE)]);
   if (guidedName) evidence.add(guidedName[1]);
   const claimed = new Set(CRITERIA.flatMap(criterion => criterion.evidence));
   for (const name of evidence) {
@@ -158,12 +222,38 @@ export async function checkDebt(repoRoot) {
   if (!audit.includes('desktop/acceptance/')) errors.push('desktop/audit-package.mjs must deny desktop/acceptance');
   const built = JSON.parse(builder);
   if (JSON.stringify(built.files || []).includes('acceptance')) errors.push('desktop/builder.json must not package desktop/acceptance');
-  for (const command of ['pnpm test', 'pnpm app:cite', 'pnpm app:build', 'node desktop/audit-package.mjs', 'pnpm app:verify --packaged', 'pnpm app:guided']) {
-    if (!workflow.includes(command)) errors.push(`workflow missing ${command}`);
+  for (const key of ['oneClick', 'perMachine', 'runAfterFinish', 'deleteAppDataOnUninstall']) {
+    if (built.nsis?.[key] !== false) errors.push(`desktop/builder.json nsis.${key} must be false`);
   }
-  if (!workflow.includes('if: always()')) errors.push('workflow must upload artifacts when the job fails');
-  if (workflow.includes('runInstallerAcceptance') || workflow.includes('app:install')) errors.push('workflow must not call the installer seam');
-  if (!workflow.includes('windows-latest')) errors.push('workflow must run on windows-latest');
+  if (built.publish !== null) errors.push('desktop/builder.json publish must be null');
+  if (pkg.dependencies?.['electron-updater'] || pkg.devDependencies?.['electron-updater']) errors.push('electron-updater must not be a dependency');
+  const decision = between(normalize(decisions), '## DEC-015', '\n## ');
+  const support = between(normalize(shellDoc), SUPPORT_START, SUPPORT_END);
+  if (!decision) errors.push('.csdd/decisions.md is missing DEC-015');
+  if (!support || !shellDoc.includes(SUPPORT_END)) errors.push('docs/windows-app-shell.md is missing the install-support block');
+  for (const [topic, statement] of Object.entries(INSTALL_SUPPORT)) {
+    if (decision && !decision.includes(statement)) errors.push(`DEC-015 disagrees with INSTALL_SUPPORT.${topic}`);
+    if (support && !support.includes(statement)) errors.push(`docs/windows-app-shell.md disagrees with INSTALL_SUPPORT.${topic}`);
+  }
+  if (pkg.scripts?.['app:install'] !== 'node desktop/acceptance/install.mjs') errors.push('package.json is missing app:install');
+  const jobs = Object.keys(WORKFLOW);
+  jobs.forEach((job, index) => {
+    const next = jobs[index + 1];
+    const body = between(normalize(workflow), `\n  ${job}:\n`, next && `\n  ${next}:\n`);
+    if (!body) {
+      errors.push(`workflow is missing the ${job} job`);
+      return;
+    }
+    for (const command of WORKFLOW[job]) {
+      if (!body.includes(command)) errors.push(`workflow ${job} job is missing ${command}`);
+    }
+    if (!body.includes('runs-on: windows-latest')) errors.push(`workflow ${job} job must run on windows-latest`);
+    if (!body.includes('if: always()')) errors.push(`workflow ${job} job must upload artifacts when it fails`);
+  });
+  if (!workflow.includes('needs: shell')) errors.push('workflow installer job must need the shell job');
+  for (const file of WATCHED) {
+    if (workflow.split(`'${file}'`).length < 3) errors.push(`workflow pull_request and push paths must include ${file}`);
+  }
   return errors;
 }
 
