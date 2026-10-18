@@ -6,7 +6,7 @@ A row is automated when it has evidence or unit tests and an empty manual list. 
 
 ## Commands
 
-The Windows workflow runs these commands on `windows-latest`, in this order.
+The Windows workflow runs two jobs on `windows-latest`. The shell job runs these commands in this order.
 
 ```powershell
 pnpm test
@@ -18,6 +18,15 @@ pnpm app:guided
 ```
 
 `pnpm app:verify --packaged` launches `dist/app/win-unpacked/Instagram to OpenDesign.exe`. The packaged child `PATH` is `System32` only. The job that starts the script still has Node. `pnpm app:guided` uses that same unpacked executable in the same job.
+
+The installer job needs the shell job and starts on a fresh runner where the app has never run. It downloads the audited shell setup into `dist/app` as the upgrade target. Then it runs these commands in this order.
+
+```powershell
+pnpm app:build "-c.extraMetadata.version=0.0.1" "-c.directories.output=dist/app-prior"
+pnpm app:install
+```
+
+The first command rebuilds the same commit as version 0.0.1 into `dist/app-prior`, which is the version the run installs first. `pnpm app:install` runs the issue 58 phases below against the two setups and writes `tmp/app-install-qa/installer-report.json`. The job uploads the report and both setups.
 
 ## Limits
 
@@ -123,3 +132,7 @@ These statements are DEC-015 in `.csdd/decisions.md`, pending operator review. `
 - Verify and guided share one job, so the workflow does not upload the unpacked app between jobs. The job timeout is 30 minutes. A slow install plus the packaged launches can still hit that limit.
 - The packaged-default launch uses the app user-data directory rather than `--shell-test-data`. A leftover process from an earlier run on the same machine can make that launch exit immediately.
 - Chromium profiles are written under `tmp/app-shell-profiles` and are not part of the uploaded artifact. Reports, screenshots, and axe JSON are under `tmp/app-shell-qa`.
+- Installer preflight fails when the install directory, the Local workspace root, or the Roaming profile root already exists. The shell job writes both data roots, so the installer phases cannot run in that job.
+- The installer job installs a setup it downloaded as an artifact, which carries no Mark of the Web. SmartScreen never runs, so the smartscreen limit stays open.
+- `pnpm app:install` resolves `LOCALAPPDATA` and `APPDATA` to their long paths before the run. The installed app reads `LOCALAPPDATA` as given, and its path guards refuse an 8.3 short name.
+- The installer job timeout is 30 minutes. It installs dependencies, builds the prior setup, and then runs two installs, two uninstalls, and several app launches. Each phase also has its own timeout.

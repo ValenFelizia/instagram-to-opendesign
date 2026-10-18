@@ -7,6 +7,12 @@ import { INSTALLER_ACCEPTANCE, INSTALLER_EVIDENCE, INSTALL_SUPPORT } from './ins
 const GUIDED_NAME = 'guided-keyboard-and-axe';
 const SUPPORT_START = '<!-- install-support -->';
 const SUPPORT_END = '<!-- /install-support -->';
+const PRIOR_BUILD = 'pnpm app:build "-c.extraMetadata.version=0.0.1" "-c.directories.output=dist/app-prior"';
+const WORKFLOW = Object.freeze({
+  shell: ['pnpm test', 'pnpm app:cite', 'pnpm app:build', 'node desktop/audit-package.mjs', 'pnpm app:verify --packaged', 'pnpm app:guided'],
+  installer: [PRIOR_BUILD, 'pnpm app:install'],
+});
+const WATCHED = ['docs/manual-acceptance-debt.md', 'docs/windows-app-shell.md', '.csdd/decisions.md'];
 
 function normalize(text) {
   return text.replace(/\r\n/g, '\n').replace(/\r/g, '\n');
@@ -20,10 +26,11 @@ function series(items) {
   return items.length < 3 ? items.join(' and ') : `${items.slice(0, -1).join(', ')}, and ${items.at(-1)}`;
 }
 
+/** @param {string} text @param {string} start @param {string} [end] */
 function between(text, start, end) {
   const from = text.indexOf(start);
   if (from < 0) return null;
-  const to = text.indexOf(end, from + start.length);
+  const to = end ? text.indexOf(end, from + start.length) : -1;
   return to < 0 ? text.slice(from) : text.slice(from, to);
 }
 
@@ -42,18 +49,21 @@ export function renderDebtDoc(criteria = CRITERIA) {
     '',
     '## Commands',
     '',
-    'The Windows workflow runs these commands on `windows-latest`, in this order.',
+    'The Windows workflow runs two jobs on `windows-latest`. The shell job runs these commands in this order.',
     '',
     '```powershell',
-    'pnpm test',
-    'pnpm app:cite',
-    'pnpm app:build',
-    'node desktop/audit-package.mjs',
-    'pnpm app:verify --packaged',
-    'pnpm app:guided',
+    ...WORKFLOW.shell,
     '```',
     '',
     '`pnpm app:verify --packaged` launches `dist/app/win-unpacked/Instagram to OpenDesign.exe`. The packaged child `PATH` is `System32` only. The job that starts the script still has Node. `pnpm app:guided` uses that same unpacked executable in the same job.',
+    '',
+    'The installer job needs the shell job and starts on a fresh runner where the app has never run. It downloads the audited shell setup into `dist/app` as the upgrade target. Then it runs these commands in this order.',
+    '',
+    '```powershell',
+    ...WORKFLOW.installer,
+    '```',
+    '',
+    'The first command rebuilds the same commit as version 0.0.1 into `dist/app-prior`, which is the version the run installs first. `pnpm app:install` runs the issue 58 phases below against the two setups and writes `tmp/app-install-qa/installer-report.json`. The job uploads the report and both setups.',
     '',
     '## Limits',
     '',
@@ -121,6 +131,10 @@ export function renderDebtDoc(criteria = CRITERIA) {
     '- Verify and guided share one job, so the workflow does not upload the unpacked app between jobs. The job timeout is 30 minutes. A slow install plus the packaged launches can still hit that limit.',
     '- The packaged-default launch uses the app user-data directory rather than `--shell-test-data`. A leftover process from an earlier run on the same machine can make that launch exit immediately.',
     '- Chromium profiles are written under `tmp/app-shell-profiles` and are not part of the uploaded artifact. Reports, screenshots, and axe JSON are under `tmp/app-shell-qa`.',
+    '- Installer preflight fails when the install directory, the Local workspace root, or the Roaming profile root already exists. The shell job writes both data roots, so the installer phases cannot run in that job.',
+    '- The installer job installs a setup it downloaded as an artifact, which carries no Mark of the Web. SmartScreen never runs, so the smartscreen limit stays open.',
+    '- `pnpm app:install` resolves `LOCALAPPDATA` and `APPDATA` to their long paths before the run. The installed app reads `LOCALAPPDATA` as given, and its path guards refuse an 8.3 short name.',
+    '- The installer job timeout is 30 minutes. It installs dependencies, builds the prior setup, and then runs two installs, two uninstalls, and several app launches. Each phase also has its own timeout.',
     '',
   );
   return lines.join('\n');
@@ -221,12 +235,25 @@ export async function checkDebt(repoRoot) {
     if (decision && !decision.includes(statement)) errors.push(`DEC-015 disagrees with INSTALL_SUPPORT.${topic}`);
     if (support && !support.includes(statement)) errors.push(`docs/windows-app-shell.md disagrees with INSTALL_SUPPORT.${topic}`);
   }
-  for (const command of ['pnpm test', 'pnpm app:cite', 'pnpm app:build', 'node desktop/audit-package.mjs', 'pnpm app:verify --packaged', 'pnpm app:guided']) {
-    if (!workflow.includes(command)) errors.push(`workflow missing ${command}`);
+  if (pkg.scripts?.['app:install'] !== 'node desktop/acceptance/install.mjs') errors.push('package.json is missing app:install');
+  const jobs = Object.keys(WORKFLOW);
+  jobs.forEach((job, index) => {
+    const next = jobs[index + 1];
+    const body = between(normalize(workflow), `\n  ${job}:\n`, next && `\n  ${next}:\n`);
+    if (!body) {
+      errors.push(`workflow is missing the ${job} job`);
+      return;
+    }
+    for (const command of WORKFLOW[job]) {
+      if (!body.includes(command)) errors.push(`workflow ${job} job is missing ${command}`);
+    }
+    if (!body.includes('runs-on: windows-latest')) errors.push(`workflow ${job} job must run on windows-latest`);
+    if (!body.includes('if: always()')) errors.push(`workflow ${job} job must upload artifacts when it fails`);
+  });
+  if (!workflow.includes('needs: shell')) errors.push('workflow installer job must need the shell job');
+  for (const file of WATCHED) {
+    if (workflow.split(`'${file}'`).length < 3) errors.push(`workflow pull_request and push paths must include ${file}`);
   }
-  if (!workflow.includes('if: always()')) errors.push('workflow must upload artifacts when the job fails');
-  if (workflow.includes('runInstallerAcceptance') || workflow.includes('app:install')) errors.push('workflow must not call the installer seam');
-  if (!workflow.includes('windows-latest')) errors.push('workflow must run on windows-latest');
   return errors;
 }
 

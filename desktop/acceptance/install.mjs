@@ -1137,3 +1137,49 @@ function windowsHost() {
   };
   return host;
 }
+
+const SETUP_NAME = new RegExp(`^${builder.nsis.artifactName
+  .replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+  .replace('\\$\\{version\\}', '(\\d+\\.\\d+\\.\\d+)')
+  .replace('\\$\\{ext\\}', 'exe')}$`);
+
+/** @param {string} directory @returns {Promise<BuildSpec>} */
+async function onlySetup(directory) {
+  const names = existsSync(directory) ? (await readdir(directory)).filter(name => SETUP_NAME.test(name)) : [];
+  if (names.length !== 1) throw new Error(`${directory} must hold exactly one setup named like ${builder.nsis.artifactName}, found ${names.length}`);
+  return { setupExe: path.join(directory, names[0]), version: names[0].match(SETUP_NAME)[1] };
+}
+
+function printPhases(report) {
+  for (const entry of report.phases) {
+    const detail = entry.status === 'passed' ? entry.evidence : entry.error ?? entry.violations[0];
+    console.log(`${entry.status.padEnd(11)} ${entry.phase}${detail ? `: ${detail}` : ''}`);
+  }
+}
+
+const here = fileURLToPath(import.meta.url);
+if (process.argv[1] && path.resolve(process.argv[1]) === path.resolve(here)) {
+  const repoRoot = path.resolve(fileURLToPath(new URL('../../', import.meta.url)));
+  const outputDir = path.join(repoRoot, 'tmp', 'app-install-qa');
+  await rm(path.join(outputDir, REPORT_FILE), { force: true });
+  try {
+    // The installed app reads LOCALAPPDATA as given, and its path guards refuse an 8.3 alias.
+    for (const name of ['LOCALAPPDATA', 'APPDATA']) {
+      if (process.env[name] && path.isAbsolute(process.env[name])) process.env[name] = realpathSync.native(process.env[name]);
+    }
+    const report = await runInstallerAcceptance({
+      kind: 'installer',
+      from: await onlySetup(path.join(repoRoot, 'dist', 'app-prior')),
+      to: await onlySetup(path.join(repoRoot, 'dist', 'app')),
+      installDir: path.join(process.env.LOCALAPPDATA ?? '', 'Programs', PRODUCT),
+      outputDir,
+    });
+    printPhases(report);
+    console.log(`installer acceptance passed (${report.from} to ${report.to})`);
+  } catch (error) {
+    const file = path.join(outputDir, REPORT_FILE);
+    if (existsSync(file)) printPhases(JSON.parse(await readFile(file, 'utf8')));
+    console.error(error instanceof Error ? error.message : String(error));
+    process.exit(1);
+  }
+}
