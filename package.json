@@ -25,7 +25,9 @@
     "app:dev": "electron .",
     "app:pack": "electron-builder --config desktop/builder.json --win --x64 --dir --publish never",
     "app:build": "electron-builder --config desktop/builder.json --win nsis --x64 --publish never",
-    "app:verify": "node desktop/verify.mjs"
+    "app:verify": "node desktop/verify.mjs",
+    "app:guided": "node desktop/acceptance/guided-ui.mjs",
+    "app:cite": "node desktop/acceptance/cite.mjs"
   },
   "license": "MIT",
   "dependencies": {
@@ -34,6 +36,7 @@
     "sharp": "^0.35.5"
   },
   "devDependencies": {
+    "axe-core": "4.14.0",
     "electron": "44.5.1",
     "electron-builder": "26.15.3",
     "playwright": "1.62.1"

@@ -15,7 +15,8 @@ for (const file of files) {
   const segments = file.split('/').filter(Boolean);
   assert.ok(permitted.has(segments[0]), `Unexpected package entry: ${segments[0]}`);
   assert.ok(!segments.some(segment => segment === '.env' || segment.startsWith('.env.') || ['.git', '.csdd', 'data', 'brand-output', 'tmp'].includes(segment)), 'Private/configuration entry must not ship');
-  if (segments[0] === 'node_modules') assert.ok(!['electron', 'electron-builder', 'playwright', 'playwright-core'].includes(segments[1]), 'Development tooling must not ship');
+  if (segments[0] === 'node_modules') assert.ok(!['electron', 'electron-builder', 'playwright', 'playwright-core', 'axe-core'].includes(segments[1]), 'Development tooling must not ship');
+  assert.ok(!file.includes('desktop/acceptance/'), 'Acceptance harness must not ship');
 }
 assert.ok(files.some(file => file.endsWith('/desktop/worker.cjs')));
 assert.ok(files.some(file => file.endsWith('/desktop/jobs.cjs')));
