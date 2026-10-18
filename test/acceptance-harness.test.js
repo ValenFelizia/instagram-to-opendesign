@@ -5,7 +5,8 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import test from 'node:test';
 import { launchPackagedApp, packagedExe, probeStartup } from '../desktop/acceptance/launch.mjs';
-import { INSTALLER_ACCEPTANCE, INSTALL_SUPPORT, runInstallerAcceptance } from '../desktop/acceptance/install.mjs';
+import { INSTALLER_ACCEPTANCE, INSTALLER_EVIDENCE, INSTALL_SUPPORT, runInstallerAcceptance } from '../desktop/acceptance/install.mjs';
+import { fakeHost } from './helpers/installer-host.js';
 import { runGuidedAcceptance } from '../desktop/acceptance/guided-ui.mjs';
 import { checkDebt } from '../desktop/acceptance/cite.mjs';
 import { CRITERIA, disposition } from '../desktop/acceptance/registry.mjs';
@@ -105,6 +106,48 @@ test('installer spec is refused before anything is written', async t => {
   await assert.rejects(() => runInstallerAcceptance(valid, { env: { ...env, APPDATA: 'Roaming' } }), /APPDATA must be an absolute path/);
   await assert.rejects(() => runInstallerAcceptance(valid, { env: { ...env, APPDATA: path.join(root, 'missing') } }), /APPDATA must exist/);
   assert.equal(existsSync(out), false);
+});
+
+test('installer machine passes a well-behaved install, upgrade and uninstall, then refuses the used profile', async t => {
+  const fake = fakeHost(t);
+  const report = await runInstallerAcceptance(fake.spec(), fake.host);
+  assert.equal(report.passed, true);
+  assert.deepEqual(report.phases.map(phase => phase.status), INSTALLER_ACCEPTANCE.phases.map(() => 'passed'));
+  assert.deepEqual(fake.report(), report);
+  assert.equal(report.phases.find(phase => phase.phase === 'uninstall-remove').evidence, INSTALLER_EVIDENCE['uninstall-remove']);
+  assert.match(fake.seenKey(), /^synthetic-/);
+  assert.equal(fake.reportText().includes(fake.seenKey()), false);
+  await assert.rejects(() => runInstallerAcceptance(fake.spec(), fake.host), /failed at preflight: .*Found: local\./);
+});
+
+const regressions = [
+  ['a default uninstall that deletes the Local workspace', { uninstallRemovesLocal: true }, 'uninstall-keep', /^local expected byte-identical: absent after the step$/],
+  ['a setup that starts the app', { installerStartsApp: true }, 'install', /app process still running/],
+  ['an app that dispatches queued work on reopen', { dispatchOnOpen: true }, 'verify-installed', /^local expected kept: job store/],
+  ['an app that retries the crashed paid attempt', { retryUncertain: true }, 'verify-upgraded', /^local expected recovered: job store/],
+  ['an old app that opens a newer job store', { newerStoreOpens: true }, 'refuse-newer-store', /was running with a newer job store/],
+];
+for (const [name, faults, failing, violation] of regressions) {
+  test(`installer machine stops at ${failing} for ${name}`, async t => {
+    const fake = fakeHost(t, faults);
+    await assert.rejects(() => runInstallerAcceptance(fake.spec(), fake.host), new RegExp(`failed at ${failing}: `));
+    const report = fake.report();
+    const index = report.phases.findIndex(phase => phase.phase === failing);
+    assert.equal(report.passed, false);
+    assert.deepEqual(report.phases.map(phase => phase.status), report.phases.map((_, at) => (at < index ? 'passed' : at === index ? 'failed' : 'not-reached')));
+    assert.ok(report.phases[index].violations.some(text => violation.test(text)), report.phases[index].violations.join('\n'));
+  });
+}
+
+test('installer machine fails a phase whose record would hold the provider key and never writes the key', async t => {
+  const fake = fakeHost(t, { echoKeyInStatus: true });
+  const error = await runInstallerAcceptance(fake.spec(), fake.host).then(() => null, thrown => thrown);
+  assert.match(error?.message, /failed at seed: the synthetic provider key appeared in this phase record/);
+  const key = fake.seenKey();
+  assert.match(key, /^synthetic-/);
+  assert.equal(error.message.includes(key), false);
+  assert.equal(fake.reportText().includes(key), false);
+  assert.equal(fake.report().phases.find(phase => phase.phase === 'seed').facts, null);
 });
 
 test('installer phases declare an effect on every root and only claim product evidence', () => {

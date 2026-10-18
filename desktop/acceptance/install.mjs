@@ -1,14 +1,41 @@
 import { createRequire } from 'node:module';
-import { realpathSync } from 'node:fs';
+import { spawn } from 'node:child_process';
+import { createHash, randomUUID } from 'node:crypto';
+import { createReadStream, existsSync, realpathSync } from 'node:fs';
+import { lstat, mkdir, readFile, readdir, rename, rm, writeFile } from 'node:fs/promises';
 import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 
 const require = createRequire(import.meta.url);
 const builder = require('../builder.json');
+const { JobStore } = require('../jobs.cjs');
 const PRODUCT = builder.productName;
+const EXE = `${PRODUCT}.exe`;
 const VERSION = /^\d+\.\d+\.\d+$/;
 const SPEC_KEYS = ['kind', 'from', 'to', 'installDir', 'outputDir'];
 const BUILD_KEYS = ['setupExe', 'version'];
 const ROOT_NAMES = /** @type {const} */ (['install', 'local', 'roaming']);
+const REPORT_FILE = 'installer-report.json';
+const CRASH_CHILD = fileURLToPath(new URL('./crash-attempt.cjs', import.meta.url));
+const SETTLE_MS = 10_000;
+const SQLITE_FILE = /\.sqlite(-journal|-wal|-shm)?$/;
+const WRITER_GUARD = '.writer-guard';
+const SUPPORTED_STORE = 2;
+
+const LAYOUT = Object.freeze({
+  workspace: 'workspace',
+  store: path.join('workspace', 'jobs', 'jobs.sqlite'),
+  jobs: path.join('workspace', 'jobs'),
+  credentials: path.join('workspace', 'credentials'),
+});
+const MARKER = Object.freeze({
+  file: path.join(LAYOUT.jobs, 'prior-evidence.txt'),
+  content: 'Prior evidence planted by the installer acceptance. An upgrade or migration must keep these bytes.\n',
+});
+const MARKER_HASH = createHash('sha256').update(MARKER.content).digest('hex');
+const PLANTED_FAULT = 'installer acceptance rolled back the version 2 migration';
+const SEED_PROVIDER = 'apify';
+const SEED_PROJECT = Object.freeze({ name: 'Retention fixture', url: 'https://www.instagram.com/example.studio/' });
 
 /**
  * @typedef {object} BuildSpec
@@ -39,12 +66,98 @@ const ROOT_NAMES = /** @type {const} */ (['install', 'local', 'roaming']);
  * @property {{ from: BuildSpec, to: BuildSpec }} builds
  * @property {Roots} roots
  * @property {string} outputDir
+ * @property {string} childPath  The only PATH entry the installed app may see.
+ */
+
+/**
+ * Lower-cased relative path to `dir`, `link`, `other` or the sha256 of the file. Links are never followed.
+ * @typedef {ReadonlyMap<string, string>} Inventory
+ */
+
+/**
+ * @typedef {object} StoreFacts
+ * @property {number} userVersion
+ * @property {ReadonlyArray<{ id: string, state: string }>} jobs          Sorted by id.
+ * @property {ReadonlyArray<{ job: string, state: string }>} attempts     Sorted by job.
+ */
+
+/**
+ * Captured only while no app process runs.
+ * @typedef {object} DataSnapshot
+ * @property {Readonly<Record<RootName, Inventory | null>>} roots  null means the root is absent.
+ * @property {StoreFacts | null} store
  */
 
 /**
  * @typedef {'absent' | 'created' | 'byte-identical' | 'kept' | 'recovered' | 'present' | 'replaced' | 'removed'} RootEffect
  */
 /** @typedef {Readonly<Record<RootName, RootEffect>>} Effects */
+
+/**
+ * Current-user uninstall registration.
+ * @typedef {object} UninstallEntry
+ * @property {string} displayVersion
+ * @property {string} installLocation
+ * @property {string[]} quietUninstall  argv parsed from QuietUninstallString.
+ */
+
+/**
+ * One running installed app, driven only through its real preload API.
+ * @typedef {object} InstalledApp
+ * @property {string} version    app.getVersion()
+ * @property {string} childPath  PATH seen by the app process.
+ * @property {(name: string, url: string) => Promise<string>} createProject  Returns the project id.
+ * @property {(provider: string, key: string) => Promise<void>} saveCredential
+ * @property {(recordFile: string, expected: string) => Promise<boolean>} credentialMatches  Only a boolean leaves the app.
+ * @property {(projectId: string) => Promise<string>} planUnconfirmed  Guided plan with no consent. Returns the job id.
+ * @property {(projectId: string) => Promise<{ listed: boolean, jobs: Array<{ id: string, state: string, nextAction: string }>, reopenDispatches: boolean }>} status
+ * @property {() => Promise<void>} exit  Explicit Exit. Resolves when the app process closed.
+ */
+
+/**
+ * The OS surface the machine touches. windowsHost() is production; tests pass a fake over temp directories.
+ * @typedef {object} Host
+ * @property {Readonly<Record<string, string | undefined>>} env
+ * @property {(setupExe: string, installDir: string) => Promise<number>} install  Silent current-user install.
+ * @property {(entry: UninstallEntry, removeData: boolean) => Promise<number>} uninstall  Resolves when the registration is gone.
+ * @property {() => Promise<UninstallEntry | null>} uninstallEntry  HKCU only.
+ * @property {() => Promise<boolean>} machineWideEntry  Any HKLM registration for the product.
+ * @property {() => Promise<number>} appProcesses  Processes whose image is the product exe.
+ * @property {(exe: string, outputDir: string) => Promise<InstalledApp>} open
+ * @property {(exe: string, outputDir: string) => Promise<import('./launch.mjs').StartupProbe>} probe
+ */
+
+/**
+ * @typedef {object} RunState
+ * @property {RunPlan} plan
+ * @property {string} secret  Synthetic provider key. No phase record may contain it.
+ * @property {UninstallEntry | null} install
+ * @property {{ projectId: string, jobId: string } | null} seed
+ * @property {string | null} crashed  Job whose paid attempt was killed after its intent was recorded.
+ * @property {DataSnapshot} data  Snapshot after the previous phase.
+ */
+
+/**
+ * @typedef {object} PhaseRecord
+ * @property {string} phase
+ * @property {'passed' | 'failed' | 'not-reached'} status
+ * @property {string | null} evidence  Set only when passed.
+ * @property {Effects} declared
+ * @property {Readonly<Record<RootName, { exists: boolean, files: number, digest: string | null }>> | null} observed
+ * @property {object | null} facts
+ * @property {string[]} violations
+ * @property {string | null} error
+ * @property {number} ms
+ */
+
+/**
+ * @typedef {object} InstallerReport
+ * @property {'installer-acceptance'} name
+ * @property {string} from
+ * @property {string} to
+ * @property {boolean} passed
+ * @property {PhaseRecord[]} phases
+ */
 
 const EFFECT_MEANING = Object.freeze({
   absent: 'Does not exist after the step.',
@@ -66,19 +179,12 @@ export const INSTALL_SUPPORT = Object.freeze({
   signing: 'Unsigned builds; SmartScreen and Mark-of-the-Web warnings are a known limitation',
   updates: 'Manual updates only; there is no auto-updater and no publish target',
   uninstall: 'Default uninstall keeps the Local workspace and the Roaming profile; --delete-app-data removes only the Roaming profile, and the Local workspace and chosen project folders stay',
-  downgrade: 'A job store newer than user_version 2 is refused with job-version-unsupported; there is no downward migration',
+  downgrade: `A job store newer than user_version ${SUPPORTED_STORE} is refused with job-version-unsupported; there is no downward migration`,
 });
 
 /** @param {RootEffect} install @param {RootEffect} local @param {RootEffect} roaming @returns {Effects} */
 function effects(install, local, roaming) {
   return Object.freeze({ install, local, roaming });
-}
-
-function pending() {
-  return {
-    act: async () => { throw new Error('not implemented'); },
-    expect: () => [],
-  };
 }
 
 const PHASES = Object.freeze([
@@ -88,7 +194,7 @@ const PHASES = Object.freeze([
     evidence: null,
     note: null,
     timeoutMs: 15_000,
-    ...pending(),
+    ...preflightPhase(),
   },
   {
     name: 'install',
@@ -96,7 +202,7 @@ const PHASES = Object.freeze([
     evidence: 'Silent per-user NSIS install registers a current-user uninstaller, starts nothing, writes no user data and ships no update metadata',
     note: null,
     timeoutMs: 180_000,
-    ...pending(),
+    ...installerPhase('from'),
   },
   {
     name: 'plant-v1-store',
@@ -104,7 +210,7 @@ const PHASES = Object.freeze([
     evidence: null,
     note: 'The harness opens the job store with a fault that rolls back the version 2 migration, then adds a prior-evidence file. The installed app must finish the migration and keep that file.',
     timeoutMs: 30_000,
-    ...pending(),
+    ...plantStorePhase(),
   },
   {
     name: 'seed',
@@ -112,7 +218,7 @@ const PHASES = Object.freeze([
     evidence: 'Installed app finishes a rolled-back v1 to v2 job store migration keeping prior evidence, then writes a managed project, a DPAPI-protected credential and an unconfirmed queued job under the real per-user data roots',
     note: null,
     timeoutMs: 90_000,
-    ...pending(),
+    ...seedPhase(),
   },
   {
     name: 'verify-installed',
@@ -120,7 +226,7 @@ const PHASES = Object.freeze([
     evidence: 'Installed app relaunch with a System32-only PATH lists the project, decrypts the credential and leaves the queued job undispatched',
     note: null,
     timeoutMs: 90_000,
-    ...pending(),
+    ...appCheckPhase('from'),
   },
   {
     name: 'plant-crashed-attempt',
@@ -128,7 +234,7 @@ const PHASES = Object.freeze([
     evidence: null,
     note: 'The harness dispatches a fake paid attempt and kills the process after the intent is recorded. The upgraded app must mark that attempt uncertain and its job interrupted, and must not retry it.',
     timeoutMs: 60_000,
-    ...pending(),
+    ...crashedAttemptPhase(),
   },
   {
     name: 'upgrade',
@@ -136,7 +242,7 @@ const PHASES = Object.freeze([
     evidence: 'Silent N to N+1 upgrade over a crashed paid attempt replaces the install, starts nothing and leaves the workspace and Chromium profile byte-identical',
     note: null,
     timeoutMs: 180_000,
-    ...pending(),
+    ...installerPhase('to'),
   },
   {
     name: 'verify-upgraded',
@@ -144,7 +250,7 @@ const PHASES = Object.freeze([
     evidence: 'Upgraded app reports N+1, keeps projects, the DPAPI credential and the queued job, and marks the crashed paid attempt uncertain and interrupted without retrying it',
     note: null,
     timeoutMs: 90_000,
-    ...pending(),
+    ...appCheckPhase('to'),
   },
   {
     name: 'refuse-newer-store',
@@ -152,7 +258,7 @@ const PHASES = Object.freeze([
     evidence: 'Installed app refuses a job store newer than it supports with job-version-unsupported and changes no workspace byte',
     note: 'The harness stamps the store one version ahead, starts the app, then restores the version. Downgrade across a store version is refused; reinstalling the newer build is the recovery.',
     timeoutMs: 60_000,
-    ...pending(),
+    ...refusalPhase(),
   },
   {
     name: 'uninstall-keep',
@@ -160,7 +266,7 @@ const PHASES = Object.freeze([
     evidence: 'Default silent uninstall removes the install and its registration and leaves the workspace and Chromium profile byte-identical',
     note: null,
     timeoutMs: 120_000,
-    ...pending(),
+    ...uninstallPhase(false),
   },
   {
     name: 'reinstall',
@@ -168,7 +274,7 @@ const PHASES = Object.freeze([
     evidence: null,
     note: null,
     timeoutMs: 180_000,
-    ...pending(),
+    ...installerPhase('to'),
   },
   {
     name: 'verify-reinstalled',
@@ -176,7 +282,7 @@ const PHASES = Object.freeze([
     evidence: 'Reinstall over retained data reopens the same project, credential, queued job and uncertain attempt without a reset or retry',
     note: null,
     timeoutMs: 90_000,
-    ...pending(),
+    ...appCheckPhase('to'),
   },
   {
     name: 'uninstall-remove',
@@ -184,7 +290,7 @@ const PHASES = Object.freeze([
     evidence: 'Uninstall with --delete-app-data removes only the Chromium profile and leaves the workspace byte-identical',
     note: 'Saved provider keys are encrypted with a key held in the Roaming profile. After this removal the encrypted files stay in the workspace but may no longer decrypt.',
     timeoutMs: 120_000,
-    ...pending(),
+    ...uninstallPhase(true),
   },
 ]);
 
@@ -223,6 +329,48 @@ export const INSTALLER_ACCEPTANCE = Object.freeze({
   phases: Object.freeze(PHASES.map(({ name, effects: declared, evidence, note }) => Object.freeze({ name, effects: declared, evidence, note }))),
   effects: EFFECT_MEANING,
 });
+
+/**
+ * Runs every phase once against real installers and the current Windows user profile. Refuses a profile
+ * that already has product data, an app process or a registration. It never deletes data it did not
+ * create and never cleans up after a failure.
+ *
+ * The report is rewritten after every phase. A failure rejects naming the phase after the report holds it.
+ * @param {unknown} raw  InstallerSpec. Validated before any side effect.
+ * @param {Host} [host]
+ * @returns {Promise<InstallerReport>}
+ */
+export async function runInstallerAcceptance(raw, host = windowsHost()) {
+  const plan = parseInstallerSpec(raw, host.env);
+  const ledger = PHASES.map(notReached);
+  await writeReport(plan, ledger, false);
+  /** @type {RunState} */
+  let state = { plan, secret: `synthetic-${randomUUID()}`, install: null, seed: null, crashed: null, data: await snapshot(plan.roots) };
+  for (const [index, phase] of PHASES.entries()) {
+    const started = Date.now();
+    let facts = null;
+    let changes = {};
+    let after = null;
+    let error = null;
+    const violations = [];
+    try {
+      ({ facts, changes = {} } = await withTimeout(phase.act(state, host), phase.timeoutMs, phase.name));
+      violations.push(...await noAppProcess(host));
+      after = await snapshot(plan.roots);
+      violations.push(...phase.expect(facts, state, after));
+      violations.push(...checkEffects(state.data, after, phase.effects));
+    } catch (thrown) {
+      error = thrown instanceof Error ? thrown.message : String(thrown);
+    }
+    ledger[index] = redact(record(phase, { facts, violations, error, after, ms: Date.now() - started }), state.secret);
+    await writeReport(plan, ledger, false);
+    if (ledger[index].status === 'failed') {
+      throw new Error(`installer acceptance failed at ${phase.name}: ${ledger[index].error ?? ledger[index].violations[0]}`);
+    }
+    state = { ...state, ...changes, data: /** @type {DataSnapshot} */ (after) };
+  }
+  return writeReport(plan, ledger, true);
+}
 
 function isRecord(value) {
   return value != null && typeof value === 'object' && !Array.isArray(value);
@@ -312,16 +460,525 @@ function parseInstallerSpec(raw, env) {
   const roots = resolveRoots(installDir, env);
   if (overlaps(installDir, roots.local) || overlaps(installDir, roots.roaming)) throw new Error('installDir must not overlap a data root');
   if (ROOT_NAMES.some(name => within(roots[name], outputDir))) throw new Error('outputDir must be outside the install and data roots');
-  return Object.freeze({ builds: Object.freeze({ from, to }), roots, outputDir });
+  if (!env.SystemRoot) throw new Error('SystemRoot is required');
+  return Object.freeze({ builds: Object.freeze({ from, to }), roots, outputDir, childPath: path.win32.join(env.SystemRoot, 'System32') });
+}
+
+function hashFile(file) {
+  return new Promise((resolve, reject) => {
+    const hash = createHash('sha256');
+    createReadStream(file)
+      .on('error', reject)
+      .on('data', chunk => hash.update(chunk))
+      .on('end', () => resolve(hash.digest('hex')));
+  });
 }
 
 /**
- * Runs every phase once against real installers and the current Windows user profile.
- * @param {unknown} raw  InstallerSpec. Validated before any side effect.
- * @param {{ env: Readonly<Record<string, string | undefined>> }} [host]
- * @returns {Promise<never>}
+ * @param {string} root
+ * @returns {Promise<Inventory | null>}
  */
-export async function runInstallerAcceptance(raw, host = { env: process.env }) {
-  parseInstallerSpec(raw, host.env);
-  throw new Error('not implemented');
+async function inventory(root) {
+  try {
+    if (!(await lstat(root)).isDirectory()) return new Map([['', 'other']]);
+  } catch (error) {
+    if (error.code === 'ENOENT') return null;
+    throw error;
+  }
+  const entries = new Map();
+  const walk = async (directory, relative) => {
+    for (const entry of await readdir(directory, { withFileTypes: true })) {
+      const full = path.join(directory, entry.name);
+      const key = path.join(relative, entry.name);
+      if (entry.isSymbolicLink()) entries.set(key.toLowerCase(), 'link');
+      else if (entry.isDirectory()) {
+        entries.set(key.toLowerCase(), 'dir');
+        await walk(full, key);
+      } else if (entry.isFile()) entries.set(key.toLowerCase(), await hashFile(full));
+      else entries.set(key.toLowerCase(), 'other');
+    }
+  };
+  await walk(root, '');
+  return entries;
+}
+
+/**
+ * @param {Roots} roots
+ * @returns {StoreFacts | null}
+ */
+function readStore(roots) {
+  const file = path.join(roots.local, LAYOUT.store);
+  if (!existsSync(file)) return null;
+  const { DatabaseSync } = require('node:sqlite');
+  const db = new DatabaseSync(file, { readOnly: true });
+  try {
+    const userVersion = Number(db.prepare('PRAGMA user_version').get().user_version);
+    const tables = new Set(db.prepare("SELECT name FROM sqlite_master WHERE type='table'").all().map(row => row.name));
+    const jobs = tables.has('jobs') ? db.prepare('SELECT id, state FROM jobs ORDER BY id').all().map(({ id, state }) => ({ id, state })) : [];
+    const attempts = tables.has('attempts') ? db.prepare('SELECT job, state FROM attempts ORDER BY job').all().map(({ job, state }) => ({ job, state })) : [];
+    return { userVersion, jobs, attempts };
+  } finally {
+    db.close();
+  }
+}
+
+/**
+ * @param {Roots} roots
+ * @param {number} userVersion
+ */
+function stampStore(roots, userVersion) {
+  const { DatabaseSync } = require('node:sqlite');
+  const db = new DatabaseSync(path.join(roots.local, LAYOUT.store));
+  try { db.exec(`PRAGMA user_version=${userVersion}`); } finally { db.close(); }
+}
+
+/**
+ * @param {Roots} roots
+ * @returns {Promise<DataSnapshot>}
+ */
+async function snapshot(roots) {
+  const [install, local, roaming] = await Promise.all(ROOT_NAMES.map(name => inventory(roots[name])));
+  return { roots: { install, local, roaming }, store: local ? readStore(roots) : null };
+}
+
+/**
+ * @param {Inventory} before
+ * @param {Inventory} after
+ * @param {(key: string) => boolean} [ignored]
+ */
+function differences(before, after, ignored = () => false) {
+  const found = [];
+  for (const [key, value] of before) {
+    if (ignored(key)) continue;
+    if (!after.has(key)) found.push(`removed ${key}`);
+    else if (after.get(key) !== value) found.push(`changed ${key}`);
+  }
+  for (const key of after.keys()) {
+    if (!ignored(key) && !before.has(key)) found.push(`added ${key}`);
+  }
+  return found;
+}
+
+function isSqlite(key) {
+  return SQLITE_FILE.test(path.basename(key));
+}
+
+function isWriterGuard(key) {
+  return key.split(path.sep).includes(WRITER_GUARD);
+}
+
+/** @param {StoreFacts | null} store */
+function recoveredStore(store) {
+  if (!store) return null;
+  return {
+    userVersion: store.userVersion,
+    jobs: store.jobs.map(job => (job.state === 'running' ? { ...job, state: 'interrupted' } : job)),
+    attempts: store.attempts.map(attempt => (attempt.state === 'intent' ? { ...attempt, state: 'uncertain' } : attempt)),
+  };
+}
+
+function sameJson(left, right) {
+  return JSON.stringify(left) === JSON.stringify(right);
+}
+
+function listed(root, effect, found) {
+  const shown = found.slice(0, 5).join(', ');
+  return `${root} expected ${effect}: ${shown}${found.length > 5 ? `, and ${found.length - 5} more` : ''}`;
+}
+
+/**
+ * Pure. Compares two snapshots against the declared effects.
+ * @param {DataSnapshot} before
+ * @param {DataSnapshot} after
+ * @param {Effects} declared
+ * @returns {string[]}
+ */
+function checkEffects(before, after, declared) {
+  const violations = [];
+  for (const root of ROOT_NAMES) {
+    const effect = declared[root];
+    const was = before.roots[root];
+    const now = after.roots[root];
+    const missing = [was ? null : 'absent before the step', now ? null : 'absent after the step'].filter(Boolean);
+    if (effect === 'absent') {
+      if (now) violations.push(`${root} expected absent: exists after the step`);
+    } else if (effect === 'created') {
+      if (was || !now) violations.push(`${root} expected created: ${was ? 'existed before the step' : 'absent after the step'}`);
+    } else if (effect === 'removed') {
+      if (!was || now) violations.push(`${root} expected removed: ${was ? 'exists after the step' : 'absent before the step'}`);
+    } else if (!was || !now) {
+      violations.push(`${root} expected ${effect}: ${missing.join(' and ')}`);
+    } else if (effect === 'byte-identical') {
+      const found = differences(was, now);
+      if (found.length) violations.push(listed(root, effect, found));
+    } else if (effect === 'replaced') {
+      if (!differences(was, now).length) violations.push(`${root} expected replaced: every file is unchanged`);
+    } else if (effect === 'kept') {
+      const found = differences(was, now, isSqlite);
+      if (!sameJson(before.store, after.store)) found.unshift('job store version, job states or attempt states changed');
+      if (found.length) violations.push(listed(root, effect, found));
+    } else if (effect === 'recovered') {
+      const found = differences(was, now, key => isSqlite(key) || (isWriterGuard(key) && !now.has(key)));
+      for (const key of now.keys()) if (isWriterGuard(key)) found.push(`writer lock not released ${key}`);
+      if (!sameJson(recoveredStore(before.store), after.store)) found.unshift('job store does not match the recovery of the previous store');
+      if (found.length) violations.push(listed(root, effect, found));
+    }
+  }
+  return violations;
+}
+
+/** Exit can resolve before Chromium helpers end, so the count gets a bounded time to reach zero. */
+async function noAppProcess(host) {
+  const deadline = Date.now() + SETTLE_MS;
+  let count = await host.appProcesses();
+  while (count > 0 && Date.now() < deadline) {
+    await new Promise(resolve => { setTimeout(resolve, 250); });
+    count = await host.appProcesses();
+  }
+  return count > 0 ? [`${count} app process${count === 1 ? '' : 'es'} still running after the step`] : [];
+}
+
+function withTimeout(promise, ms, name) {
+  let timer;
+  const expired = new Promise((_resolve, reject) => {
+    timer = setTimeout(() => reject(new Error(`${name} did not finish within ${ms} ms`)), ms);
+  });
+  return Promise.race([promise, expired]).finally(() => clearTimeout(timer));
+}
+
+/** @param {Inventory | null} entries */
+function summarize(entries) {
+  if (!entries) return { exists: false, files: 0, digest: null };
+  const lines = [...entries].sort(([left], [right]) => (left < right ? -1 : left > right ? 1 : 0)).map(([key, value]) => `${key}\0${value}\n`);
+  const files = [...entries.values()].filter(value => value !== 'dir').length;
+  return { exists: true, files, digest: createHash('sha256').update(lines.join('')).digest('hex') };
+}
+
+function notReached(phase) {
+  return { phase: phase.name, status: 'not-reached', evidence: null, declared: phase.effects, observed: null, facts: null, violations: [], error: null, ms: 0 };
+}
+
+/** @returns {PhaseRecord} */
+function record(phase, { facts, violations, error, after, ms }) {
+  const failed = error !== null || violations.length > 0;
+  return {
+    phase: phase.name,
+    status: failed ? 'failed' : 'passed',
+    evidence: failed ? null : phase.evidence,
+    declared: phase.effects,
+    observed: after && Object.fromEntries(ROOT_NAMES.map(root => [root, summarize(after.roots[root])])),
+    facts,
+    violations,
+    error,
+    ms,
+  };
+}
+
+/**
+ * @param {PhaseRecord} entry
+ * @param {string} secret
+ * @returns {PhaseRecord}
+ */
+function redact(entry, secret) {
+  if (!JSON.stringify(entry).includes(secret)) return entry;
+  return {
+    ...entry,
+    status: 'failed',
+    evidence: null,
+    facts: null,
+    violations: ['the synthetic provider key appeared in this phase record'],
+    error: null,
+  };
+}
+
+/**
+ * @param {RunPlan} plan
+ * @param {PhaseRecord[]} ledger
+ * @param {boolean} passed
+ * @returns {Promise<InstallerReport>}
+ */
+async function writeReport(plan, ledger, passed) {
+  /** @type {InstallerReport} */
+  const report = { name: 'installer-acceptance', from: plan.builds.from.version, to: plan.builds.to.version, passed, phases: ledger };
+  await mkdir(plan.outputDir, { recursive: true });
+  const file = path.join(plan.outputDir, REPORT_FILE);
+  const temporary = `${file}.${randomUUID()}.tmp`;
+  await writeFile(temporary, `${JSON.stringify(report, null, 2)}\n`);
+  await rename(temporary, file);
+  return report;
+}
+
+function exePath(plan) {
+  return path.join(plan.roots.install, EXE);
+}
+
+function sameLocation(left, right) {
+  return typeof left === 'string' && path.resolve(left).toLowerCase() === path.resolve(right).toLowerCase();
+}
+
+function preflightPhase() {
+  return {
+    async act(state, host) {
+      const { plan, data } = state;
+      return {
+        facts: {
+          existingRoots: ROOT_NAMES.filter(name => data.roots[name] !== null),
+          registered: (await host.uninstallEntry()) !== null,
+          machineWide: await host.machineWideEntry(),
+          appProcesses: await host.appProcesses(),
+          setupsPresent: [plan.builds.from.setupExe, plan.builds.to.setupExe].every(file => existsSync(file)),
+        },
+      };
+    },
+    expect(facts) {
+      const problems = [];
+      if (facts.existingRoots.length) {
+        problems.push(`Installer acceptance needs a Windows user profile with no product data. Found: ${facts.existingRoots.join(', ')}. Use a fresh runner or a disposable user; the harness never deletes data it did not create.`);
+      }
+      if (facts.registered || facts.machineWide) problems.push('the product is already registered for uninstall');
+      if (facts.appProcesses > 0) problems.push('an app process is already running');
+      if (!facts.setupsPresent) problems.push('a setup file is missing');
+      return problems;
+    },
+  };
+}
+
+/** @param {'from' | 'to'} build */
+function installerPhase(build) {
+  return {
+    async act(state, host) {
+      const { plan } = state;
+      const exitCode = await host.install(plan.builds[build].setupExe, plan.roots.install);
+      const entry = await host.uninstallEntry();
+      return {
+        facts: {
+          exitCode,
+          registeredVersion: entry?.displayVersion ?? null,
+          installLocation: entry?.installLocation ?? null,
+          machineWide: await host.machineWideEntry(),
+          exePresent: existsSync(exePath(plan)),
+          updateMetadata: existsSync(path.join(plan.roots.install, 'resources', 'app-update.yml')),
+        },
+        changes: { install: entry },
+      };
+    },
+    expect(facts, state) {
+      const { plan } = state;
+      const problems = [];
+      if (facts.exitCode !== 0) problems.push(`setup exited ${facts.exitCode}`);
+      if (facts.registeredVersion !== plan.builds[build].version) problems.push(`registered version is ${facts.registeredVersion}, expected ${plan.builds[build].version}`);
+      if (!sameLocation(facts.installLocation, plan.roots.install)) problems.push('the uninstaller is not registered in the install directory');
+      if (facts.machineWide) problems.push('setup registered a machine-wide uninstaller');
+      if (!facts.exePresent) problems.push('the app executable is missing from the install directory');
+      if (facts.updateMetadata) problems.push('the install ships auto-update metadata');
+      return problems;
+    },
+  };
+}
+
+function plantStorePhase() {
+  return {
+    async act(state) {
+      const { roots } = state.plan;
+      const jobsRoot = path.join(roots.local, LAYOUT.jobs);
+      let planted = false;
+      try {
+        new JobStore(jobsRoot, { fault: name => { if (name === 'pipeline-migration-before-commit') throw new Error(PLANTED_FAULT); } }).close();
+      } catch (error) {
+        if (error.message !== PLANTED_FAULT) throw error;
+        planted = true;
+      }
+      if (!planted) throw new Error('the planted migration fault did not fire');
+      await writeFile(path.join(roots.local, MARKER.file), MARKER.content, { flag: 'wx' });
+      return { facts: { userVersion: readStore(roots)?.userVersion ?? null } };
+    },
+    expect(facts, state, after) {
+      const problems = [];
+      if (after.store?.userVersion !== 1) problems.push(`planted job store is at user_version ${after.store?.userVersion}, expected 1`);
+      if (after.roots.local?.get(MARKER.file.toLowerCase()) !== MARKER_HASH) problems.push('prior evidence file was not planted');
+      return problems;
+    },
+  };
+}
+
+function credentialFile(plan) {
+  return path.join(plan.roots.local, LAYOUT.credentials, `${SEED_PROVIDER}.json`);
+}
+
+/**
+ * @param {InstalledApp} app
+ * @param {RunState} state
+ * @param {string} projectId
+ */
+async function appFacts(app, state, projectId) {
+  const status = await app.status(projectId);
+  return {
+    appVersion: app.version,
+    childPath: app.childPath,
+    projectListed: status.listed,
+    credentialMatches: await app.credentialMatches(credentialFile(state.plan), state.secret),
+    jobs: status.jobs.map(({ id, state: jobState, nextAction }) => ({ id, state: jobState, nextAction })),
+    reopenDispatches: status.reopenDispatches,
+  };
+}
+
+function appProblems(facts, state, version, seedJobId) {
+  const problems = [];
+  if (facts.appVersion !== version) problems.push(`app reports ${facts.appVersion}, expected ${version}`);
+  if (String(facts.childPath).toLowerCase() !== state.plan.childPath.toLowerCase()) problems.push('app PATH is not System32 only');
+  if (!facts.projectListed) problems.push('the seeded project is not listed');
+  if (!facts.credentialMatches) problems.push('the saved credential does not decrypt to the seeded key');
+  if (facts.reopenDispatches !== false) problems.push('status reports that reopening dispatches work');
+  const queued = facts.jobs.find(job => job.id === seedJobId);
+  if (queued?.state !== 'queued') problems.push(`the seeded job is ${queued?.state ?? 'missing'}, expected queued`);
+  if (state.crashed) {
+    const crashed = facts.jobs.find(job => job.id === state.crashed);
+    if (crashed?.state !== 'interrupted' || crashed.nextAction !== 'reconcile-attempt') {
+      problems.push(`the crashed job is ${crashed?.state ?? 'missing'} with ${crashed?.nextAction ?? 'no action'}, expected interrupted with reconcile-attempt`);
+    }
+  }
+  for (const job of facts.jobs) if (job.state === 'running') problems.push(`job ${job.id} is running after reopen`);
+  return problems;
+}
+
+function seedPhase() {
+  return {
+    async act(state, host) {
+      const app = await host.open(exePath(state.plan), state.plan.outputDir);
+      try {
+        const projectId = await app.createProject(SEED_PROJECT.name, SEED_PROJECT.url);
+        await app.saveCredential(SEED_PROVIDER, state.secret);
+        const jobId = await app.planUnconfirmed(projectId);
+        return { facts: { projectId, jobId, ...await appFacts(app, state, projectId) }, changes: { seed: { projectId, jobId } } };
+      } finally {
+        await app.exit();
+      }
+    },
+    expect(facts, state, after) {
+      const problems = appProblems(facts, state, state.plan.builds.from.version, facts.jobId);
+      if (after.store?.userVersion !== SUPPORTED_STORE) problems.push(`job store is at user_version ${after.store?.userVersion}, expected ${SUPPORTED_STORE}`);
+      if (after.roots.local?.get(MARKER.file.toLowerCase()) !== MARKER_HASH) problems.push('the migration changed or removed the prior evidence file');
+      return problems;
+    },
+  };
+}
+
+/** @param {'from' | 'to'} build */
+function appCheckPhase(build) {
+  return {
+    async act(state, host) {
+      if (!state.install || !state.seed) throw new Error('no install or seed to verify');
+      const app = await host.open(exePath(state.plan), state.plan.outputDir);
+      try {
+        return { facts: await appFacts(app, state, state.seed.projectId) };
+      } finally {
+        await app.exit();
+      }
+    },
+    expect(facts, state) {
+      return appProblems(facts, state, state.plan.builds[build].version, state.seed?.jobId);
+    },
+  };
+}
+
+async function waitForCheckpoint(file, exited) {
+  for (;;) {
+    if (existsSync(file)) return JSON.parse(await readFile(file, 'utf8'));
+    const code = await Promise.race([exited, new Promise(resolve => { setTimeout(() => resolve(undefined), 50); })]);
+    if (code !== undefined) throw new Error(`crash child exited ${code} before recording an intent`);
+  }
+}
+
+function crashedAttemptPhase() {
+  return {
+    async act(state) {
+      if (!state.seed) throw new Error('no seeded project for the crashed attempt');
+      const checkpoint = path.join(state.plan.outputDir, 'crash-attempt.json');
+      await rm(checkpoint, { force: true });
+      const workspace = path.join(state.plan.roots.local, LAYOUT.workspace);
+      const child = spawn(process.execPath, [CRASH_CHILD, workspace, state.seed.projectId, checkpoint], { stdio: ['ignore', 'ignore', 'pipe'], windowsHide: true });
+      let stderr = '';
+      child.stderr.setEncoding('utf8');
+      child.stderr.on('data', chunk => { if (stderr.length < 4096) stderr += chunk; });
+      const exited = new Promise(resolve => { child.once('exit', code => resolve(code)); child.once('error', () => resolve(-1)); });
+      try {
+        const { jobId } = await waitForCheckpoint(checkpoint, exited);
+        return { facts: { jobId }, changes: { crashed: jobId } };
+      } catch (error) {
+        throw new Error(`${error.message}${stderr ? `: ${stderr.trim().split('\n').at(-1)}` : ''}`);
+      } finally {
+        child.kill('SIGKILL');
+        await exited;
+      }
+    },
+    expect(facts, state, after) {
+      const job = after.store?.jobs.find(item => item.id === facts.jobId);
+      const attempt = after.store?.attempts.find(item => item.job === facts.jobId);
+      if (job?.state === 'running' && attempt?.state === 'intent') return [];
+      return [`the crashed attempt left job ${job?.state ?? 'missing'} and attempt ${attempt?.state ?? 'missing'}, expected running and intent`];
+    },
+  };
+}
+
+function refusalPhase() {
+  return {
+    async act(state, host) {
+      const { plan, data } = state;
+      if (!data.store) throw new Error('no job store to stamp');
+      const original = data.store.userVersion;
+      stampStore(plan.roots, original + 1);
+      try {
+        const stamped = await snapshot(plan.roots);
+        const probe = await host.probe(exePath(plan), plan.outputDir);
+        const changedDuringRefusal = [
+          ...await noAppProcess(host),
+          ...checkEffects(stamped, await snapshot(plan.roots), effects('byte-identical', 'byte-identical', 'present')),
+        ];
+        return { facts: { stampedVersion: original + 1, probe, changedDuringRefusal } };
+      } finally {
+        stampStore(plan.roots, original);
+      }
+    },
+    expect(facts) {
+      const problems = [];
+      const { probe } = facts;
+      if (probe.outcome !== 'refused') problems.push(`app start was ${probe.outcome} with a newer job store, expected refused`);
+      else if (probe.step !== 'jobs' || probe.code !== 'job-version-unsupported' || probe.exitCode === 0) {
+        problems.push(`app refused at ${probe.step} with ${probe.code} and exit ${probe.exitCode}, expected jobs with job-version-unsupported`);
+      }
+      problems.push(...facts.changedDuringRefusal.map(problem => `during the refused start: ${problem}`));
+      return problems;
+    },
+  };
+}
+
+/** @param {boolean} removeData */
+function uninstallPhase(removeData) {
+  return {
+    async act(state, host) {
+      if (!state.install) throw new Error('nothing is installed');
+      const exitCode = await host.uninstall(state.install, removeData);
+      return {
+        facts: { exitCode, removeData, registered: (await host.uninstallEntry()) !== null, exePresent: existsSync(exePath(state.plan)) },
+        changes: { install: null },
+      };
+    },
+    expect(facts) {
+      const problems = [];
+      if (facts.exitCode !== 0) problems.push(`uninstaller exited ${facts.exitCode}`);
+      if (facts.registered) problems.push('the uninstall registration remains');
+      if (facts.exePresent) problems.push('the app executable remains');
+      return problems;
+    },
+  };
+}
+
+/** @returns {Host} */
+function windowsHost() {
+  return /** @type {Host} */ ({
+    env: process.env,
+    ...Object.fromEntries(['install', 'uninstall', 'uninstallEntry', 'machineWideEntry', 'appProcesses', 'open', 'probe'].map(name => [
+      name, async () => { throw new Error('not implemented'); },
+    ])),
+  });
 }
