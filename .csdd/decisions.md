@@ -1,5 +1,22 @@
 # Decisions
 
+## DEC-015 — Declare Windows install support, manual updates and uninstall retention
+
+- Status: proposed for issue #58, pending operator review. It is not a release or distribution decision.
+- Date: 2026-10-18
+- Context: issue #58 requires a declared support floor, installer format, signing and update strategy, and uninstall behavior before distribution. Electron keeps the Chromium profile and the DPAPI-protected key under Roaming AppData. The app keeps the project registry, managed projects, credential records and the job store under Local AppData. electron-builder's `--delete-app-data` uninstall flag removes Roaming AppData only.
+- Decision:
+  - Support floor: Windows 10 and Windows 11, x64 only.
+  - Tested: CI installs on GitHub windows-latest, which is Windows Server; Windows 10 and Windows 11 client editions are not exercised.
+  - Installer: Assisted NSIS installer with a current-user default (oneClick false, perMachine false).
+  - Signing: Unsigned builds; SmartScreen and Mark-of-the-Web warnings are a known limitation.
+  - Updates: Manual updates only; there is no auto-updater and no publish target.
+  - Uninstall: Default uninstall keeps the Local workspace and the Roaming profile; --delete-app-data removes only the Roaming profile, and the Local workspace and chosen project folders stay.
+  - Downgrade: A job store newer than user_version 2 is refused with job-version-unsupported; there is no downward migration.
+- Rationale: a per-user assisted installer needs no elevation and keeps the existing build. Unsigned manual builds avoid a signing purchase and any automatic update or restart of paid work, which issue #58 does not authorize. Keeping Local data on every uninstall means removing the program can never erase projects, credentials or job evidence. Refusing a newer store keeps an older build from rewriting data it does not understand.
+- Consequence: `desktop/builder.json` states `deleteAppDataOnUninstall: false` and `publish: null`, and `pnpm app:cite` fails when this entry, `docs/windows-app-shell.md` or `INSTALL_SUPPORT` in `desktop/acceptance/install.mjs` drift apart. Removing Roaming data can leave saved provider keys undecryptable while their encrypted records stay in the workspace. Users delete the Local workspace by hand. Client-edition, SmartScreen, real-upgrade and network observations remain manual on issue #58.
+- Evidence: `pnpm app:install` (`desktop/acceptance/install.mjs`) in the `installer` job of `.github/workflows/windows-app.yml`; [install support](../docs/windows-app-shell.md#install-support); [manual acceptance debt](../docs/manual-acceptance-debt.md).
+
 ## DEC-014 — Keep portable disclosure separate from private delivery and effort history
 
 - Status: implementation decision for issue #56, pending operator source review; builds on #55 merged through PR #64 at main 3da3d81.

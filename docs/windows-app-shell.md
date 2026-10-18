@@ -43,6 +43,33 @@ On the current Windows x64 host (10.0.26300):
 
 The Windows CI workflow repeats suite/build/inventory/packaged checks and retains only the unsigned installer and generic test screenshot/report. The first runner suite failed because its TEMP used a Windows short-name alias, which existing canonical path guards deliberately reject; CI now creates an unaliased workspace temporary directory without relaxing the guards. Its result is separate evidence after execution; configuring it does not claim it passed. No live provider, private case, credential store, durable job, restart/power-loss recovery, clean VM install, actual Narrator/tray keyboard acceptance, signing or Windows 10 support was verified. Initial build target is Windows x64; the tested host is Windows 11. Final support floor/distribution acceptance remains issue 58.
 
+## Install support
+
+Tracking: [issue 58](https://github.com/ValenFelizia/instagram-to-opendesign/issues/58). These statements are DEC-015, pending operator review. `pnpm app:cite` fails when this block, DEC-015 or `INSTALL_SUPPORT` in `desktop/acceptance/install.mjs` disagree.
+
+<!-- install-support -->
+- Support floor: Windows 10 and Windows 11, x64 only.
+- Tested: CI installs on GitHub windows-latest, which is Windows Server; Windows 10 and Windows 11 client editions are not exercised.
+- Installer: Assisted NSIS installer with a current-user default (oneClick false, perMachine false).
+- Signing: Unsigned builds; SmartScreen and Mark-of-the-Web warnings are a known limitation.
+- Updates: Manual updates only; there is no auto-updater and no publish target.
+- Uninstall: Default uninstall keeps the Local workspace and the Roaming profile; --delete-app-data removes only the Roaming profile, and the Local workspace and chosen project folders stay.
+- Downgrade: A job store newer than user_version 2 is refused with job-version-unsupported; there is no downward migration.
+<!-- /install-support -->
+
+Data roots:
+
+| Root | Holds | Default uninstall | Uninstall with `--delete-app-data` |
+| --- | --- | --- | --- |
+| Install directory, `%LOCALAPPDATA%\Programs\Instagram to OpenDesign` by default | Program files and the uninstaller | Removed | Removed |
+| `%LOCALAPPDATA%\Instagram to OpenDesign` | Project registry, managed projects, credential records, job store | Kept | Kept |
+| `%APPDATA%\Instagram to OpenDesign` | Chromium profile, including the key that protects saved credentials | Kept | Removed |
+| A project folder chosen outside the workspace | That project's files | Kept | Kept |
+
+An upgrade runs the new installer over the old one. The data roots are not touched, and the app finishes any job store migration on its next start. A crashed paid attempt is shown as uncertain and is never retried automatically. Installing an older build over newer data is refused at startup with `job-version-unsupported`; install the newer build again to recover. After `--delete-app-data`, saved provider keys may no longer decrypt and must be entered again.
+
+`pnpm app:install` exercises this table on a fresh Windows runner with synthetic data. The phases and their declared effects are in the Issue 58 section of [manual acceptance debt](manual-acceptance-debt.md).
+
 ## Manual acceptance before closing issue 51
 
 1. On a disposable/clean supported Windows environment without external Node, install the NSIS build, open its shortcut and confirm both imports are available.

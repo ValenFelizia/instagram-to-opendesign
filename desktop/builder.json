@@ -8,6 +8,6 @@
   "asarUnpack": ["node_modules/sharp/**", "node_modules/@img/**"],
   "npmRebuild": false,
   "win": { "target": [{ "target": "nsis", "arch": ["x64"] }], "signAndEditExecutable": false },
-  "nsis": { "oneClick": false, "perMachine": false, "allowToChangeInstallationDirectory": true, "createDesktopShortcut": true, "createStartMenuShortcut": true, "runAfterFinish": false, "artifactName": "instagram-to-opendesign-${version}-windows-x64-setup.${ext}" },
+  "nsis": { "oneClick": false, "perMachine": false, "allowToChangeInstallationDirectory": true, "createDesktopShortcut": true, "createStartMenuShortcut": true, "runAfterFinish": false, "deleteAppDataOnUninstall": false, "artifactName": "instagram-to-opendesign-${version}-windows-x64-setup.${ext}" },
   "publish": null
 }

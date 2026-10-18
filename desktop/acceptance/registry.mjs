@@ -1,4 +1,9 @@
-/** @typedef {'clean-machine' | 'native-shell' | 'assistive-technology' | 'release-decision'} Limit */
+import { INSTALLER_EVIDENCE as INSTALLER } from './install.mjs';
+
+/**
+ * @typedef {'clean-machine' | 'windows-client' | 'smartscreen' | 'real-upgrade' | 'native-shell'
+ *   | 'assistive-technology' | 'network-observation' | 'release-decision'} Limit
+ */
 
 /**
  * @typedef {object} AcceptanceCriterion
@@ -11,10 +16,14 @@
  */
 
 export const LIMITS = {
-  'clean-machine': 'The runner that starts the script has Node. The packaged child PATH is System32 only, and that child is not an NSIS install on a machine without Node.',
+  'clean-machine': 'The runner that starts the scripts has Node. The packaged and installed children see a System32-only PATH, but the machine is not clean.',
+  'windows-client': 'windows-latest is Windows Server. Windows 10 and Windows 11 client editions, the declared support floor, are not exercised by CI.',
+  smartscreen: 'CI runs an unsigned installer from disk without a download mark, so SmartScreen and unknown-publisher prompts are not exercised.',
+  'real-upgrade': 'CI upgrades between two builds of one commit with synthetic data. A person upgrading a real installation with real projects is not exercised.',
   'native-shell': 'The harness stubs file dialogs and keeps the window hidden. It does not drive the tray, the native folder picker, foreground activation, or Alt+F4.',
   'assistive-technology': 'Keyboard Tab and axe run in the packaged renderer. They do not run Narrator, 200% zoom, or a person reading the status announcements.',
-  'release-decision': 'Signing, the Windows version floor, and install or upgrade retention stay on issue 58. This harness does not decide a release.',
+  'network-observation': 'The harness does not capture network traffic from the installer, the uninstaller or the app. Absence of cloud or telemetry calls rests on configuration review and the blocked renderer requests.',
+  'release-decision': 'Signing, the Windows version floor, distribution and the uninstall data scope are an operator release decision on issue 58 (DEC-015, pending). This harness does not decide a release.',
 };
 
 const PATH_EVIDENCE = 'Packaged child PATH is System32 with no NODE_OPTIONS or secret-like environment';
@@ -55,8 +64,11 @@ const NOTIFICATION_TEST = 'notification copy and accessibility contracts stay al
 const PERCENT_TEST = 'projectStages never invent percentages and mark unreached stages';
 const STOP_TEST = 'stop does not claim remote cancellation; notifications stay allowlisted';
 const COMPLETED_TEST = 'local completed run projects stages and available inventory without fake progress';
+const MIGRATION_TEST = 'migration rollback and unsupported version fail closed without deleting valid snapshots';
+const FENCE_TEST = 'explicit shutdown fences a late fake response and restart never repeats the call';
+const RESTART_AUTH_TEST = 'authorization expires on restart and project moves revoke approval while backups omit control locks';
 
-/** Acceptance bullets copied from issues 51, 52, and 57. */
+/** Acceptance bullets copied from issues 51, 52, 57, and 58. */
 export const CRITERIA = [
   {
     id: '51.clean-install',
@@ -194,9 +206,57 @@ export const CRITERIA = [
     tests: [PERCENT_TEST, STOP_TEST, COMPLETED_TEST],
     manual: [],
   },
+  {
+    id: '58.clean-install',
+    issue: 58,
+    text: 'Install/open works on a clean supported Windows machine without external Node.',
+    evidence: [INSTALLER.install, INSTALLER.seed, INSTALLER['verify-installed']],
+    tests: [],
+    manual: ['clean-machine', 'windows-client', 'smartscreen'],
+  },
+  {
+    id: '58.upgrade-retention',
+    issue: 58,
+    text: 'Upgrade/migration failure preserves prior recoverable projects and credentials; cannot erase evidence or automatically retry uncertain remote requests.',
+    evidence: [INSTALLER.seed, INSTALLER.upgrade, INSTALLER['verify-upgraded'], INSTALLER['refuse-newer-store']],
+    tests: [MIGRATION_TEST, FENCE_TEST, RESTART_AUTH_TEST],
+    manual: ['real-upgrade', 'windows-client'],
+  },
+  {
+    id: '58.shell-guarantees',
+    issue: 58,
+    text: 'Window/tray/Exit, crash recovery and restart are verified against their separate documented guarantees.',
+    evidence: [SHELL_EVIDENCE, CRASH_EVIDENCE, EXIT_EVIDENCE, RELAUNCH_EVIDENCE, INSTALLER['verify-upgraded']],
+    tests: [EXIT_TEST],
+    manual: ['native-shell'],
+  },
+  {
+    id: '58.uninstall',
+    issue: 58,
+    text: 'Uninstall clearly identifies retained versus explicitly removed local data; no unintended deletion or cloud/telemetry behavior.',
+    evidence: [INSTALLER['uninstall-keep'], INSTALLER['verify-reinstalled'], INSTALLER['uninstall-remove']],
+    tests: [],
+    manual: ['network-observation', 'release-decision'],
+  },
+  {
+    id: '58.support-matrix',
+    issue: 58,
+    text: 'Signing/update limitations and actual support matrix are documented without implying untested OS guarantees.',
+    evidence: [],
+    tests: [],
+    manual: ['release-decision', 'windows-client'],
+  },
+  {
+    id: '58.packaged-checks',
+    issue: 58,
+    text: 'Packaged security/accessibility checks pass before distribution.',
+    evidence: [SHELL_EVIDENCE, NAVIGATION_EVIDENCE, GUIDED_UI_EVIDENCE],
+    tests: [SHELL_IPC_TEST, WORKSPACE_IPC_TEST],
+    manual: ['assistive-technology'],
+  },
 ];
 
-const ISSUE_BULLET_COUNTS = { 51: 6, 52: 5, 57: 6 };
+const ISSUE_BULLET_COUNTS = { 51: 6, 52: 5, 57: 6, 58: 6 };
 
 /**
  * automated when the row has evidence or tests and no manual limit.
@@ -218,11 +278,11 @@ function assertRegistry(criteria) {
   const ids = new Set();
   const texts = new Set();
   /** @type {Record<number, number>} */
-  const counts = { 51: 0, 52: 0, 57: 0 };
+  const counts = Object.fromEntries(Object.keys(ISSUE_BULLET_COUNTS).map(issue => [issue, 0]));
   for (const criterion of criteria) {
     if (ids.has(criterion.id)) throw new Error(`duplicate criterion ${criterion.id}`);
     ids.add(criterion.id);
-    if (!Object.hasOwn(ISSUE_BULLET_COUNTS, criterion.issue)) throw new Error(`${criterion.id} issue must be 51, 52, or 57`);
+    if (!Object.hasOwn(ISSUE_BULLET_COUNTS, criterion.issue)) throw new Error(`${criterion.id} issue must be one of ${Object.keys(ISSUE_BULLET_COUNTS).join(', ')}`);
     counts[criterion.issue] += 1;
     if (typeof criterion.text !== 'string' || !criterion.text.endsWith('.')) throw new Error(`${criterion.id} text must be a verbatim bullet`);
     if (texts.has(criterion.text)) throw new Error(`duplicate bullet ${criterion.id}`);
