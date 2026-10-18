@@ -172,7 +172,6 @@ const EFFECT_MEANING = Object.freeze({
 });
 const LOCAL_ONLY = new Set(['kept', 'recovered']);
 
-/** DEC-015 statements. cite.mjs requires each value verbatim in DEC-015 and in docs/windows-app-shell.md. */
 export const INSTALL_SUPPORT = Object.freeze({
   floor: 'Windows 10 and Windows 11, x64 only',
   tested: 'CI installs on GitHub windows-latest, which is Windows Server; Windows 10 and Windows 11 client editions are not exercised',
@@ -320,12 +319,10 @@ function assertPhases(phases) {
 
 assertPhases(PHASES);
 
-/** Registry evidence names, keyed by phase. */
 export const INSTALLER_EVIDENCE = Object.freeze(Object.fromEntries(
   PHASES.filter(phase => phase.evidence).map(phase => [phase.name, phase.evidence]),
 ));
 
-/** What cite.mjs renders as the Issue 58 section of the debt doc. */
 export const INSTALLER_ACCEPTANCE = Object.freeze({
   phases: Object.freeze(PHASES.map(({ name, effects: declared, evidence, note }) => Object.freeze({ name, effects: declared, evidence, note }))),
   effects: EFFECT_MEANING,
@@ -588,7 +585,6 @@ function listed(root, effect, found) {
 }
 
 /**
- * Pure. Compares two snapshots against the declared effects.
  * @param {DataSnapshot} before
  * @param {DataSnapshot} after
  * @param {Effects} declared
