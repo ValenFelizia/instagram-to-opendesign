@@ -1,10 +1,10 @@
 import assert from 'node:assert/strict';
-import { existsSync, mkdirSync, mkdtempSync, realpathSync, rmSync } from 'node:fs';
+import { chmodSync, existsSync, mkdirSync, mkdtempSync, realpathSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import test from 'node:test';
-import { launchPackagedApp, packagedExe } from '../desktop/acceptance/launch.mjs';
+import { launchPackagedApp, packagedExe, probeStartup } from '../desktop/acceptance/launch.mjs';
 import { INSTALLER_ACCEPTANCE, INSTALL_SUPPORT, runInstallerAcceptance } from '../desktop/acceptance/install.mjs';
 import { runGuidedAcceptance } from '../desktop/acceptance/guided-ui.mjs';
 import { checkDebt } from '../desktop/acceptance/cite.mjs';
@@ -21,9 +21,11 @@ test('packagedExe points at the unpacked Windows executable', () => {
 
 test('launch specs that cannot spawn are rejected before a process starts', async () => {
   await assert.rejects(
-    () => launchPackagedApp({ kind: 'installed', exe: 'C:\\Installed\\Instagram to OpenDesign.exe', outputDir }),
-    /not implemented/,
+    () => launchPackagedApp({ kind: 'installed', exe: 'C:\\Installed\\Instagram to OpenDesign.exe', outputDir, appData: 'C:\\fixture' }),
+    /unknown fields/,
   );
+  await assert.rejects(() => probeStartup({ kind: 'installed', exe: 'Instagram to OpenDesign.exe', outputDir }), /exe must be an absolute path/);
+  await assert.rejects(() => probeStartup({ kind: 'development', appRoot: 'C:\\repo', profileDir: 'C:\\profile', outputDir }), /packaged executable/);
   await assert.rejects(
     () => launchPackagedApp({ kind: 'packaged-test', exe, profileDir: 'C:\\profile', outputDir, env: { PATH: 'C:\\Node' } }),
     /unknown fields/,
@@ -39,6 +41,35 @@ test('launch specs that cannot spawn are rejected before a process starts', asyn
     () => launchPackagedApp({ kind: 'packaged-test', exe, profileDir: 'profile', outputDir }),
     /profileDir must be an absolute path/,
   );
+});
+
+test('probeStartup reports refusal, exit and a start that keeps running', { skip: process.platform === 'win32' }, async t => {
+  const root = mkdtempSync(path.join(realpathSync.native(tmpdir()), 'probe-startup-'));
+  const saved = { SystemRoot: process.env.SystemRoot, OPENAI_API_KEY: process.env.OPENAI_API_KEY };
+  process.env.SystemRoot = root;
+  process.env.OPENAI_API_KEY = 'synthetic-parent-key';
+  t.after(() => {
+    for (const [key, value] of Object.entries(saved)) {
+      if (value === undefined) delete process.env[key];
+      else process.env[key] = value;
+    }
+    rmSync(root, { recursive: true, force: true });
+  });
+  const script = (name, body) => {
+    const file = path.join(root, name);
+    writeFileSync(file, `#!/bin/sh\n${body}\n`);
+    chmodSync(file, 0o755);
+    return { kind: 'installed', exe: file, outputDir: root };
+  };
+  const hiddenOnly = '[ "$#" -eq 1 ] && [ "$1" = "--shell-test-hidden" ] && [ -z "$OPENAI_API_KEY" ] || exit 9';
+  assert.deepEqual(
+    await probeStartup(script('refuse', `${hiddenOnly}\necho "APP_SHELL_START_FAILED:jobs:job-version-unsupported" >&2\nexit 1`)),
+    { outcome: 'refused', exitCode: 1, step: 'jobs', code: 'job-version-unsupported' },
+  );
+  assert.deepEqual(await probeStartup(script('exit', `${hiddenOnly}\nexit 3`)), { outcome: 'exited', exitCode: 3 });
+  const started = Date.now();
+  assert.deepEqual(await probeStartup(script('linger', 'exec /bin/sleep 30'), 300), { outcome: 'running' });
+  assert.ok(Date.now() - started < 10_000);
 });
 
 test('guided acceptance refuses a session that is not packaged-test', async () => {

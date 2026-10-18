@@ -139,8 +139,7 @@ function argsFor(spec) {
   if (spec.kind === 'packaged-test' || spec.kind === 'development') {
     return [`--shell-test-data=${spec.profileDir}`, '--shell-test-hidden'];
   }
-  if (spec.kind === 'packaged-default') return ['--shell-test-hidden'];
-  throw new Error('not implemented');
+  return ['--shell-test-hidden'];
 }
 
 function playwrightElectron() {
@@ -156,8 +155,7 @@ function electronBinary() {
  */
 function launchTarget(spec) {
   if (spec.kind === 'development') return { executablePath: electronBinary(), args: [spec.appRoot, ...argsFor(spec)] };
-  if (spec.kind === 'packaged-test' || spec.kind === 'packaged-default') return { executablePath: spec.exe, args: argsFor(spec) };
-  throw new Error('not implemented');
+  return { executablePath: spec.exe, args: argsFor(spec) };
 }
 
 /**
@@ -260,7 +258,6 @@ function createSession(spec, app, page, env, executablePath, args, childPath) {
  */
 export async function launchPackagedApp(raw) {
   const spec = parseLaunch(raw);
-  if (spec.kind === 'installed') throw new Error('not implemented');
   const env = childEnv(process.env, spec);
   const target = launchTarget(spec);
   const electron = playwrightElectron();
@@ -274,5 +271,68 @@ export async function launchPackagedApp(raw) {
   } catch (error) {
     if (app) await app.close().catch(() => {});
     throw error;
+  }
+}
+
+/**
+ * How a startup ended, read from the exit code and the `APP_SHELL_START_FAILED:<step>:<code>` stderr line.
+ * @typedef {{ outcome: 'refused', exitCode: number, step: string, code: string }
+ *   | { outcome: 'exited', exitCode: number }
+ *   | { outcome: 'running' }} StartupProbe
+ */
+
+const START_FAILED = /APP_SHELL_START_FAILED:([a-z]+):([A-Za-z0-9-]+)/;
+
+function delay(ms) {
+  return new Promise(resolve => { setTimeout(resolve, ms); });
+}
+
+/**
+ * @param {import('node:child_process').ChildProcess} child
+ * @param {NodeJS.ProcessEnv} env
+ */
+async function killTree(child, env) {
+  if (process.platform !== 'win32') { child.kill('SIGKILL'); return; }
+  const taskkill = spawn(win.join(env.SystemRoot, 'System32', 'taskkill.exe'), ['/T', '/F', '/PID', String(child.pid)], { windowsHide: true, stdio: 'ignore' });
+  await new Promise(resolve => { taskkill.once('error', resolve); taskkill.once('exit', resolve); });
+}
+
+/**
+ * Starts the app without Playwright, so a refusal that exits before any window is still observed.
+ * Uses the same spec validation, child environment and arguments as launchPackagedApp. A process still
+ * alive after timeoutMs is killed with its process tree and reported as running.
+ * @param {unknown} raw
+ * @param {number} [timeoutMs]
+ * @returns {Promise<StartupProbe>}
+ */
+export async function probeStartup(raw, timeoutMs = 30000) {
+  const spec = parseLaunch(raw);
+  if (spec.kind === 'development') throw new Error('probeStartup needs a packaged executable');
+  const env = childEnv(process.env, spec);
+  const target = launchTarget(spec);
+  const child = spawn(target.executablePath, target.args, { env, windowsHide: true, stdio: ['ignore', 'ignore', 'pipe'] });
+  let stderr = '';
+  child.stderr.setEncoding('utf8');
+  child.stderr.on('data', chunk => { if (stderr.length < 65536) stderr += chunk; });
+  const drained = new Promise(resolve => { child.stderr.once('end', resolve); child.stderr.once('error', resolve); });
+  const exited = new Promise((resolve, reject) => {
+    child.once('error', reject);
+    child.once('exit', code => resolve(code ?? -1));
+  });
+  let timer;
+  const timedOut = new Promise(resolve => { timer = setTimeout(() => resolve(null), timeoutMs); });
+  try {
+    const exitCode = await Promise.race([exited, timedOut]);
+    if (exitCode === null) {
+      await killTree(child, env);
+      await exited.catch(() => {});
+      return { outcome: 'running' };
+    }
+    // Chromium helpers can hold the inherited stderr handle briefly after the main process exits.
+    await Promise.race([drained, delay(2000)]);
+    const match = stderr.match(START_FAILED);
+    return match ? { outcome: 'refused', exitCode, step: match[1], code: match[2] } : { outcome: 'exited', exitCode };
+  } finally {
+    clearTimeout(timer);
   }
 }

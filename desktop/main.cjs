@@ -149,5 +149,5 @@ else {
     supervisor.boot();
     startupStep = 'window';
     openWindow();
-  }).catch(error => { console.error(`APP_SHELL_START_FAILED:${startupStep}:${error.name}`); allowQuit = true; app.exit(1); });
+  }).catch(error => { console.error(`APP_SHELL_START_FAILED:${startupStep}:${error.code || error.name}`); allowQuit = true; app.exit(1); });
 }
