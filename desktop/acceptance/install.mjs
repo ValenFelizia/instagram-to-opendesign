@@ -5,6 +5,7 @@ import { createReadStream, existsSync, realpathSync } from 'node:fs';
 import { lstat, mkdir, readFile, readdir, rename, rm, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { launchPackagedApp, probeStartup } from './launch.mjs';
 
 const require = createRequire(import.meta.url);
 const builder = require('../builder.json');
@@ -973,12 +974,166 @@ function uninstallPhase(removeData) {
   };
 }
 
+const UNINSTALL_KEYS = Object.freeze({
+  user: ['HKCU:\\Software\\Microsoft\\Windows\\CurrentVersion\\Uninstall'],
+  machine: ['HKLM:\\Software\\Microsoft\\Windows\\CurrentVersion\\Uninstall', 'HKLM:\\Software\\WOW6432Node\\Microsoft\\Windows\\CurrentVersion\\Uninstall'],
+});
+const GUIDED_OPTIONS = Object.freeze({ includeReport: true, includePackage: false, includeExport: false, language: 'es', refresh: false, reanalyze: false, postLimit: 20 });
+const QUIET_MS = 3000;
+
+function delay(ms) {
+  return new Promise(resolve => { setTimeout(resolve, ms); });
+}
+
+function capture(file, args, options = {}) {
+  return new Promise((resolve, reject) => {
+    const child = spawn(file, args, { windowsHide: true, stdio: ['ignore', 'pipe', 'pipe'], ...options });
+    let stdout = '';
+    let stderr = '';
+    child.stdout.setEncoding('utf8').on('data', chunk => { stdout += chunk; });
+    child.stderr.setEncoding('utf8').on('data', chunk => { stderr += chunk; });
+    child.once('error', reject);
+    child.once('close', code => resolve({ code: code ?? -1, stdout, stderr }));
+  });
+}
+
+function exited(file, args, options = {}) {
+  return new Promise((resolve, reject) => {
+    const child = spawn(file, args, { windowsHide: true, stdio: 'ignore', ...options });
+    child.once('error', reject);
+    child.once('exit', code => resolve(code ?? -1));
+  });
+}
+
+/** @param {NodeJS.ProcessEnv} env @param {string[]} keys */
+async function registrations(env, keys) {
+  const script = [
+    "$ErrorActionPreference = 'Stop'",
+    `$name = '${PRODUCT.replaceAll("'", "''")}'`,
+    `$found = @(foreach ($key in @(${keys.map(key => `'${key}'`).join(', ')})) { if (Test-Path $key) {`,
+    '  Get-ChildItem -Path $key | Get-ItemProperty -ErrorAction SilentlyContinue |',
+    '    Where-Object { $_.DisplayName -eq $name -or $_.DisplayName -like "$name *" } |',
+    '    Select-Object DisplayName, DisplayVersion, QuietUninstallString',
+    '} })',
+    'ConvertTo-Json -InputObject $found -Compress',
+  ].join('\n');
+  const powershell = path.win32.join(env.SystemRoot, 'System32', 'WindowsPowerShell', 'v1.0', 'powershell.exe');
+  const encoded = Buffer.from(script, 'utf16le').toString('base64');
+  const { code, stdout, stderr } = await capture(powershell, ['-NoProfile', '-NonInteractive', '-ExecutionPolicy', 'Bypass', '-EncodedCommand', encoded]);
+  if (code !== 0) throw new Error(`uninstall registry query exited ${code}: ${stderr.trim().split('\n').at(-1)}`);
+  const parsed = JSON.parse(stdout.trim() || '[]');
+  return Array.isArray(parsed) ? parsed : [parsed];
+}
+
+/** @param {unknown} command */
+function parseCommand(command) {
+  if (typeof command !== 'string' || !command.trim()) throw new Error('the uninstall registration has no QuietUninstallString');
+  const quoted = command.match(/^\s*"([^"]+)"(.*)$/);
+  const [file, rest] = quoted ? [quoted[1], quoted[2]] : [command.trim().split(/\s+/)[0], command.trim().split(/\s+/).slice(1).join(' ')];
+  return [file, ...rest.split(/\s+/).filter(Boolean)];
+}
+
+/**
+ * @param {import('./launch.mjs').LaunchSession} session
+ * @param {string} version
+ * @returns {InstalledApp}
+ */
+function installedApp(session, version) {
+  const call = async (action, operation, argument) => {
+    const result = await session.page.evaluate(operation, argument);
+    if (!result?.ok) throw new Error(`${action} failed: ${result?.code ?? 'no response'}`);
+    return result;
+  };
+  return {
+    version,
+    childPath: session.childPath,
+    async createProject(name, url) {
+      const result = await call('create', ([projectName, projectUrl]) => window.localWorkspace.create(projectName, projectUrl, 'default'), [name, url]);
+      return result.workspace.active;
+    },
+    async saveCredential(provider, key) {
+      await call('credential-save', ([name, value]) => window.localWorkspace.saveCredential(name, value), [provider, key]);
+    },
+    async credentialMatches(recordFile, expected) {
+      const saved = JSON.parse(await readFile(recordFile, 'utf8'));
+      if (saved?.version !== 1 || typeof saved.encrypted !== 'string') return false;
+      return session.app.evaluate(async ({ safeStorage }, value) => {
+        try {
+          return (await safeStorage.decryptStringAsync(Buffer.from(value.encrypted, 'base64'))).result === value.expected;
+        } catch {
+          return false;
+        }
+      }, { encrypted: saved.encrypted, expected });
+    },
+    async planUnconfirmed(projectId) {
+      const result = await call('plan', ([id, taskId, options]) => window.guidedWork.plan(id, taskId, 1, options), [projectId, randomUUID(), GUIDED_OPTIONS]);
+      return result.job.id;
+    },
+    async status(projectId) {
+      const list = await call('list', () => window.localWorkspace.list());
+      const { progress } = await call('status', id => window.guidedWork.status(id), projectId);
+      return {
+        listed: list.workspace.projects.some(project => project.id === projectId && project.status === 'active'),
+        jobs: progress.jobs.map(({ id, state, nextAction }) => ({ id, state, nextAction })),
+        reopenDispatches: progress.reopenDispatches,
+      };
+    },
+    async exit() {
+      const closed = session.app.waitForEvent('close');
+      await session.page.evaluate(() => window.appShell.exit()).catch(() => {});
+      await closed;
+      await session.close();
+    },
+  };
+}
+
 /** @returns {Host} */
 function windowsHost() {
-  return /** @type {Host} */ ({
-    env: process.env,
-    ...Object.fromEntries(['install', 'uninstall', 'uninstallEntry', 'machineWideEntry', 'appProcesses', 'open', 'probe'].map(name => [
-      name, async () => { throw new Error('not implemented'); },
-    ])),
-  });
+  const env = process.env;
+  const host = {
+    env,
+    async install(setupExe, installDir) {
+      // NSIS reads /D= raw to the end of the command line, so it must be last and unquoted.
+      return exited(setupExe, ['/S', '/currentuser', `/D=${installDir}`], { windowsVerbatimArguments: true, argv0: `"${setupExe}"` });
+    },
+    async uninstall(entry, removeData) {
+      const [file, ...args] = entry.quietUninstall;
+      const code = await exited(file, removeData ? [...args, '--delete-app-data'] : args);
+      // The NSIS uninstaller re-executes from a temporary copy, so its first process exits before the work ends.
+      const deadline = Date.now() + 100_000;
+      while (Date.now() < deadline && ((await host.uninstallEntry()) !== null || existsSync(entry.installLocation))) await delay(500);
+      return code;
+    },
+    async uninstallEntry() {
+      const found = await registrations(env, UNINSTALL_KEYS.user);
+      if (found.length > 1) throw new Error('more than one current-user uninstall registration');
+      if (!found.length) return null;
+      const quietUninstall = parseCommand(found[0].QuietUninstallString);
+      return { displayVersion: String(found[0].DisplayVersion), installLocation: path.win32.dirname(quietUninstall[0]), quietUninstall };
+    },
+    async machineWideEntry() {
+      return (await registrations(env, UNINSTALL_KEYS.machine)).length > 0;
+    },
+    async appProcesses() {
+      const tasklist = path.win32.join(env.SystemRoot, 'System32', 'tasklist.exe');
+      const { code, stdout } = await capture(tasklist, ['/FI', `IMAGENAME eq ${EXE}`, '/FO', 'CSV', '/NH']);
+      if (code !== 0) throw new Error(`tasklist exited ${code}`);
+      return stdout.split(/\r?\n/).filter(line => line.startsWith('"')).length;
+    },
+    async open(exe, outputDir) {
+      const session = await launchPackagedApp({ kind: 'installed', exe, outputDir });
+      try {
+        const version = await session.app.evaluate(({ app }) => app.getVersion());
+        await delay(QUIET_MS);
+        return installedApp(session, version);
+      } catch (error) {
+        await session.close();
+        throw error;
+      }
+    },
+    probe(exe, outputDir) {
+      return probeStartup({ kind: 'installed', exe, outputDir });
+    },
+  };
+  return host;
 }
