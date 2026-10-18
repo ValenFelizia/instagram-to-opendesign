@@ -413,11 +413,7 @@ function overlaps(left, right) {
   return within(left, right) || within(right, left);
 }
 
-/**
- * An 8.3 alias or a linked folder fails the app's own path guards, so the harness refuses it instead of resolving it.
- * @param {string | undefined} value
- * @param {string} name
- */
+/** @param {string | undefined} value @param {string} name */
 function longRoot(value, name) {
   if (typeof value !== 'string' || !path.isAbsolute(value)) throw new Error(`${name} must be an absolute path`);
   let real;
@@ -1159,7 +1155,6 @@ if (process.argv[1] && path.resolve(process.argv[1]) === path.resolve(here)) {
   const outputDir = path.join(repoRoot, 'tmp', 'app-install-qa');
   await rm(path.join(outputDir, REPORT_FILE), { force: true });
   try {
-    // The installed app reads LOCALAPPDATA as given, and its path guards refuse an 8.3 alias.
     for (const name of ['LOCALAPPDATA', 'APPDATA']) {
       if (process.env[name] && path.isAbsolute(process.env[name])) process.env[name] = realpathSync.native(process.env[name]);
     }

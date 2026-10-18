@@ -1,4 +1,3 @@
-// Child of install.mjs. Records a fake paid attempt intent, writes the checkpoint, then blocks until the parent kills it.
 const fs = require('node:fs');
 const path = require('node:path');
 const { randomUUID } = require('node:crypto');
