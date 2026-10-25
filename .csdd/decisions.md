@@ -4,7 +4,7 @@
 
 - Status: accepted by the operator, 2026-10-25. It changes documentation and evaluation practice, not runtime behavior.
 - Date: 2026-10-25
-- Context: the private-case constraint in the specifications contradicted 16 tracked files that named a real brand, its domain, its owner and the outputs it rejected. At the same time the repository had 187 tests and no place to record whether the product delivered anything useful: the one real case existed only as prose inside public documentation, and the synthetic example existed as a folder with no recorded run. The operator asked for an explicit rule, a durable private home for the real case, and a committed eval that is complete rather than an isolated artifact.
+- Context: the private-case constraint in the specifications contradicted 12 tracked files that named a real brand, its domain, its owner and the outputs it rejected; the README had already been sanitised in DEC-016. At the same time the repository had 187 tests and no place to record whether the product delivered anything useful: the one real case existed only as prose inside public documentation, and the synthetic example existed as a folder with no recorded run. The operator asked for an explicit rule, a durable private home for the real case, and a committed eval that is complete rather than an isolated artifact.
 - Decision:
   - A real case may be published only as a generic protocol or software behaviour. Identity, source content, attributed preferences, local paths, quoted material, rejected outputs and the full record stay private.
   - The test is substitution: replace the identity with "a private test brand" and keep every sentence that still teaches something true. A rejection stays a rejection.
