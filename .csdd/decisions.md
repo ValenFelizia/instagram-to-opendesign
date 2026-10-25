@@ -1,5 +1,21 @@
 # Decisions
 
+## DEC-017 — Publish the protocol, keep the case private, and record evals as complete cases
+
+- Status: accepted by the operator, 2026-10-25. It changes documentation and evaluation practice, not runtime behavior.
+- Date: 2026-10-25
+- Context: the private-case constraint in the specifications contradicted 16 tracked files that named a real brand, its domain, its owner and the outputs it rejected. At the same time the repository had 187 tests and no place to record whether the product delivered anything useful: the one real case existed only as prose inside public documentation, and the synthetic example existed as a folder with no recorded run. The operator asked for an explicit rule, a durable private home for the real case, and a committed eval that is complete rather than an isolated artifact.
+- Decision:
+  - A real case may be published only as a generic protocol or software behaviour. Identity, source content, attributed preferences, local paths, quoted material, rejected outputs and the full record stay private.
+  - The test is substitution: replace the identity with "a private test brand" and keep every sentence that still teaches something true. A rejection stays a rejection.
+  - The complete record of a real case lives in the Git-ignored `evals/private/<slug>/`, under the same contract as a public case. A private case is the private instance of the process, not an exception to it.
+  - `evals/<slug>/` holds a complete case: `README.md` with the property and its declared limits, `case.json` with run, cost, preconditions and assertions, the input, and a dated `outcome.md`.
+  - Every case separates a mechanical layer that `pnpm test` enforces from a judgment layer a person records. A green mechanical layer proves the pipeline ran, not that the result is good.
+  - `examples/consumer-neutral-brief/` is the recorded output of the first public case, `evals/consumer-neutral-core/`. The case reproduces its bytes and fails if they drift.
+- Rationale: truth and privacy collide when the evidence belongs to someone else's brand. Separating protocol from identity lets the engineering lesson survive publication without publishing the case. A golden eval also enforces the consumer-neutral boundary that DEC-009 declared but nothing tested: a renderer's fields cannot migrate back into the core without breaking it.
+- Consequence: public documentation describes stages, failures and outcomes; identity and attributed preferences live only in `evals/private/`. Earlier entries in this file and in the specifications were rewritten for identity only; no limitation, rejection or result changed. Adding a public case now means adding a test, and a case without `outcome.md` is visibly unrun.
+- Evidence: this pull request; `evals/consumer-neutral-core/run.mjs`; `test/eval-consumer-neutral-core.test.js`; the rewritten documents named in #71.
+
 ## DEC-016 — Prepare a single contributor surface before sharing the repository
 
 - Status: accepted by the operator, 2026-10-24. It changes repository surface, not product behavior.
@@ -100,13 +116,13 @@
 - Status: accepted for the first report
 - Date: 2026-09-29
 - Updated: 2026-09-30
-- Context: JSON and the OpenDesign package expose sources but do not give the brand owner an accessible overview. The user wants English project documentation and an optional English report while retaining Spanish for Fer's review.
+- Context: JSON and the OpenDesign package expose sources but do not give the brand owner an accessible overview. The user wants English project documentation and an optional English report while retaining Spanish for the owner's review.
 - Decision: generate local HTML from validated analysis with embedded reviewed own thumbnails, internal evidence links, review status and provisional colors. Default to Spanish; `--lang en` translates existing prose with one structured text-only request and a fingerprinted local cache. Keep original source text inspectable and preserve IDs, confidence, status, nulls and hex values. The browser loads no external resources. Issue #18 adds an embedded hash-authorized script solely for explicit review download/import comparison; file writes remain an explicit CLI action.
 - Rationale: reports can be opened, reviewed and printed without a server; both languages are reproducible from the local snapshot. Translation avoids rerunning visual analysis just to change language.
-- Consequence: HTML embeds reduced copies of profile images and text, stays under Git-ignored `data/` and requires permission for redistribution. Spanish regeneration has no provider cost; uncached English translation requires `OPENAI_API_KEY` and may incur a charge. Invalid translations preserve previous output. Real Felisa output stays outside the public repository.
-- Evidence: synthetic tests for references, escaping, collaborator exclusion, translation caching and output preservation; local desktop and mobile renders with Felisa.
+- Consequence: HTML embeds reduced copies of profile images and text, stays under Git-ignored `data/` and requires permission for redistribution. Spanish regeneration has no provider cost; uncached English translation requires `OPENAI_API_KEY` and may incur a charge. Invalid translations preserve previous output. Real private-case output stays outside the public repository.
+- Evidence: synthetic tests for references, escaping, collaborator exclusion, translation caching and output preservation; local desktop and mobile renders with the private case.
 
-## DEC-007 — Keep the importer local after the Felisa trial
+## DEC-007 — Keep the importer local after the private validation trial
 
 - Status: accepted for VAL-93
 - Date: 2026-09-28
@@ -114,16 +130,16 @@
 - Decision: conclude that these trials showed no clear visual improvement or demonstrated effort reduction. Keep the importer local and reviewable; do not expand to MCP yet. Deliver the preferred manual Story locally after replacing the bag screenshot with the original photo of the same product.
 - Rationale: the storefront already supplies verified typography, color and copy, so the Instagram package adds context but little incremental value to a tightly defined brief. Owner preference and visual defects carry more weight than technical execution alone.
 - Consequence: the next hypothesis is to propose several composition directions and check assets before generation. The final Story still needs inspection in Instagram's editor with its native link sticker before publication. No real asset enters the OSS repository.
-- Evidence: protocol and results in `docs/mvp-validation.md`; real HTML, screenshots and notes under Git-ignored `data/felisa_fr/validation/`; owner feedback from the trial.
+- Evidence: protocol and results in `docs/mvp-validation.md`; the complete private record in the Git-ignored `evals/private/`; owner feedback from the trial.
 
 ## DEC-006 — Enable package selection in OpenDesign's local catalog
 
 - Status: accepted for VAL-93
 - Date: 2026-09-28
-- Context: `od design-systems show` could read the Felisa package, but a new project rejected `user:felisa-fr` with `DESIGN_SYSTEM_NOT_PUBLISHED`; a user folder without `metadata.json` is treated as `draft`.
+- Context: `od design-systems show` could read the private package, but a new project rejected `user:<slug>` with `DESIGN_SYSTEM_NOT_PUBLISHED`; a user folder without `metadata.json` is treated as `draft`.
 - Decision: the compiler writes `metadata.json` with `status: published` beside the manifest. This enables local project selection; identity inferences remain provisional and reviewable in `DESIGN.md` and the sources.
 - Rationale: a discoverable package that cannot be selected does not satisfy the workflow VAL-92 set out to validate. Catalog status does not alter the analysis or send the package to a public service.
-- Consequence: existing installations must be recompiled and the new file copied into the catalog. Felisa is tested in an isolated instance; real assets stay outside the repository.
+- Consequence: existing installations must be recompiled and the new file copied into the catalog. The private case is tested in an isolated instance; real assets stay outside the repository.
 - Evidence: OpenDesign `0.23.1` in an isolated daemon; project creation failed without `metadata.json` and succeeded with `status: published`; a new project created with the public `user:example-studio` fixture; 15 importer tests.
 
 ## DEC-005 — Compile a minimal package without normalization by reimport
@@ -134,7 +150,7 @@
 - Decision: propose colors with an extra request limited to reviewed own graphics, fill all 56 tokens with provisional functional values and retain provenance in `brand-analysis.json` and `source/`. Keep the minimum profile without `sourceFiles`. Install the precompiled folder into the user catalog rather than using `import-local` to test preservation.
 - Rationale: authored `DESIGN.md` keeps analysis and limits visible without inventing verified rules or assuming rich-profile requirements.
 - Consequence: CSS values require brand review; local installation differs from raw-project import, and real data stays outside the public repository. VAL-93 measures utility against a baseline.
-- Evidence: isolated `od design-systems import-local` and `od design-systems show user:felisa-fr` runs; [OpenDesign guide](https://github.com/nexu-io/open-design/blob/main/docs/design-systems.md).
+- Evidence: isolated `od design-systems import-local` and `od design-systems show user:<slug>` runs; [OpenDesign guide](https://github.com/nexu-io/open-design/blob/main/docs/design-systems.md).
 
 ## DEC-004 — Initial vision-based Brand Analyzer with subsequent review
 

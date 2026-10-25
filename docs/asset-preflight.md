@@ -25,4 +25,4 @@ In the compiled package, `source/asset-catalog.json` has remapped local paths. O
 
 ## Local verification, 2026-09-30
 
-The existing Felisa validation PNG visibly contains carousel dots at its lower edge; the supplied JPEG has no dots. Sharp measured 705 × 888 for the PNG, with an alpha channel but **no transparent pixels**, and 1200 × 1600 for the JPEG with no alpha channel. A provider-free Story catalog check inspected 18 reviewed own images and marked zero reusable: no local permission review exists yet. This verifies detection and pending state, not brand-owner approval. Actual images remain Git-ignored.
+In a private validation case, a supplied screenshot PNG visibly contained carousel dots at its lower edge and the supplied JPEG did not. Sharp measured 705 × 888 for the PNG, with an alpha channel but **no transparent pixels**, and 1200 × 1600 for the JPEG with no alpha channel. A provider-free Story catalog check inspected 18 reviewed own images and marked zero reusable: no local permission review exists yet. This verifies detection and pending state, not brand-owner approval. Actual images remain Git-ignored.
