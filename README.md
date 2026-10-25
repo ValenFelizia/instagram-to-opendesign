@@ -30,7 +30,7 @@ Instagram is the first implemented source. OpenDesign is an optional implemented
 - An Apify token for ingestion.
 - An OpenAI API key for analysis, color proposals, creative directions and English translation.
 
-Both providers may charge. Ingestion makes two Actor runs, each capped at USD 2 by the request. Analysis is one request. Direction suggestions and translation are separate opt-in requests. Nothing retries a paid call automatically.
+Both providers may charge. Ingestion makes two Actor runs, each capped at USD 2 by the request. Analysis is one request. When reviewed brand graphics exist, one more request proposes approximate colors, and a valid local result is reused. Direction suggestions and translation are separate opt-in requests. Nothing retries a paid call automatically.
 
 ## Quickstart
 
@@ -73,7 +73,7 @@ pnpm brand:handoff --verify tmp/agent-context
 | Analysis only | `node --env-file=.env.local bin/analyze-brand.js data/<user>` | OpenAI |
 | Verified decisions | `pnpm brand:decisions data/<user>` | none |
 | Asset preflight | `pnpm brand:assets data/<user>` | none |
-| Request and brief | `pnpm brand:brief data/<user>` | none, unless `--suggest` |
+| Request and brief | `pnpm brand:brief data/<user>` | none, or one request with `--suggest` |
 | Accessibility preflight | `pnpm brand:accessibility <package-dir> <design-brief.json>` | none |
 | Generic handoff | `pnpm brand:handoff data/<user>` | none |
 | OpenDesign package | `pnpm brand:compile data/<user>` | none |
@@ -81,6 +81,8 @@ pnpm brand:handoff --verify tmp/agent-context
 | Result review | `pnpm brand:result ...` | none |
 
 Every command prints its usage when arguments are missing or invalid.
+
+Paid standalone commands read the key from the environment, not from `.env.local`. Run them as `node --env-file=.env.local bin/<command>.js`, as the stage guides show.
 
 ## Boundaries
 

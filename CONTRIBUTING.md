@@ -23,7 +23,7 @@ pnpm install
 Copy-Item .env.example .env.local   # cp on macOS and Linux
 ```
 
-Put `APIFY_TOKEN` and `OPENAI_API_KEY` in `.env.local`. The file is ignored by Git. Tests do not need either key and never call a provider.
+Put `APIFY_TOKEN` and `OPENAI_API_KEY` in `.env.local`. The file is ignored by Git. `pnpm brand:instagram` loads it. Standalone paid commands do not, so run those as `node --env-file=.env.local bin/<command>.js`, or export the variable in your shell. Tests do not need either key and never call a provider.
 
 The Windows app work needs Windows. The pipeline, tests and CLI run on macOS and Linux too.
 
