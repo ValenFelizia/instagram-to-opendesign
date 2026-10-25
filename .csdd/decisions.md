@@ -1,8 +1,25 @@
 # Decisions
 
+## DEC-016 — Prepare a single contributor surface before sharing the repository
+
+- Status: accepted by the operator, 2026-10-24. It changes repository surface, not product behavior.
+- Date: 2026-10-24
+- Context: the repository becomes public-facing. The README described engineering progress instead of what a newcomer can run, CONTRIBUTING was 18 lines, issues had no labels and two incompatible body shapes, and there was no issue form, pull request template, security policy or code of conduct. Only a Windows-path workflow ran CI, so a documentation pull request triggered no check.
+- Decision:
+  - The README presents the local CLI as the only complete path, states that no installer or npm package exists, and names the app as a local shell verified with synthetic material. It drops private evaluation case material from the front page.
+  - One general issue form collects kind, problem, proposed solution, scope, acceptance and context. A maintainer applies type, priority and area labels during triage. Priorities are `P0` to `P3`; areas are `area:core`, `area:cli`, `area:app`, `area:docs` and `area:ci`.
+  - `CONTRIBUTING.md` documents setup, the test commands, dialect and style conventions, issue and pull request rules, agent-assisted contributions, the language policy and the private-data rules. It is the canonical contributor guide.
+  - Code style stays review-enforced with an `.editorconfig`. Prettier and ESLint adoption is deferred to #72 so a mass reformat does not collide with open branches.
+  - A portable `ci.yml` runs `pnpm test` and `pnpm app:cite` on Ubuntu for every pull request. The Windows workflow keeps its path filter.
+  - The source scope of #51, #52 and #58 is closed. The manual rows those issues could not verify move to #70. The registry and the debt document keep their existing criterion ids.
+  - Removing private case material from the remaining public docs is #71, because rewriting evidence documents changes durable truth and needs its own review.
+- Rationale: a public repository needs a truthful entry point, a contribution path a stranger can follow, and a tracker that does not present closed work as open. Deferring the formatter keeps this change reviewable and avoids conflicts with in-flight branches.
+- Consequence: a new contributor reads README, CONTRIBUTING and one issue form. Distribution is clone plus pnpm, not npm. No release is implied by the accepted install support. The private-case rule now has an explicit remediation task. Formatting drift remains possible until #72 lands.
+- Evidence: this pull request; `pnpm test` and `pnpm app:cite` locally; the new `.github/` surface; issues #70, #71 and #72.
+
 ## DEC-015 — Declare Windows install support, manual updates and uninstall retention
 
-- Status: proposed for issue #58, pending operator review. It is not a release or distribution decision.
+- Status: accepted by the operator on 2026-10-18, when PR #69 merged and issue #58 closed. It declares install support; it is not a release or a distribution commitment.
 - Date: 2026-10-18
 - Context: issue #58 requires a declared support floor, installer format, signing and update strategy, and uninstall behavior before distribution. Electron keeps the Chromium profile and the DPAPI-protected key under Roaming AppData. The app keeps the project registry, managed projects, credential records and the job store under Local AppData. electron-builder's `--delete-app-data` uninstall flag removes Roaming AppData only.
 - Decision:
@@ -14,8 +31,8 @@
   - Uninstall: Default uninstall keeps the Local workspace and the Roaming profile; --delete-app-data removes only the Roaming profile, and the Local workspace and chosen project folders stay.
   - Downgrade: A job store newer than user_version 2 is refused with job-version-unsupported; there is no downward migration.
 - Rationale: a per-user assisted installer needs no elevation and keeps the existing build. Unsigned manual builds avoid a signing purchase and any automatic update or restart of paid work, which issue #58 does not authorize. Keeping Local data on every uninstall means removing the program can never erase projects, credentials or job evidence. Refusing a newer store keeps an older build from rewriting data it does not understand.
-- Consequence: `desktop/builder.json` states `deleteAppDataOnUninstall: false` and `publish: null`, and `pnpm app:cite` fails when this entry, `docs/windows-app-shell.md` or `INSTALL_SUPPORT` in `desktop/acceptance/install.mjs` drift apart. Removing Roaming data can leave saved provider keys undecryptable while their encrypted records stay in the workspace. Users delete the Local workspace by hand. Client-edition, SmartScreen, real-upgrade and network observations remain manual on issue #58.
-- Evidence: `pnpm app:install` (`desktop/acceptance/install.mjs`) in the `installer` job of `.github/workflows/windows-app.yml`; [install support](../docs/windows-app-shell.md#install-support); [manual acceptance debt](../docs/manual-acceptance-debt.md).
+- Consequence: `desktop/builder.json` states `deleteAppDataOnUninstall: false` and `publish: null`, and `pnpm app:cite` fails when this entry, `docs/windows-app-shell.md` or `INSTALL_SUPPORT` in `desktop/acceptance/install.mjs` drift apart. Removing Roaming data can leave saved provider keys undecryptable while their encrypted records stay in the workspace. Users delete the Local workspace by hand. Client-edition, SmartScreen, real-upgrade and network observations remain manual in issue #70.
+- Evidence: `pnpm app:install` (`desktop/acceptance/install.mjs`) in the `installer` job of `.github/workflows/windows-app.yml`; [install support](../docs/windows-app-shell.md#install-support); [manual acceptance debt](../docs/manual-acceptance-debt.md); manual rows in issue #70.
 
 ## DEC-014 — Keep portable disclosure separate from private delivery and effort history
 
@@ -43,12 +60,12 @@
 - Context: issue #53 requires transactions, revision-bound single-use authorization, writer fencing and inventory-based recovery. The CLI supports Node >=20, while the selected Electron app bundles a newer Node runtime.
 - Decision: use the bundled `node:sqlite` DatabaseSync API only in privileged desktop code. Keep a versioned strict job database and a separate lifetime SQLite writer transaction, plus an exclusive token-based project filesystem interlock shared by app operations and the provided CLI. Keep the bounded JSON registry and OS-protected credentials separate. Freeze bounded input trees; publish only validated append-only snapshots through a fenced metadata transaction.
 - Rationale: actual packaged Electron 44.5.1 executed SQLite 3.53.4, fake intent/acknowledgement, snapshot promotion and store restart with no external Node on PATH. No additional native ABI dependency is needed; importing the core/CLI does not import SQLite.
-- Consequence: no PID/time-based automatic lock removal, remote replay, exactly-once billing or power-loss guarantee. Unknown/incomplete/CLI markers fail closed. Fresh retry requires a new plan and authorization. Issue #54 core stages/response/accounting is operator-merged through PR #63 at main c7739d7; selective authority #55 is operator-merged through PR #64 at main 3da3d81; delivery/history #56 and guided controls #57 are separate increments. Native manual gates from #51/#52 remain open.
+- Consequence: no PID/time-based automatic lock removal, remote replay, exactly-once billing or power-loss guarantee. Unknown/incomplete/CLI markers fail closed. Fresh retry requires a new plan and authorization. Issue #54 core stages/response/accounting is operator-merged through PR #63 at main c7739d7; selective authority #55 is operator-merged through PR #64 at main 3da3d81; delivery/history #56 and guided controls #57 are separate increments. Native manual rows from #51/#52 are tracked in issue #70.
 - Evidence: `test/jobs.test.js` actual process termination, SQLite contention/FULL, Windows file sharing locks and migration failure checks; `desktop/verify.mjs` actual bundled runtime proof; [protocol and limits](../docs/transactional-jobs.md).
 
 ## DEC-011 — Windows-first Electron app with managed local projects
 
-- Status: accepted platform/product direction; #51/#52 source merged through PR #60/#61, verified with synthetic material only and native manual gates pending. Issue #53 implements the separate transactional kernel; the integrated guided app remains pending.
+- Status: accepted platform/product direction; #51/#52 source merged through PR #60/#61, verified with synthetic material only and their native manual rows tracked in issue #70. Issue #53 implements the separate transactional kernel; the integrated guided app remains pending.
 - Date: 2026-10-03
 - Context: #45 / VAL-106 compares local browser and desktop packaging after accepted onboarding/review prototypes. The existing core is Node with native image dependencies; no contained app or persistent scheduler exists.
 - Decision: deliver an installable Windows-first app opened from an icon; closing the window keeps work in the background, explicit Exit stops local work. Projects default to an app-managed local folder outside the repository, with advanced location/export options. Adopt Electron for the first version, accepting runtime/installer footprint to reuse Node; keep UI-library selection separate and the core portable for later OS support.

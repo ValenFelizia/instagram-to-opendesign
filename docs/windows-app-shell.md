@@ -41,11 +41,11 @@ On the current Windows x64 host (10.0.26300):
 - Package inventory audit verifies the allowlist/private-data exclusion and Windows x64 sharp binary. Test reports/screenshots are in `tmp/app-shell-qa`, with isolated disposable test profiles.
 - Development harness failures were corrected: normalized Windows launch paths/profile variables; waited for asynchronous native-dialog close/focus; avoided a Playwright locator wait after deliberately blocked navigation. Actual renderer failure now destroys the dead view so Open recreates it without replacing the worker.
 
-The shell job of the Windows CI workflow repeats suite/build/inventory/packaged checks and retains only the unsigned installer and generic test screenshot/report. The first runner suite failed because its TEMP used a Windows short-name alias, which existing canonical path guards deliberately reject; CI now creates an unaliased workspace temporary directory without relaxing the guards. Its result is separate evidence after execution; configuring it does not claim it passed. No live provider, private case, credential store, durable job, restart/power-loss recovery, clean VM install, actual Narrator/tray keyboard acceptance, signing or Windows 10 support was verified. Initial build target is Windows x64; the tested host is Windows 11. Final support floor/distribution acceptance remains issue 58.
+The shell job of the Windows CI workflow repeats suite/build/inventory/packaged checks and retains only the unsigned installer and generic test screenshot/report. The first runner suite failed because its TEMP used a Windows short-name alias, which existing canonical path guards deliberately reject; CI now creates an unaliased workspace temporary directory without relaxing the guards. Its result is separate evidence after execution; configuring it does not claim it passed. No live provider, private case, credential store, durable job, restart/power-loss recovery, clean VM install, actual Narrator/tray keyboard acceptance, signing or Windows 10 support was verified. Initial build target is Windows x64; the tested host is Windows 11. Final support floor and distribution acceptance belong to the manual tracker in #70.
 
 ## Install support
 
-Tracking: [issue 58](https://github.com/ValenFelizia/instagram-to-opendesign/issues/58). These statements are DEC-015, pending operator review. `pnpm app:cite` fails when this block, DEC-015 or `INSTALL_SUPPORT` in `desktop/acceptance/install.mjs` disagree.
+Tracking: [#70](https://github.com/ValenFelizia/instagram-to-opendesign/issues/70). These statements are DEC-015, accepted on 2026-10-18. `pnpm app:cite` fails when this block, DEC-015 or `INSTALL_SUPPORT` in `desktop/acceptance/install.mjs` disagree.
 
 <!-- install-support -->
 - Support floor: Windows 10 and Windows 11, x64 only.
@@ -68,15 +68,15 @@ Data roots:
 
 An upgrade runs the new installer over the old one. The data roots are not touched, and the app finishes any job store migration on its next start. A crashed paid attempt is shown as uncertain and is never retried automatically. Installing an older build over newer data is refused at startup with `job-version-unsupported`; install the newer build again to recover. After `--delete-app-data`, saved provider keys may no longer decrypt and must be entered again.
 
-`pnpm app:install` exercises this table on a fresh Windows runner with synthetic data. The phases and their declared effects are in the Issue 58 section of [manual acceptance debt](manual-acceptance-debt.md).
+`pnpm app:install` exercises this table on a fresh Windows runner with synthetic data. The phases and their declared effects are in the installer phases section of [manual acceptance debt](manual-acceptance-debt.md).
 
-## Manual acceptance before closing issue 51
+## Manual acceptance
 
 1. On a disposable/clean supported Windows environment without external Node, install the NSIS build, open its shortcut and confirm both imports are available.
 2. Start the local check, close the window, reopen the shortcut/tray and confirm it continued. Alt+F4 must close the view; Ctrl+Q or Exit must terminate the app. Invoke a second shortcut while the first is alive.
 3. With Windows keyboard and Narrator, inspect the native menu/tray Open/Exit, first-close dialog/focus/status and zoom/high contrast. Browser automation does not establish native tray or screen-reader usability.
 
-Keep issue 51 open for those acceptance gates even after the source PR merges. Managed projects/credentials are issue 52; transactional jobs/authorization are issue 53; real core stages and guided screens follow issues 54–57. This shell cannot start paid work or recover a real business project.
+These rows are tracked in [#70](https://github.com/ValenFelizia/instagram-to-opendesign/issues/70), not in a closed source issue. Managed projects/credentials came from issue 52; transactional jobs from issue 53; real core stages and guided screens from issues 54–57. This shell cannot start paid work or recover a real business project.
 
 ## API references
 

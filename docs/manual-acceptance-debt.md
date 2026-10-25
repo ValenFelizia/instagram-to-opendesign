@@ -1,6 +1,6 @@
 # Manual acceptance debt
 
-This file lists every acceptance bullet from issues 51, 52, 57, and 58. The bullet text is copied from the Acceptance section of each issue. `pnpm app:cite` checks this file against `desktop/acceptance/registry.mjs`. It does not read GitHub, and it does not mark a manual row passed.
+This file lists every acceptance bullet inherited from issues 51, 52, 57, and 58. The bullet text was copied from the Acceptance section of each issue while it was open. `pnpm app:cite` checks this file against `desktop/acceptance/registry.mjs`. It does not read GitHub, and it does not mark a manual row passed.
 
 A row is automated when it has evidence or unit tests and an empty manual list. A row is partial when it has both. A row is manual when it has limits and no evidence or tests. Partial and manual rows still need a person.
 
@@ -26,7 +26,7 @@ pnpm app:build "-c.extraMetadata.version=0.0.1" "-c.directories.output=dist/app-
 pnpm app:install
 ```
 
-The first command rebuilds the same commit as version 0.0.1 into `dist/app-prior`, which is the version the run installs first. `pnpm app:install` runs the issue 58 phases below against the two setups and writes `tmp/app-install-qa/installer-report.json`. The job uploads the report and both setups.
+The first command rebuilds the same commit as version 0.0.1 into `dist/app-prior`, which is the version the run installs first. `pnpm app:install` runs the installer phases below against the two setups and writes `tmp/app-install-qa/installer-report.json`. The job uploads the report and both setups.
 
 ## Limits
 
@@ -39,7 +39,7 @@ The first command rebuilds the same commit as version 0.0.1 into `dist/app-prior
 | native-shell | The harness stubs file dialogs and keeps the window hidden. It does not drive the tray, the native folder picker, foreground activation, or Alt+F4. |
 | assistive-technology | Keyboard Tab and axe run in the packaged renderer. They do not run Narrator, 200% zoom, or a person reading the status announcements. |
 | network-observation | The harness does not capture network traffic from the installer, the uninstaller or the app. Absence of cloud or telemetry calls rests on configuration review and the blocked renderer requests. |
-| release-decision | Signing, the Windows version floor, distribution and the uninstall data scope are an operator release decision on issue 58 (DEC-015, pending). This harness does not decide a release. |
+| release-decision | Signing, the Windows version floor, distribution and the uninstall data scope are declared in DEC-015, accepted on 2026-10-18. This harness does not decide a release. |
 
 ## Criteria
 
@@ -69,7 +69,7 @@ The first command rebuilds the same commit as version 0.0.1 into `dist/app-prior
 | 58.support-matrix | [#58](https://github.com/ValenFelizia/instagram-to-opendesign/issues/58) | manual | Signing/update limitations and actual support matrix are documented without implying untested OS guarantees. | None | release-decision, windows-client |
 | 58.packaged-checks | [#58](https://github.com/ValenFelizia/instagram-to-opendesign/issues/58) | partial | Packaged security/accessibility checks pass before distribution. | Packaged core/sharp, isolated renderer, keyboard close dialog and background worker/second instance; External navigation, popup, fetch blocked; narrow layout and high contrast focus; guided-keyboard-and-axe; shell IPC accepts fixed actions only and refuses foreign frames; IPC rejects arbitrary paths, scope injection, IDs, extra fields and foreign actions | assistive-technology |
 
-## Issue 58
+## Installer phases
 
 `runInstallerAcceptance` in `desktop/acceptance/install.mjs` runs these phases once, in this order, and stops at the first failure. Each phase declares its effect on three roots: the install directory, the Local workspace root `%LOCALAPPDATA%\Instagram to OpenDesign` and the Roaming profile root `%APPDATA%\Instagram to OpenDesign`. The machine snapshots every root after each phase and fails the phase when a root does not match its declared effect. The uninstall rows are the documented retention policy.
 
@@ -109,7 +109,7 @@ The first command rebuilds the same commit as version 0.0.1 into `dist/app-prior
 
 ### Install support
 
-These statements are DEC-015 in `.csdd/decisions.md`, pending operator review. `docs/windows-app-shell.md` repeats them, and `pnpm app:cite` fails when either copy drifts.
+These statements are DEC-015 in `.csdd/decisions.md`, accepted on 2026-10-18. `docs/windows-app-shell.md` repeats them, and `pnpm app:cite` fails when either copy drifts.
 
 | Topic | Statement |
 | --- | --- |

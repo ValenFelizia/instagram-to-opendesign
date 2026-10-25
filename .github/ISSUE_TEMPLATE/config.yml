@@ -1,0 +1,11 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Contributing guide
+    url: https://github.com/ValenFelizia/instagram-to-opendesign/blob/main/CONTRIBUTING.md
+    about: Setup, tests, code conventions, labels and review expectations.
+  - name: Security policy
+    url: https://github.com/ValenFelizia/instagram-to-opendesign/blob/main/SECURITY.md
+    about: Report a vulnerability privately instead of opening an issue.
+  - name: Documentation
+    url: https://github.com/ValenFelizia/instagram-to-opendesign/tree/main/docs
+    about: Stage guides, contracts and the product roadmap.
