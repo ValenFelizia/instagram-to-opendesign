@@ -17,6 +17,9 @@ brand-output/
 data/
 tmp/
 
+# Private evaluation cases stay local and unpublished
+evals/private/
+
 # Editor and OS files
 .DS_Store
 Thumbs.db

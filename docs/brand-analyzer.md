@@ -5,8 +5,8 @@ GitHub [#4](https://github.com/ValenFelizia/instagram-to-opendesign/issues/4) tu
 Run `pnpm install`, then put `OPENAI_API_KEY=<your API key>` in the ignored `.env.local`. The OpenAI API key is separate from `APIFY_TOKEN` and may require billing. Do not commit keys, profile data, or a real analysis. In PowerShell:
 
 ```powershell
-node bin/analyze-brand.js data/felisa_fr --dry-run
-node --env-file=.env.local bin/analyze-brand.js data/felisa_fr
+node bin/analyze-brand.js data/<slug> --dry-run
+node --env-file=.env.local bin/analyze-brand.js data/<slug>
 ```
 
 The dry run reads local files without an API call or key. It reports selected image and caption counts, exclusions, and image bytes. The live command uses `gpt-6-luna` with `reasoning.effort: high` through the [Responses API](https://developers.openai.com/api/docs/models/gpt-6-luna). It sends up to 24 reviewed, profile-owned selected images as local image data URLs, plus profile metadata and captions authored by that profile. Collaborator posts and unreviewed images are excluded from inference input. Images are sent with `detail: high`; [OpenAI documents image input and its variable token cost](https://developers.openai.com/api/docs/guides/images-vision). A run makes one API request, with no automatic retry; there is no fixed dollar estimate or service-side spend cap.
