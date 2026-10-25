@@ -13,4 +13,4 @@ references/document-contracts.md#external-tracker-stub
 
 Mode: external
 Tracker: https://github.com/ValenFelizia/instagram-to-opendesign/issues
-Next: open Issues; product priority via Linear VAL-100; native Windows manual acceptance in #70 before release work; contributor-surface follow-ups #71/#72
+Next: open Issues; product priority via Linear VAL-100; native Windows manual acceptance in #70 before release work; #71 closes after the private-case sweep; #72 covers formatter and linter

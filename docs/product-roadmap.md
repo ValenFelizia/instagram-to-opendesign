@@ -1,65 +1,103 @@
-# Guided creative-agent context: product roadmap
+# Product roadmap
 
-Accepted direction, 2026-10-03. Product priorities are canonical in [Linear](https://linear.app/valenf/document/product-direction-and-guided-local-workflow-2026-10-03-7dede0439fcc); this document maps them to repository work. Current runtime contracts are unchanged. This is planning, not an implemented app.
+This is the shape of the thing, not a task list. It holds the few big moves worth making and the rules that constrain them. Day-to-day work is in [GitHub Issues](https://github.com/ValenFelizia/instagram-to-opendesign/issues); product priority is in [Linear](https://linear.app/valenf/issue/VAL-100/deliver-a-guided-workflow-from-brand-evidence-to-useful-creative-agent-context). When a spike is understood well enough to split, it becomes issues and leaves this page.
 
-## Product purpose
+No dates. A spike that needs a date is not a spike.
 
-Prepare useful, reviewable context for a concrete creative task without repeatedly reconstructing a business from scattered brand material. Instagram is the first implemented source. OpenDesign is an optional implemented adapter. Evidence, confidence, human decisions, selected originals and the request are useful before a recipient is selected.
+## The bet
 
-## Primary user
+A person with a real brand, a real product and a real task should not have to rebuild their brand from scattered material every time they talk to a creative agent. If this tool can turn that material into context an agent can act on — and show its work while doing it — it is worth the effort.
 
-The initial audience is a technical operator working with creative agents across brand projects: someone comfortable configuring APIs, inspecting evidence and moving files/context between tools. The user explicitly confirmed this audience on 2026-10-03.
+Everything below either tests that bet or refuses to assume it.
 
-Prioritize a clear visual journey, reusable provider settings and access to advanced model options, local outputs and detailed evidence. A nontechnical owner may use an already-configured installation with assistance, but independent nontechnical onboarding is not the initial target. Keep labels, keyboard/focus behavior and recovery understandable for both.
+## Rules that do not move
 
-The intended journey is profile and objective → reused/local versus explicit paid intake → readable summary → important review → task-specific context → generic agent handoff or optional adapter → output and human feedback.
+- **The core is consumer-neutral.** Decisions, request, brief, hashes and acceptance tasks are canonical before a recipient is chosen. A renderer's fixed slots must not decide which brand facts survive ([DEC-009](../.csdd/decisions.md)). `evals/consumer-neutral-core/` enforces this.
+- **No new source and no new adapter until one real person closes the loop once.** Breadth before depth is how this kind of tool becomes a demo that impresses nobody who has a real job.
+- **Private by default.** A real case lives in `evals/private/` and never in public documentation ([DEC-017](../.csdd/decisions.md)).
+- **Claims need evidence.** A verified inventory, a green test and a pretty render are three different things. Comparative savings and general utility need a matched run, and the roadmap does not assume one will happen.
+- **Honest status.** No installer, no npm package, no release, no general-utility verdict. When that changes, it changes because a spike closed, not because a page needed a slogan.
 
-## Next work, in order
+## Horizon 1 — Make it true for one person
 
-| Priority | Product scope | Product tracking | Technical boundary |
-| --- | --- | --- | --- |
-| Foundation | Retain targeted provenance, human brief and rendered accessibility checks | VAL-100 | #15 is closed after supplied-font source/compilation verification; #17/#19 retain targeted acceptance. #37 accounting is merged through PR #41 |
-| First | Design the first-use journey and recoverable states | [VAL-104](https://linear.app/valenf/issue/VAL-104/design-guided-onboarding-from-a-profile-to-a-first-useful-brief) | [GitHub issue 43](https://github.com/ValenFelizia/instagram-to-opendesign/issues/43): navigable synthetic onboarding/dossier prototype, screen states and core gap mapping |
-| Alongside journey design | Selective review and room for creative proposals | [VAL-105](https://linear.app/valenf/issue/VAL-105/make-brand-review-selective-while-preserving-creative-freedom) | [GitHub issue 44](https://github.com/ValenFelizia/instagram-to-opendesign/issues/44): review-state/authority proposal; preserve current gates |
-| Next | Plan a contained local workspace | [VAL-106](https://linear.app/valenf/issue/VAL-106/define-a-contained-local-app-workspace-for-evidence-and-deliverables) | [GitHub issue 45](https://github.com/ValenFelizia/instagram-to-opendesign/issues/45): platform comparison, durable jobs and workspace proposal before framework selection |
-| Across the journey | Understandable spend, cache reuse and progress | [VAL-107](https://linear.app/valenf/issue/VAL-107/make-paid-actions-cache-reuse-and-run-progress-understandable) | [GitHub issue 46](https://github.com/ValenFelizia/instagram-to-opendesign/issues/46): paid-action/cache/progress surfaces based on accounting; unknowns retained |
-| Delivery | Generic task-specific export | [VAL-102](https://linear.app/valenf/issue/VAL-102/prepare-reusable-task-specific-context-for-generic-creative-agents) | #32 implementation is merged through PR #42/#41; canonical entrypoint and verified inventory, without reanalysis or OpenDesign packaging |
-| Later | Evaluate naming | [VAL-103](https://linear.app/valenf/issue/VAL-103/reframe-product-positioning-and-evaluate-projectrepository-name) | #33 keeps current repo/package/CLI/schema names until a concrete decision |
+The tool is currently true for its author. This horizon removes that asterisk.
 
-[VAL-100](https://linear.app/valenf/issue/VAL-100/deliver-a-guided-workflow-from-brand-evidence-to-useful-creative-agent-context) coordinates the increment. GitHub #39 reconciles this documentation and backlog; future implementation tasks should follow observed orchestration gaps rather than assume a framework or hosted service now.
+### S1. Close the loop with a real brand, without rescuing it
 
-## Review and creativity
+**Question.** Can a technical operator go from a profile to an agent-ready folder and a delivered piece without the author in the room?
 
-Facts, permission and explicitly approved constraints remain authoritative. Inferences, defaults and creative choices retain their status. An exploratory draft can propose copy, typography, colors and composition without presenting them as confirmed brand rules. Confirmed execution and publication require their applicable human review. Progressive review should ask only for information that changes the next step and show the evidence and consequence.
+**Done when.** One person, one brand, one finished piece, no manual file surgery and no undocumented step. The private case is the natural candidate.
 
-The current CLI still requires a confirmed request and human-selected direction for a ready selected brief. Changing that contract requires separate schema/core work; this roadmap does not bypass it. Brand reports remain Spanish by default and retain the explicit English option.
+**Not promised.** Growth, a second user, or that the piece is good. This spike proves the path exists, not that it is pleasant.
 
-## Learning without mandatory generation
+### S2. Prove the app on real hardware
 
-Practical feedback and concrete friction can guide product work. A controlled comparison remains available when a specific question and budget justify it; see [result review](result-review.md). Quantified savings, comparative superiority and general reliability require corresponding evidence. Neither a valid package nor an accepted exploratory design proves all of those claims. Additional OpenDesign generation is not a prerequisite for this increment.
+**Question.** Does the Windows app survive a real install on a machine that is not the development box?
 
-GitHub #21 closes the implemented review-feature scope. Its optional comparison protocol remains available. Targeted provenance and final rendered accessibility checks remain open; they are not replaced by positive visual feedback.
+**Done when.** The manual acceptance rows in [#70](https://github.com/ValenFelizia/instagram-to-opendesign/issues/70) are verified on Windows 10 and 11 with a live provider run, or are explicitly retired as not worth verifying.
 
-## Local app boundary
+**Not promised.** A release, code signing or an auto-updater. Install support is already declared; this spike only checks that the declaration is true.
 
-Keep evidence, report, decisions, originals and deliverables discoverable in one local project. Reuse the existing core and valid results. Design save/resume, stale input, partial result and error recovery states. Include keyboard navigation, visible focus, clear names, responsive readability and status that does not rely on color or motion alone.
+### S3. Decide what the first release is
 
-After joint platform review, DEC-011 selects a Windows-first Electron app, background work after window close, explicit Exit and app-managed local projects. Read the [workspace/job blueprint](local-workspace.md); UI library and implementation details remain open, and no app is implemented. Hosted SaaS/accounts, cloud synchronization, telemetry by default, MCP, new social-network sources and universal vendor support are outside this increment.
+**Question.** Is this a tool the author uses, a tool a stranger can install, or a product with a support promise?
 
-## Cost and privacy
+**Done when.** The answer is recorded as a decision, with the distribution path it implies.
 
-Make paid actions explicit before execution, identify cached/local work and avoid automatic paid retries. Preserve actual billed cost, tokens, provider wall time and human effort separately. Label estimates with their basis; unknown values remain unknown, not zero.
+**Not promised.** That the answer is "release". "Keep it a local tool" is a valid outcome and probably the honest one until S1 and S2 close.
 
-User-designated private work remains local and Git-ignored, including identifiers, source material, paths, assets, reports, feedback and outcomes. Public docs, fixtures and product tracking contain generic requirements only. No private case material is needed for this roadmap.
+## Horizon 2 — Make it true for someone else
 
-## Onboarding prototype review
+Only after Horizon 1. Each spike here answers a question that Horizon 1 will make askable.
 
-The [local synthetic prototype](../prototypes/onboarding/README.md) makes the first-use journey navigable, including the dossier, selective decisions and failure/recovery scenarios. The user accepted its concept/flow and authorized PR #47's merge into main @ `55eb220`; VAL-104 is Done. Read the [screen/core mapping and integration gaps](onboarding-prototype.md). This is interaction design, not the integrated app or a platform decision.
+### S4. A second source
 
-Future UI should be minimal, keep only useful information and use direct section/status titles instead of editorial SaaS copy. The user explicitly deferred visual/copy polishing so work can continue on product behavior.
+**Question.** What does a second source teach about the core that Instagram could not?
 
-The [selective-review proposal](selective-review.md) defines authority, task-specific questions, correction consequences and separate exploration/execution/publication states, with an isolated synthetic interaction prototype. The operator merged PR #48; #44 is closed and VAL-105 Done for proposal/prototype scope. Production schemas and readiness remain unchanged. The [local workspace blueprint](local-workspace.md) develops VAL-106; detailed spend/progress follows in VAL-107. Backlog slices are proposed, not an authorization to implement an entire app.
+**Done when.** A second source exercises the same canonical preparation without special cases leaking into the core.
 
-The [paid-action/reuse/progress specification](spend-progress.md) supplies VAL-107's operator-reviewed surface and ten fictional cases. It projects recorded phase/attempt observations, keeps missing/mixed billing distinct, deduplicates shared preparation and rejects stale consent. Proposed job ownership/checkpoint/recovery are separate from current journals. PR #59 integrated the approved PR #50 into main at `4993c15`; #46 is closed and VAL-107 Done for its specification/prototype. No paid instrumentation change is implied.
+**Not promised.** Universal scraping, a source marketplace, or support for whatever is popular next month. One second source is a test of the boundary, not a coverage target.
 
-The [implementation sequence](app-implementation.md) maps the reviewed plans and accounting gaps to GitHub #51–#58. The user authorized app implementation on 2026-10-04. The [Windows shell/native packaging](windows-app-shell.md) (#51) is ready for source review and current-host executable checks; clean-install and native accessibility acceptance remain open in [#70](https://github.com/ValenFelizia/instagram-to-opendesign/issues/70). Projects/credentials (#52), jobs, stage/review integration, history and guided UI are merged through PR #61–#66. VAL-100 coordinates product priorities; VAL-106 and VAL-107 are Done for their scoped proposals. The app still has no live provider acceptance: its acceptance runs use synthetic material and a fake transport, even though the guided screen can authorize a run.
+### S5. A second recipient
+
+**Question.** Does the handoff serve an agent that is not OpenDesign, without the core knowing which one it is?
+
+**Done when.** A different agent consumes the folder and the core is unchanged by it. The synthetic case already proves the folder is neutral; this proves a real recipient can use it.
+
+**Not promised.** A plugin system or a vendor matrix. If a second recipient needs adapter work, that is a finding, not a feature.
+
+### S6. Someone else can start alone
+
+**Question.** Can a person who is not the author install this, read the docs and reach a first useful result without a call?
+
+**Done when.** One such person does it, and the friction they hit becomes issues.
+
+**Not promised.** A funnel, a landing page or onboarding analytics. This spike is about whether the documentation is true, not about conversion.
+
+## Horizon 3 — Decide what it becomes
+
+### S7. Naming and positioning
+
+**Question.** Do the repository, package, CLI and schema names still describe the product after Horizons 1 and 2?
+
+**Done when.** A naming decision is recorded, or the current names are explicitly kept.
+
+**Not promised.** A rebrand. Current names stay until a decision says otherwise, and compatibility is a real cost.
+
+### S8. Whatever the evals say
+
+**Question.** What does the accumulated record of real cases say the next big move should be?
+
+**Done when.** This page is rewritten from evidence instead of intention.
+
+This spike is deliberately empty. It exists so the roadmap has a place to change its mind.
+
+## Not on this roadmap
+
+Hosted SaaS and accounts. Cloud synchronization. MCP. Telemetry by default. A universal vendor-compatibility promise. Automatic publication. New social sources beyond the one that S4 tests. These are not deferred with a date; they are out of scope until something in Horizon 1 or 2 makes them the obvious next move.
+
+## How this page changes
+
+A spike splits when it is understood: its parts become issues with acceptance criteria, and the spike leaves this page. A spike that keeps not happening for a year is either wrong or not wanted, and should be deleted rather than carried.
+
+The record of what already happened lives in [the verification checkpoint](verification-checkpoint.md), [the app implementation sequence](app-implementation.md) and the [eval outcomes](../evals/consumer-neutral-core/outcome.md). This page is only about what is next.
