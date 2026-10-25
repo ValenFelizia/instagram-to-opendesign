@@ -125,9 +125,11 @@ Direction and proposals:
 
 Synthetic examples: [OpenDesign package](examples/example-studio/), [agent handoff folder](examples/consumer-neutral-brief/).
 
+Evidence: [evals](evals/README.md) holds complete, reproducible cases with a dated record of what actually happened. `examples/consumer-neutral-brief/` is the recorded output of the first one, not an illustration.
+
 ## Project status and roadmap
 
-The next increment is a guided local workflow, from brand evidence to context a creative agent can use. Public planning is in the [product roadmap](docs/product-roadmap.md). Day-to-day work is tracked in [GitHub Issues](https://github.com/ValenFelizia/instagram-to-opendesign/issues). Product priorities are canonical in [Linear](https://linear.app/valenf/issue/VAL-100/deliver-a-guided-workflow-from-brand-evidence-to-useful-creative-agent-context), which needs access.
+The next increment is a guided local workflow, from brand evidence to context a creative agent can use. The [product roadmap](docs/product-roadmap.md) is a short list of big moves, not a task list; day-to-day work is tracked in [GitHub Issues](https://github.com/ValenFelizia/instagram-to-opendesign/issues). Product priorities are canonical in [Linear](https://linear.app/valenf/issue/VAL-100/deliver-a-guided-workflow-from-brand-evidence-to-useful-creative-agent-context), which needs access.
 
 Generated identity remains provisional. Quantified effort savings, comparative superiority and general reliability remain unmeasured. Claims of that kind require a matched experiment, not a successful local run.
 

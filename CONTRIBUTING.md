@@ -65,6 +65,18 @@ There is no formatter and no linter yet. A mass reformat would collide with open
 - Windows-only behavior gets an explicit skip elsewhere with a reason.
 - A behavior change needs a test that fails before the change and passes after it.
 
+## Evals
+
+A test answers "does this module honour its contract?". An eval answers "does the product deliver something useful?". They live in different places and cost different things.
+
+- `evals/<slug>/` holds a complete case: a `README.md` with the property and its limits, a `case.json` with run, cost and assertions, its input, and a dated `outcome.md`.
+- The mechanical assertions belong in `pnpm test`, named by `case.json.enforcedBy`. The judgment layer is a person reading the output, and it is never automated.
+- A case without `outcome.md` has never been run. Say so rather than implying it passed.
+- `evals/private/` is ignored and holds real cases. Do not move that material into `docs/` or into a public eval.
+- The first case, [`evals/consumer-neutral-core`](evals/consumer-neutral-core/README.md), reproduces `examples/consumer-neutral-brief/` byte for byte. If you change core output, expect that comparison to fail and decide deliberately whether the example or the code is wrong.
+
+Read [evals/README.md](evals/README.md) for the full contract.
+
 ## Issues and labels
 
 There is one issue form. It asks for the kind, the problem, a proposed solution, the scope, an acceptance checklist and context. A maintainer applies labels during triage.
@@ -113,9 +125,10 @@ Agent-assisted work is welcome. These rules keep the result accountable.
 
 ## Private data and evidence
 
-- `data/`, `brand-output/` and `tmp/` are ignored. Keep them that way.
+- `data/`, `brand-output/`, `tmp/` and `evals/private/` are ignored. Keep them that way.
 - Never commit tokens, private profile data, private project paths or third-party images without redistribution rights.
-- Public fixtures use synthetic brands. Real evaluation material and its outcomes stay local.
+- Public fixtures use synthetic brands. A real evaluation case lives in `evals/private/` and its identity, assets and outcomes never appear in a public file.
+- A public document may describe a stage, a failure or a generic outcome. Apply the substitution test in [DEC-017](.csdd/decisions.md): replace the identity with "a private test brand" and keep every sentence that still teaches something true.
 - Generated packages contain public profile content and machine-local paths. Review both before sharing one.
 
 ## Security and conduct

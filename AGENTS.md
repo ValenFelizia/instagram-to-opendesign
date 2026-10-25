@@ -9,6 +9,13 @@
 
 The canonical requirement is the [language policy in `.csdd/specs.md`](.csdd/specs.md#language-policy). Contributor guidance is in [CONTRIBUTING.md](CONTRIBUTING.md).
 
+## Private cases and evals
+
+- A real evaluation case lives in `evals/private/`, which is ignored. Never copy its identity, assets, captions, attributed preferences or rejected outputs into a tracked file, an issue, a pull request or a commit message.
+- A tracked document may describe a stage, a software behaviour or a generic outcome. Apply the substitution test in [DEC-017](.csdd/decisions.md): replace the identity with "a private test brand" and keep every sentence that still teaches something true. A rejection stays a rejection.
+- A new public case goes in `evals/<slug>/` with `README.md`, `case.json`, its input and a dated `outcome.md`. Mechanical assertions go in `pnpm test`; the judgment layer is a person's record, never an assertion.
+- Do not claim a case passed without an `outcome.md` entry. A case that has never been run is not evidence.
+
 ## Coordination (CSDD external stub)
 
 - `.csdd/todo.md` is `Mode: external`. Do not create In Progress / Ready to Land / Pending boards or `Owner` / `Agent` / `Scope` claims there.
