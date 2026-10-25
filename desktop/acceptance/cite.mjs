@@ -112,7 +112,7 @@ export function renderDebtDoc(criteria = CRITERIA) {
     '',
     '### Install support',
     '',
-    'These statements are DEC-015 in `.csdd/decisions.md`, pending operator review. `docs/windows-app-shell.md` repeats them, and `pnpm app:cite` fails when either copy drifts.',
+    'These statements are DEC-015 in `.csdd/decisions.md`, accepted on 2026-10-18. `docs/windows-app-shell.md` repeats them, and `pnpm app:cite` fails when either copy drifts.',
     '',
     '| Topic | Statement |',
     '| --- | --- |',

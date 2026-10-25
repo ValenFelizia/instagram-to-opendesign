@@ -23,7 +23,7 @@ export const LIMITS = {
   'native-shell': 'The harness stubs file dialogs and keeps the window hidden. It does not drive the tray, the native folder picker, foreground activation, or Alt+F4.',
   'assistive-technology': 'Keyboard Tab and axe run in the packaged renderer. They do not run Narrator, 200% zoom, or a person reading the status announcements.',
   'network-observation': 'The harness does not capture network traffic from the installer, the uninstaller or the app. Absence of cloud or telemetry calls rests on configuration review and the blocked renderer requests.',
-  'release-decision': 'Signing, the Windows version floor, distribution and the uninstall data scope are an operator release decision on issue 58 (DEC-015, pending). This harness does not decide a release.',
+  'release-decision': 'Signing, the Windows version floor, distribution and the uninstall data scope are declared in DEC-015, accepted on 2026-10-18. This harness does not decide a release.',
 };
 
 const PATH_EVIDENCE = 'Packaged child PATH is System32 with no NODE_OPTIONS or secret-like environment';

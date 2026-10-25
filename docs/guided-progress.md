@@ -35,6 +35,6 @@ Automated checks cover skip link presence, labeled consent controls, linked `rol
 
 ## Remaining boundaries
 
-- Native #51/#52/#58 gates stay open (clean install, Narrator/tray, real picker UX, release).
+- Native Windows manual rows stay open in #70 (clean install, Narrator/tray, real picker UX, release).
 - No live paid provider generation, private fixtures, publication/upload/deploy or signed release.
 - Selective dossier/image-review polish remains deferred; this slice wires progress, spend, scoped consent and privileged authority/delivery controls to real jobs.

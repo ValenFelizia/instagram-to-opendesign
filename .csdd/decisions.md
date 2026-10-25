@@ -1,8 +1,25 @@
 # Decisions
 
+## DEC-016 — Prepare a single contributor surface before sharing the repository
+
+- Status: accepted by the operator, 2026-10-24. It changes repository surface, not product behavior.
+- Date: 2026-10-24
+- Context: the repository becomes public-facing. The README described engineering progress instead of what a newcomer can run, CONTRIBUTING was 18 lines, issues had no labels and two incompatible body shapes, and there was no issue form, pull request template, security policy or code of conduct. Only a Windows-path workflow ran CI, so a documentation pull request triggered no check.
+- Decision:
+  - The README presents the local CLI as the only complete path, states that no installer or npm package exists, and names the app as a local shell verified with synthetic material. It drops private evaluation case material from the front page.
+  - One general issue form collects kind, problem, proposed solution, scope, acceptance and context. A maintainer applies type, priority and area labels during triage. Priorities are `P0` to `P3`; areas are `area:core`, `area:cli`, `area:app`, `area:docs` and `area:ci`.
+  - `CONTRIBUTING.md` documents setup, the test commands, dialect and style conventions, issue and pull request rules, agent-assisted contributions, the language policy and the private-data rules. It is the canonical contributor guide.
+  - Code style stays review-enforced with an `.editorconfig`. Prettier and ESLint adoption is deferred to #72 so a mass reformat does not collide with open branches.
+  - A portable `ci.yml` runs `pnpm test` and `pnpm app:cite` on Ubuntu for every pull request. The Windows workflow keeps its path filter.
+  - The source scope of #51, #52 and #58 is closed. The manual rows those issues could not verify move to #70. The registry and the debt document keep their existing criterion ids.
+  - Removing private case material from the remaining public docs is #71, because rewriting evidence documents changes durable truth and needs its own review.
+- Rationale: a public repository needs a truthful entry point, a contribution path a stranger can follow, and a tracker that does not present closed work as open. Deferring the formatter keeps this change reviewable and avoids conflicts with in-flight branches.
+- Consequence: a new contributor reads README, CONTRIBUTING and one issue form. Distribution is clone plus pnpm, not npm. No release is implied by the accepted install support. The private-case rule now has an explicit remediation task. Formatting drift remains possible until #72 lands.
+- Evidence: this pull request; `pnpm test` and `pnpm app:cite` locally; the new `.github/` surface; issues #70, #71 and #72.
+
 ## DEC-015 — Declare Windows install support, manual updates and uninstall retention
 
-- Status: proposed for issue #58, pending operator review. It is not a release or distribution decision.
+- Status: accepted by the operator on 2026-10-18, when PR #69 merged and issue #58 closed. It declares install support; it is not a release or a distribution commitment.
 - Date: 2026-10-18
 - Context: issue #58 requires a declared support floor, installer format, signing and update strategy, and uninstall behavior before distribution. Electron keeps the Chromium profile and the DPAPI-protected key under Roaming AppData. The app keeps the project registry, managed projects, credential records and the job store under Local AppData. electron-builder's `--delete-app-data` uninstall flag removes Roaming AppData only.
 - Decision:
@@ -15,7 +32,7 @@
   - Downgrade: A job store newer than user_version 2 is refused with job-version-unsupported; there is no downward migration.
 - Rationale: a per-user assisted installer needs no elevation and keeps the existing build. Unsigned manual builds avoid a signing purchase and any automatic update or restart of paid work, which issue #58 does not authorize. Keeping Local data on every uninstall means removing the program can never erase projects, credentials or job evidence. Refusing a newer store keeps an older build from rewriting data it does not understand.
 - Consequence: `desktop/builder.json` states `deleteAppDataOnUninstall: false` and `publish: null`, and `pnpm app:cite` fails when this entry, `docs/windows-app-shell.md` or `INSTALL_SUPPORT` in `desktop/acceptance/install.mjs` drift apart. Removing Roaming data can leave saved provider keys undecryptable while their encrypted records stay in the workspace. Users delete the Local workspace by hand. Client-edition, SmartScreen, real-upgrade and network observations remain manual on issue #58.
-- Evidence: `pnpm app:install` (`desktop/acceptance/install.mjs`) in the `installer` job of `.github/workflows/windows-app.yml`; [install support](../docs/windows-app-shell.md#install-support); [manual acceptance debt](../docs/manual-acceptance-debt.md).
+- Evidence: `pnpm app:install` (`desktop/acceptance/install.mjs`) in the `installer` job of `.github/workflows/windows-app.yml`; [install support](../docs/windows-app-shell.md#install-support); [manual acceptance debt](../docs/manual-acceptance-debt.md); manual rows in issue #70.
 
 ## DEC-014 — Keep portable disclosure separate from private delivery and effort history
 

@@ -13,4 +13,4 @@ references/document-contracts.md#external-tracker-stub
 
 Mode: external
 Tracker: https://github.com/ValenFelizia/instagram-to-opendesign/issues
-Next: open Issues; product priority via Linear VAL-100; native Windows gates #51/#52/#58 before release work; draft #58 installer acceptance is PR #69 (DEC-015 pending operator review)
+Next: open Issues; product priority via Linear VAL-100; native Windows manual acceptance in #70 before release work; contributor-surface follow-ups #71/#72
