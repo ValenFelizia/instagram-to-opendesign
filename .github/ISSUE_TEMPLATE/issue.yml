@@ -1,0 +1,92 @@
+name: Issue
+description: Report a bug, propose a feature or task, or ask a question.
+title: ""
+labels: ["needs-triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to write this. Use English here.
+
+        Do not include provider keys, private profile data, private project paths or links to private projects.
+        A maintainer applies the type and priority labels during triage.
+
+  - type: dropdown
+    id: kind
+    attributes:
+      label: Kind
+      description: Pick the closest match. A maintainer confirms it with a label.
+      options:
+        - Bug
+        - Feature request
+        - Implementation task
+        - Documentation
+        - Question
+    validations:
+      required: true
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem
+      description: What is wrong or missing, and who is affected. Describe current behavior, not the fix.
+      placeholder: "Running `pnpm brand:brief data/example_studio --init web-hero` writes ... instead of ..."
+    validations:
+      required: true
+
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed solution
+      description: The smallest change that would solve it. Leave this empty if you have no preference.
+      placeholder: Accept a fixture path in the brief command and reuse the existing request validator.
+    validations:
+      required: false
+
+  - type: textarea
+    id: scope
+    attributes:
+      label: Scope and boundary
+      description: Which files, commands or stages are involved, and what is explicitly out of scope.
+      placeholder: "Touches src/brief.js and its tests. Does not change the schema or the readiness gates."
+    validations:
+      required: false
+
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: Acceptance checklist
+      description: Concrete, verifiable outcomes, one per line. Leave this empty if you cannot state them yet.
+      value: |
+        - [ ] 
+        - [ ] 
+    validations:
+      required: false
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered
+      description: Other approaches and why they are worse. Optional.
+    validations:
+      required: false
+
+  - type: textarea
+    id: context
+    attributes:
+      label: Additional context
+      description: Links to docs, related issues, synthetic fixtures or sanitized logs. Do not attach private brand material.
+    validations:
+      required: false
+
+  - type: checkboxes
+    id: confirm
+    attributes:
+      label: Before submitting
+      options:
+        - label: I searched existing issues and pull requests.
+          required: true
+        - label: This contains no credentials, private profile data or private project paths.
+          required: true
+        - label: This is written in English.
+          required: true
