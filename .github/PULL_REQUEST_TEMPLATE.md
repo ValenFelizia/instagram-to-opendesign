@@ -1,4 +1,6 @@
-<!-- Keep this in English. See the language policy in CONTRIBUTING.md. -->
+<!-- Keep this in English. See the language and commit conventions in CONTRIBUTING.md. -->
+<!-- Title format: Conventional Commits — <type>(<scope>): <summary in imperative mood> -->
+<!-- Examples: feat(cli): accept external fixture path, fix(app): prevent window leak -->
 
 ## Problem
 
@@ -34,6 +36,7 @@ pnpm test
 
 ## Checklist
 
+- [ ] PR title follows Conventional Commits (`<type>(<scope>): <summary>`)
 - [ ] Tests pass and new behavior is covered
 - [ ] No credentials, private profile data or private project paths
 - [ ] Documentation and issue/PR text are in English

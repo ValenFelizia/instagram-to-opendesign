@@ -57,6 +57,51 @@ There is no formatter and no linter yet. A mass reformat would collide with open
 - A caller that branches on a failure needs a stable code in the message, such as `job-version-unsupported` or `APP_SHELL_START_FAILED`. Never put a secret, a provider payload or an absolute private path in an error or a log line.
 - Comment the reason, not the line. A comment that restates the code is removed in review.
 
+## Commit conventions
+
+Git history on `main` is preserved with merge commits, so commit messages and pull request titles remain directly visible. We follow the [Conventional Commits v1.0.0](https://www.conventionalcommits.org/en/v1.0.0/) specification.
+
+Each commit message follows this structure:
+
+```text
+<type>(<scope>): <summary>
+
+[optional body explaining context, rationale, and tradeoffs]
+
+[optional footer(s), e.g., Refs #123, Fixes #123, or BREAKING CHANGE: description]
+```
+
+### Types
+
+- `feat`: A new user-facing capability, command, or pipeline stage.
+- `fix`: A bug fix in behavior, schemas, or existing commands.
+- `docs`: Documentation-only changes (README, stage guides, CSDD specs, evals docs).
+- `test`: Adding or correcting tests or synthetic test fixtures.
+- `refactor`: Code changes that neither fix a bug nor add a feature.
+- `perf`: Code changes that improve performance.
+- `build`: Changes affecting build scripts, packaging, or external dependencies.
+- `ci`: Changes to CI workflows, acceptance runners, or developer tooling.
+- `chore`: Maintenance tasks, repo cleanup, or small configuration tweaks.
+
+### Scopes
+
+Scopes usually match the area of the codebase being modified (aligning with issue and PR areas):
+- `core`: Pipeline orchestration, schema models, contracts, and core exports in `src/`.
+- `cli`: CLI commands, flags, and runner scripts in `bin/`.
+- `app`: Electron desktop app shell, window manager, and acceptance in `desktop/`.
+- `docs`: Contributor guides, CSDD durable specs, and documentation in `docs/`.
+- `evals`: Evaluation cases, criteria, and outcomes in `evals/`.
+- `ci`: GitHub Actions workflows and verification harnesses.
+
+Omit the scope if a commit spans multiple areas or is repository-wide (e.g., `docs: update roadmap`).
+
+### Message style
+
+- Use the imperative, present tense: "add", "fix", "change", not "added", "fixes", "changing".
+- Write the summary in English, lowercase, without a trailing period.
+- Keep the first line under 72 characters.
+- Use breaking change syntax (`type(scope)!: summary` or `BREAKING CHANGE: ...` in the footer) when introducing backward-incompatible schema or CLI changes.
+
 ## Tests
 
 - Test the behavior a caller can observe, not the internal structure.
@@ -81,6 +126,13 @@ Read [evals/README.md](evals/README.md) for the full contract.
 
 There is one issue form. It asks for the kind, the problem, a proposed solution, the scope, an acceptance checklist and context. A maintainer applies labels during triage.
 
+### Issue titles
+
+Issue titles are more flexible than commit or PR titles, but they should be clear, concise, and written in English using the imperative mood to describe the desired outcome or defect:
+- Start with an imperative verb (e.g., `Adopt a formatter and linter after the open branches land`, `Verify the manual Windows acceptance rows before distribution`, `Check brief and token accessibility before design`).
+- Avoid vague titles like "bug in brief" or "update docs".
+- Do not force Conventional Commit prefixes on issue titles; use natural, descriptive task summaries instead.
+
 | Label | Use |
 | --- | --- |
 | `bug` | Something does not work as documented |
@@ -101,6 +153,7 @@ State the problem before the solution. Link the issue a pull request closes.
 
 ## Pull requests
 
+- Title must follow Conventional Commits (e.g. `feat(cli): accept external fixture path in brief`, `fix(app): restore foreground activation on tray click`). Because pull requests are merged with merge commits, the PR title forms the permanent changelog on `main`.
 - One concern per pull request. Keep unrelated reformatting out.
 - Fill the template. Verification means the commands you ran and their actual result, not a promise that it should work.
 - Explain the boundary. Saying what a change does not do prevents the next person from over-reading it.

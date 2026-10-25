@@ -8,6 +8,7 @@ body:
       value: |
         Thanks for taking the time to write this. Use English here.
 
+        Write an actionable title in the imperative mood (e.g., 'Verify manual Windows acceptance rows before distribution', 'Adopt a formatter and linter after the open branches land').
         Do not include provider keys, private profile data, private project paths or links to private projects.
         A maintainer applies the type and priority labels during triage.
 
