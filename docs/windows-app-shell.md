@@ -68,7 +68,7 @@ Data roots:
 
 An upgrade runs the new installer over the old one. The data roots are not touched, and the app finishes any job store migration on its next start. A crashed paid attempt is shown as uncertain and is never retried automatically. Installing an older build over newer data is refused at startup with `job-version-unsupported`; install the newer build again to recover. After `--delete-app-data`, saved provider keys may no longer decrypt and must be entered again.
 
-`pnpm app:install` exercises this table on a fresh Windows runner with synthetic data. The phases and their declared effects are in the installer section of [manual acceptance debt](manual-acceptance-debt.md).
+`pnpm app:install` exercises this table on a fresh Windows runner with synthetic data. The phases and their declared effects are in the installer phases section of [manual acceptance debt](manual-acceptance-debt.md).
 
 ## Manual acceptance
 

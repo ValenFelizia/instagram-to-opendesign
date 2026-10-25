@@ -32,7 +32,7 @@ In PowerShell, quote the profile argument so `@` is not read as shell syntax: `p
 ## Run the tests
 
 ```powershell
-pnpm test        # 187 tests, one Windows-only skip, about two minutes
+pnpm test        # 187 tests, one platform-specific skip, about two minutes
 pnpm app:cite    # acceptance documents against the registry
 ```
 

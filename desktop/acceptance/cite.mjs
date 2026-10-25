@@ -43,7 +43,7 @@ export function renderDebtDoc(criteria = CRITERIA) {
   const lines = [
     '# Manual acceptance debt',
     '',
-    `This file lists every acceptance bullet from issues ${series(issues.map(String))}. The bullet text is copied from the Acceptance section of each issue. \`pnpm app:cite\` checks this file against \`desktop/acceptance/registry.mjs\`. It does not read GitHub, and it does not mark a manual row passed.`,
+    `This file lists every acceptance bullet inherited from issues ${series(issues.map(String))}. The bullet text was copied from the Acceptance section of each issue while it was open. \`pnpm app:cite\` checks this file against \`desktop/acceptance/registry.mjs\`. It does not read GitHub, and it does not mark a manual row passed.`,
     '',
     'A row is automated when it has evidence or unit tests and an empty manual list. A row is partial when it has both. A row is manual when it has limits and no evidence or tests. Partial and manual rows still need a person.',
     '',
@@ -63,7 +63,7 @@ export function renderDebtDoc(criteria = CRITERIA) {
     ...WORKFLOW.installer,
     '```',
     '',
-    'The first command rebuilds the same commit as version 0.0.1 into `dist/app-prior`, which is the version the run installs first. `pnpm app:install` runs the issue 58 phases below against the two setups and writes `tmp/app-install-qa/installer-report.json`. The job uploads the report and both setups.',
+    'The first command rebuilds the same commit as version 0.0.1 into `dist/app-prior`, which is the version the run installs first. `pnpm app:install` runs the installer phases below against the two setups and writes `tmp/app-install-qa/installer-report.json`. The job uploads the report and both setups.',
     '',
     '## Limits',
     '',
@@ -85,7 +85,7 @@ export function renderDebtDoc(criteria = CRITERIA) {
   }
   lines.push(
     '',
-    '## Issue 58',
+    '## Installer phases',
     '',
     '`runInstallerAcceptance` in `desktop/acceptance/install.mjs` runs these phases once, in this order, and stops at the first failure. Each phase declares its effect on three roots: the install directory, the Local workspace root `%LOCALAPPDATA%\\Instagram to OpenDesign` and the Roaming profile root `%APPDATA%\\Instagram to OpenDesign`. The machine snapshots every root after each phase and fails the phase when a root does not match its declared effect. The uninstall rows are the documented retention policy.',
     '',

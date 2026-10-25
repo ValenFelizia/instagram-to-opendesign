@@ -27,7 +27,7 @@ Errors return `{ ok:false, code, action }` only. Responses never include credent
 
 ## Accessibility
 
-Automated checks cover skip link presence, labeled consent controls, linked `role="alert"` errors, polite status announcements, focus on the consent checkbox and status heading, and reduced-motion/forced-colors CSS. Packaged Windows Narrator, zoom, high-contrast usability and real native picker/tray review remain a **manual gate** shared with open #51/#52 acceptance. Browser prototype walks do not replace that review.
+Automated checks cover skip link presence, labeled consent controls, linked `role="alert"` errors, polite status announcements, focus on the consent checkbox and status heading, and reduced-motion/forced-colors CSS. Packaged Windows Narrator, zoom, high-contrast usability and real native picker/tray review remain a **manual row** tracked in [#70](https://github.com/ValenFelizia/instagram-to-opendesign/issues/70). Browser prototype walks do not replace that review.
 
 ## Verification
 
