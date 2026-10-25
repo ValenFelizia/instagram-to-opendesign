@@ -3,7 +3,7 @@
   "property": "The core produces a complete, verifiable agent handoff without depending on any renderer's contract.",
   "layer": "both",
   "input": {
-    "source": "test/helpers/brief.js",
+    "source": "test/helpers/profile.js + test/helpers/brief.js, see input/README.md",
     "kind": "instagram-story",
     "generated": true,
     "deterministic": true,
