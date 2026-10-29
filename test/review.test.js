@@ -3,6 +3,8 @@ import assert from 'node:assert/strict';
 import { readFile, rm, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { importReview, reviewSnapshot } from '../src/review.js';
+import { reviewHtml } from '../src/review-html.js';
+import { createHash } from 'node:crypto';
 import { emptyDecisions, loadDecisions } from '../src/decisions.js';
 import { digest } from '../src/local.js';
 import { profileFixture } from './helpers/profile.js';
@@ -35,4 +37,12 @@ test('scoped review import preserves rules and unrelated decisions, detects stal
     await assert.rejects(() => importReview(f.prepared, f.analysis, incoming), /evidence changed/);
     assert.equal(await readFile(path.join(f.root, 'brand-decisions.json'), 'utf8'), prior);
   } finally { await rm(f.root, { recursive: true, force: true }); }
+});
+
+test('report review script hash matches the text a browser hashes after newline normalization', () => {
+  const { html, scriptHash } = reviewHtml({ username: 'example_studio', items: [] }, 'en');
+  const script = html.match(/<script>([\s\S]*)<\/script>$/)[1];
+  // HTML parsing turns CRLF into LF before CSP hashes an inline script; a CRLF checkout must not break the hash.
+  const browserHash = createHash('sha256').update(script.replace(/\r\n?/g, '\n')).digest('base64');
+  assert.equal(scriptHash, browserHash);
 });
