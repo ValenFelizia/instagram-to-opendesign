@@ -16,7 +16,8 @@ export function reviewHtml(snapshot, language) {
     const topic = REPORT_COPY[language].topics[ANALYSIS_TOPICS.indexOf(item.topic)] ?? item.topic;
     return `<fieldset><legend>${e(topic)}</legend><p>${e(item.value ?? copy.pending)}</p><p>${item.stale ? copy.changed : copy.unchanged} · ${e(item.id)}</p><p>${item.evidenceIds.map((id) => `<a href="#evidence-${e(id)}">${e(id)}</a>`).join(' · ')}</p><label for="review-${e(item.id)}-action">${copy.action}</label><select id="review-${e(item.id)}-action">${[['pending', copy.pending], ['accept-proposal', copy.accept], ['reject', copy.reject]].map(([value, label]) => `<option value="${value}"${value === action ? ' selected' : ''}>${label}</option>`).join('')}</select><label for="review-${e(item.id)}-note">${copy.noteLabel}</label><textarea id="review-${e(item.id)}-note" aria-describedby="review-${e(item.id)}-error">${e(item.existing?.note ?? '')}</textarea><p id="review-${e(item.id)}-error"></p></fieldset>`;
   }).join('');
-  const script = `(${reviewClient.toString()})();`;
+  // A CRLF checkout leaks into toString(); browsers hash the LF-normalized text, so the CSP hash must too.
+  const script = `(${reviewClient.toString().replace(/\r\n?/g, '\n')})();`;
   const scriptHash = createHash('sha256').update(script).digest('base64');
   const data = JSON.stringify({ ...snapshot, language }).replaceAll('<', '\\u003c');
   const commands = [`pnpm brand:decisions data/${e(snapshot.username)} --import &lt;downloaded-file.json&gt;`, `pnpm brand:compile data/${e(snapshot.username)}`, `pnpm brand:report data/${e(snapshot.username)}`].join('\n');
