@@ -34,6 +34,7 @@ try {
   if (result.analysisUsage) console.log(`Analysis API usage: ${result.analysisUsage.input_tokens ?? '?'} input, ${result.analysisUsage.output_tokens ?? '?'} output tokens.`);
   if (result.status === 'review-required') {
     console.log(`${result.pending.length} selected profile-owned images need review before analysis.`);
+    if (result.excludedCollaborators > 0) console.log(`${result.excludedCollaborators} collaborator images on the contact sheet are excluded from review and from model input.`);
     console.log(`Contact sheet: ${result.contactSheet}`);
     console.log(`Edit classifications in: ${result.reviewFile}`);
     console.log(`Then repeat: pnpm brand:instagram '${username}'${options.language === 'en' ? ' --lang en' : ''}`);

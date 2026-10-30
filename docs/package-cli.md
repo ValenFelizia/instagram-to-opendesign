@@ -6,7 +6,7 @@ GitHub [#5](https://github.com/ValenFelizia/instagram-to-opendesign/issues/5) co
 pnpm brand:instagram '@publicusername'
 ```
 
-On first use, the command ingests public posts and creates `data/<username>/evidence/contact-sheet.svg` and `review.json`. It stops with exit code 2 until every selected, profile-owned image has a `brand-graphic`, `product-photo`, or `mixed` classification. Collaborator images are excluded from that gate and from model input. Review the contact sheet, edit classifications in `review.json`, then repeat the **same command**. An existing valid source and analysis are reused; no automatic retries duplicate API charges.
+On first use, the command ingests public posts and creates `data/<username>/evidence/contact-sheet.svg` and `review.json`. It stops with exit code 2 until every selected, profile-owned image has a `brand-graphic`, `product-photo`, or `mixed` classification. Collaborator images are excluded from that gate and from model input, and the command prints how many of them the contact sheet shows, so the gate count can be lower than the sheet's total. Review the contact sheet, edit classifications in `review.json`, then repeat the **same command**. An existing valid source and analysis are reused; no automatic retries duplicate API charges.
 
 `--refresh` requests new Instagram data through Apify. `--reanalyze` repeats the OpenAI analysis and color proposal. Both may incur new charges. A changed source or review invalidates the relevant cached analysis automatically. To rebuild only the package from current local data without any provider calls, run `pnpm brand:compile data/<username>`.
 
