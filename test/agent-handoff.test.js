@@ -4,6 +4,7 @@ import { cp, mkdir, readFile, rm, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { spawnSync } from 'node:child_process';
 import { briefFixture, fixtureDirections } from './helpers/brief.js';
+import { profileFixture } from './helpers/profile.js';
 import { exportAgentHandoff, verifyAgentHandoff, importDirections, prepareBrief } from '../src/core.js';
 import { digest } from '../src/local.js';
 
@@ -60,5 +61,18 @@ test('pending exports remain exploration only; stale inputs preserve the previou
     await mkdir(path.join(built.outputDir, 'source'));
     await writeFile(path.join(built.outputDir, 'source/package-context.json'), '{}');
     await assert.rejects(() => verifyAgentHandoff(built.outputDir), /inventory changed/);
+  } finally { await rm(fixture.root, { recursive: true, force: true }); }
+});
+
+test('handoff without a design request rejects with a stable code and recovery guidance', async () => {
+  const fixture = await profileFixture();
+  try {
+    await assert.rejects(() => exportAgentHandoff(fixture.root), (error) => {
+      assert.equal(error.code, 'DESIGN_REQUEST_MISSING');
+      for (const fragment of [path.join(fixture.root, 'design-request.json'), 'brand:brief', '--init', 'docs/design-brief.md', 'brand-output/']) {
+        assert.ok(error.message.includes(fragment), `message names ${fragment}`);
+      }
+      return true;
+    });
   } finally { await rm(fixture.root, { recursive: true, force: true }); }
 });

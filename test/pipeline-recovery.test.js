@@ -181,7 +181,7 @@ test('export failure retains the compiled package and the prior valid completed 
   const f = await fixture(t), job = f.plan();
   const complete = await f.pipeline.run(job.id, f.pipeline.authorize(job.id, job.planHash));
   const next = f.plan({ taskId: job.task, taskRevision: 2, includeExport: true, maxPaidCalls: 0 });
-  await assert.rejects(f.pipeline.run(next.id, f.pipeline.authorize(next.id, next.planHash)), /ENOENT/);
+  await assert.rejects(f.pipeline.run(next.id, f.pipeline.authorize(next.id, next.planHash)), { code: 'DESIGN_REQUEST_MISSING' });
   assert.equal(f.store.view(next.id).state, 'failed'); assert.equal(f.store.view(job.id).state, 'completed');
   assert.ok(f.store.validSnapshot(f.store.db.prepare('SELECT * FROM snapshots WHERE id=?').get(complete.output)));
   assert.equal(f.pipeline.stages(next.id).find(s => s.name === 'compilation').state, 'completed'); assert.equal(f.calls(), 2);
