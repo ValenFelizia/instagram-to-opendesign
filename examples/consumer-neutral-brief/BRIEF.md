@@ -30,6 +30,10 @@ Use only the files below. Proposal rationales and unselected alternatives are re
 
 ## Selected assets
 
+- E-IMG-2189F24AE9BF3848: [logo](assets/E-IMG-2189F24AE9BF3848.png); 80×60; fit **contain**.
+  - Image alternative (informative): "Synthetic logo". Permission source: S-REQUEST.
+  - Keep the whole original; do not apply the catalog cover-crop candidate.
+  - Low resolution accepted for the actual slot; inspect sharpness in the render.
 - E-IMG-A0A8AF237EC969A8: [product](assets/E-IMG-A0A8AF237EC969A8.jpg); 80×60; fit **contain**.
   - Image alternative (informative): "Synthetic product image". Permission source: S-REQUEST.
   - Keep the whole original; do not apply the catalog cover-crop candidate.

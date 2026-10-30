@@ -229,7 +229,7 @@ export async function selectedBrief(profileDir, { requestDocument, directionsDoc
   if (!selected) pending.push('Select one direction before execution.');
   if (selected) pending.push(...selected.missingInformation);
   if (selected?.hierarchy === 'brand-first' && !state.request.copy.some((item) => item.id === 'brand')) pending.push('brand-first direction requires confirmed brand copy.');
-  const assets = selected ? state.selected.filter((entry) => selected.assetIds.includes(entry.id)) : state.selected;
+  const assets = selected ? state.selected.filter((entry) => entry.role === 'logo' || selected.assetIds.includes(entry.id)) : state.selected;
   const accessibility = accessibilityPreflight({ tokens: state.decisions.tokenOverrides, plan: state.request.accessibility, request: state.request, assets });
   pending.push(...accessibility.checks.filter((check) => check.status === 'fail').map((check) => `Accessibility failure ${check.id}: ${check.instruction}`));
   const brief = { schemaVersion: state.request.schemaVersion === 'design-request/v2' ? 'design-brief/v2' : 'design-brief/v1', inputHash: state.inputHash, kind: state.request.kind,

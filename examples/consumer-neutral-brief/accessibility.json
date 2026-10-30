@@ -15,6 +15,11 @@
       "alternatives": []
     },
     {
+      "id": "alt-E-IMG-2189F24AE9BF3848",
+      "status": "manual-review",
+      "instruction": "Check the image purpose in this composition; informative images need useful alternatives, decorative images empty alternatives. A filename or catalog description is not a contextual review."
+    },
+    {
       "id": "alt-E-IMG-A0A8AF237EC969A8",
       "status": "manual-review",
       "instruction": "Check the image purpose in this composition; informative images need useful alternatives, decorative images empty alternatives. A filename or catalog description is not a contextual review."

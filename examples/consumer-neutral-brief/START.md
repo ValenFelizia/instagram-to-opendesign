@@ -17,6 +17,7 @@ Execute only the selected direction and applicable confirmed constraints. Unspec
 
 ## Original assets
 
+- [logo: E-IMG-2189F24AE9BF3848](assets/E-IMG-2189F24AE9BF3848.png) — 80 × 60; fit contain; alternative {"usage":"informative","text":"Synthetic logo"}.
 - [product: E-IMG-A0A8AF237EC969A8](assets/E-IMG-A0A8AF237EC969A8.jpg) — 80 × 60; fit contain; alternative {"usage":"informative","text":"Synthetic product image"}.
 
 Files use relative paths and preserve supplied bytes. Rights, crop, actual display size and accessibility remain governed by the brief. Fonts named in a rule are not proof that a font file or licence was supplied.

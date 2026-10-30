@@ -12,6 +12,7 @@ A synthetic product for a test.
 
 ## Imágenes informativas
 
+- E-IMG-2189F24AE9BF3848: Synthetic logo
 - E-IMG-A0A8AF237EC969A8: Synthetic product image
 
 ## Acción pendiente en Instagram
