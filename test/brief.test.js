@@ -109,6 +109,9 @@ test('direction provider uses text-only strict Responses JSON and handles refusa
     const result = await requestCreativeDirections(context, { token: 'synthetic-key', fetchImpl: async (url, options) => {
       assert.equal(url, 'https://api.openai.com/v1/responses');
       const body = JSON.parse(options.body); assert.equal(body.text.format.strict, true); assert.equal(body.store, false);
+      const keywords = (node) => typeof node !== 'object' || node === null ? [] : Array.isArray(node) ? node.flatMap(keywords)
+        : Object.entries(node).flatMap(([key, value]) => key === 'properties' ? Object.values(value).flatMap(keywords) : [key, ...keywords(value)]);
+      assert.deepEqual([...new Set(keywords(body.text.format.schema))].filter((key) => !['type', 'properties', 'required', 'additionalProperties', 'items', 'enum'].includes(key)), []);
       assert.equal(body.input[1].content, JSON.stringify(context)); assert.ok(!options.body.includes('input_image'));
       return Response.json({ status: 'completed', output: [{ type: 'message', content: [{ type: 'output_text', text: JSON.stringify({ directions: fixtureDirections(context) }) }] }] });
     } });
