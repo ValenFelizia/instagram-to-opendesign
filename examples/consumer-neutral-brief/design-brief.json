@@ -150,6 +150,7 @@
     }
   ],
   "pending": [],
+  "acknowledgedMissingInformation": [],
   "accessibility": {
     "schemaVersion": "accessibility-preflight/v1",
     "status": "manual-review",

@@ -32,9 +32,11 @@ The provider interface is `requestCreativeDirections(context, options)`. It uses
 
 Validation checks 2–3 unique directions, different layouts, reading hierarchies and asset treatments, known citations and selected asset IDs. Directions cannot supply copy, fonts or executable code. Free-text rationales remain **creative proposals requiring review**; a JSON schema cannot establish the truth of prose. A single-image treatment uses one asset; paired uses two. Changing colors alone is not an alternative. See `schemas/creative-directions.schema.json` and the synthetic helper in `test/helpers/brief.js`.
 
-`creative-directions.json` stores the suggestions, model, usage and context digest. Changing only `selectedDirectionId` reuses suggestions. Request text, constraints, fit/alt review, source approval, evidence or asset-byte changes invalidate context. Invalid replies, refusals and failures preserve the previous cache and brief. Compilation rejects stale suggestions rather than silently charging again. Refresh preserves the human inputs, previous brief and cache; a changed context still requires renewed review.
+`creative-directions.json` stores the suggestions, model, usage and context digest. Changing only `selectedDirectionId` or `acknowledgedMissingInformation` reuses suggestions. Request text, constraints, fit/alt review, source approval, evidence or asset-byte changes invalidate context. Invalid replies, refusals and failures preserve the previous cache and brief. Compilation rejects stale suggestions rather than silently charging again. Refresh preserves the human inputs, previous brief and cache; a changed context still requires renewed review.
 
 Set `selectedDirectionId` to exactly one proposal ID after reading all alternatives, limits and missing information. Unselected directions stay in the record and do not become execution instructions.
+
+`acknowledgedMissingInformation` records a person's review of the selected direction's `missingInformation`. List items by exact string; a listed item no longer blocks the brief, while unlisted items still do, and the acknowledged items stay in the brief under "Acknowledged missing information".
 
 ## Compile and hand off
 
