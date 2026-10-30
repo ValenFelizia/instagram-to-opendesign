@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { readFile, rm, stat, writeFile } from 'node:fs/promises';
+import { readdir, readFile, rm, stat, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { compileBrief, importDirections, prepareBrief, suggestDirections, validateDirections, validateRequest } from '../src/brief.js';
 import { requestCreativeDirections } from '../src/providers/openai-directions.js';
@@ -124,15 +124,22 @@ test('an approved request logo ships with a single-image direction that does not
   try {
     const { context } = await prepareBrief(fixture.root);
     const directions = fixtureDirections(context);
-    await importDirections(fixture.root, { directions });
     const logoId = fixture.review.entries.find((entry) => entry.role === 'logo').id;
+    const photoId = fixture.review.entries.find((entry) => entry.role !== 'logo').id;
+    directions.find((item) => item.id === 'D-2').assetIds = [logoId];
+    await importDirections(fixture.root, { directions });
     const direction = directions.find((item) => item.id === 'D-1');
-    assert.equal(direction.assetTreatment, 'single-contained'); assert.notEqual(direction.assetIds[0], logoId);
+    assert.equal(direction.assetTreatment, 'single-contained'); assert.deepEqual(direction.assetIds, [photoId]);
     fixture.request.selectedDirectionId = 'D-1';
     await writeFile(path.join(fixture.root, 'design-request.json'), JSON.stringify(fixture.request));
     const { brief, outputDir } = await compileBrief(fixture.root);
-    assert.deepEqual(brief.assets.map((asset) => asset.id).sort(), [direction.assetIds[0], logoId].sort());
+    assert.deepEqual(brief.assets.map((asset) => asset.id).sort(), [photoId, logoId].sort());
     const logo = brief.assets.find((asset) => asset.id === logoId);
     assert.equal((await stat(path.join(outputDir, logo.path))).isFile(), true);
+    fixture.request.selectedDirectionId = 'D-2';
+    await writeFile(path.join(fixture.root, 'design-request.json'), JSON.stringify(fixture.request));
+    const logoOnly = await compileBrief(fixture.root);
+    assert.deepEqual(logoOnly.brief.assets.map((asset) => asset.id), [logoId]);
+    assert.deepEqual((await readdir(path.join(logoOnly.outputDir, 'assets'))).map((file) => path.parse(file).name), [logoId]);
   } finally { await rm(fixture.root, { recursive: true, force: true }); }
 });
