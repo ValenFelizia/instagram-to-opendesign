@@ -68,6 +68,7 @@ test('unknown rights and screenshots with UI remain evidence; a supplied origina
     assert.equal(assets.entries[2].readyForDesign, true);
     assert.equal(assets.entries[2].source.type, 'supplied-local');
     const result = await compilePackage(fixture.prepared, fixture.analysis, fixture.colors, { outputRoot: path.join(fixture.root, 'output') });
+    assert.equal(result.readyAssets, 1);
     const catalog = JSON.parse(await readFile(path.join(result.outputDir, 'source/asset-catalog.json'), 'utf8'));
     assert.ok(catalog.entries.slice(0, 2).every((entry) => entry.path.startsWith('source/images/')));
     assert.ok(catalog.entries[2].path.startsWith('assets/reusable/'));
@@ -83,6 +84,7 @@ test('invalid permission references and duplicate primaries preserve prior catal
     await buildAssetCatalog(fixture.prepared, fixture.analysis);
     const options = { outputRoot: path.join(fixture.root, 'output') };
     const result = await compilePackage(fixture.prepared, fixture.analysis, fixture.colors, options);
+    assert.equal(result.readyAssets, 2);
     const previousCatalog = await readFile(path.join(fixture.root, 'asset-catalog.json'), 'utf8');
     const previousPackage = await readFile(path.join(result.outputDir, 'source/asset-catalog.json'), 'utf8');
     review.entries[0].permission.sourceId = 'S-FAKE';

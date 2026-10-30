@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 import { runPipeline } from '../src/pipeline.js';
+import { noReadyAssetsWarning } from '../src/asset-catalog.js';
 import path from 'node:path';
 import { cleanUsername } from '../src/normalize.js';
 import writer from '../src/writer-guard.cjs';
@@ -39,6 +40,7 @@ try {
     process.exitCode = 2;
   } else {
     console.log(`OpenDesign package: ${result.outputDir}`);
+    if (result.readyAssets === 0) console.warn(noReadyAssetsWarning(path.join('data', cleanUsername(username))));
     const report = result.report;
     console.log(`Brand report: ${report.outputPath}`);
     if (report.translationUsage) console.log(`Translation API usage: ${report.translationUsage.input_tokens ?? '?'} input, ${report.translationUsage.output_tokens ?? '?'} output tokens.`);

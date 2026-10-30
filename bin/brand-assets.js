@@ -19,6 +19,7 @@ try {
   if (mode === '--init' && !args.length) {
     if (await readOptionalJson(file)) throw new Error('Asset review already exists; initialization never overwrites it.');
     await writeJsonAtomically(file, await initializeAssets(prepared)); console.log(file);
+    console.log(`Original photos from outside Instagram go in ${profileDir}/manual/; register each with: pnpm brand:assets ${profileDir} --add manual/<file> (png, jpg, jpeg or webp).`);
   } else if (mode === '--add' && args.length === 1 && /^manual\/[A-Za-z0-9._/-]+\.(png|jpg|jpeg|webp)$/.test(args[0])) {
     const document = await readOptionalJson(file) ?? await initializeAssets(prepared);
     validateAssetReview(document, prepared.source.profile.username);

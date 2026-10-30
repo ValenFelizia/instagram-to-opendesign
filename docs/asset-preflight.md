@@ -21,7 +21,7 @@ Keep actual files and reports in Git-ignored `data/`. Initialization and registr
 
 Changed file bytes invalidate the asset review. Changed permission documents invalidate their approval. Missing current images, unsafe paths, unknown sources and multiple primaries per role reject compilation before replacing a prior output. Update the digest only after renewing human review.
 
-In the compiled package, `source/asset-catalog.json` has remapped local paths. Only `readyForDesign` files go into `assets/reusable/`. Other files and `assets/moodboard.webp` remain analysis references and must not be reused as approved artwork. The catalog keeps exclusions, origin URLs, measured properties and candidate alt/crop information. Permission and manual source snapshots remain inspectable. This adds no keys to OpenDesign's manifest.
+In the compiled package, `source/asset-catalog.json` has remapped local paths. Only `readyForDesign` files go into `assets/reusable/`; when none qualifies, `brand:instagram` and `brand:compile` print a warning because the agent then receives no photos or logo. Other files and `assets/moodboard.webp` remain analysis references and must not be reused as approved artwork. The catalog keeps exclusions, origin URLs, measured properties and candidate alt/crop information. Permission and manual source snapshots remain inspectable. This adds no keys to OpenDesign's manifest.
 
 ## Local verification, 2026-09-30
 

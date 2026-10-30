@@ -339,5 +339,5 @@ export async function compilePackage(prepared, analysis, colorProposals, { outpu
       inputHash: packageContextHash(analysis, colorProposals, decisions, assets.catalog, channel), files: await fileDigests(root) }));
     await validateBuiltPackage(root, slug);
   });
-  return { outputDir, slug, tokens };
+  return { outputDir, slug, tokens, readyAssets: assets.entries.filter((entry) => entry.readyForDesign).length };
 }
