@@ -167,6 +167,11 @@
         "alternatives": []
       },
       {
+        "id": "alt-E-IMG-2189F24AE9BF3848",
+        "status": "manual-review",
+        "instruction": "Check the image purpose in this composition; informative images need useful alternatives, decorative images empty alternatives. A filename or catalog description is not a contextual review."
+      },
+      {
         "id": "alt-E-IMG-A0A8AF237EC969A8",
         "status": "manual-review",
         "instruction": "Check the image purpose in this composition; informative images need useful alternatives, decorative images empty alternatives. A filename or catalog description is not a contextual review."
@@ -333,6 +338,67 @@
     }
   ],
   "assets": [
+    {
+      "id": "E-IMG-2189F24AE9BF3848",
+      "path": "assets/E-IMG-2189F24AE9BF3848.png",
+      "sha256": "37078e81e7483520f8538a10aa75261018bdc000c3e2ba8f64a74001c3944efb",
+      "origin": "original",
+      "role": "logo",
+      "include": true,
+      "primary": false,
+      "permission": {
+        "use": "local-design",
+        "sourceId": "S-REQUEST"
+      },
+      "uiOverlay": false,
+      "subjectBox": null,
+      "alt": {
+        "text": "Synthetic logo",
+        "usage": "unknown"
+      },
+      "stale": false,
+      "readyForDesign": true,
+      "blockers": [],
+      "source": {
+        "type": "instagram",
+        "url": "https://www.instagram.com/example_studio/",
+        "evidenceId": "E-IMG-2189F24AE9BF3848"
+      },
+      "technical": {
+        "width": 80,
+        "height": 60,
+        "aspectRatio": 1.3333333333333333,
+        "format": "png",
+        "hasAlphaChannel": false,
+        "hasTransparentPixels": false,
+        "bytes": 247
+      },
+      "crop": {
+        "x": 0.2890625,
+        "y": 0,
+        "width": 0.421875,
+        "height": 1,
+        "reviewRequired": true,
+        "cutsSubject": false,
+        "note": "Centered cover proposal only; original file is unchanged. Use contain if cropping is inappropriate."
+      },
+      "lowResolution": true,
+      "altSuggestion": {
+        "text": "Synthetic logo",
+        "needsReview": true,
+        "note": "Decide informative/decorative usage for the actual composition; this text is a candidate."
+      },
+      "use": {
+        "id": "E-IMG-2189F24AE9BF3848",
+        "fit": "contain",
+        "cropReviewed": false,
+        "lowResolutionAccepted": true,
+        "alt": {
+          "usage": "informative",
+          "text": "Synthetic logo"
+        }
+      }
+    },
     {
       "id": "E-IMG-A0A8AF237EC969A8",
       "path": "assets/E-IMG-A0A8AF237EC969A8.jpg",

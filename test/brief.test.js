@@ -18,7 +18,7 @@ test('hero and Story briefs preserve copy, bundle local evidence and execute onl
       await writeFile(path.join(fixture.root, 'design-request.json'), JSON.stringify(fixture.request));
       built = await compileBrief(fixture.root);
       assert.equal(built.brief.status, 'ready-for-execution');
-      assert.equal(built.brief.assets.length, 1); assert.equal(built.brief.directions.length, 3);
+      assert.equal(built.brief.assets.length, 2); assert.equal(built.brief.directions.length, 3);
       assert.deepEqual(built.brief.request.copy, fixture.request.copy);
       for (const item of [...built.brief.assets.map((asset) => ({ sourcePath: asset.path })), ...built.brief.evidence,
         ...built.brief.sources.map((source) => ({ sourcePath: source.path }))]) assert.equal((await stat(path.join(built.outputDir, item.sourcePath))).isFile(), true);
@@ -116,5 +116,23 @@ test('direction provider uses text-only strict Responses JSON and handles refusa
     for (const payload of [{ status: 'incomplete' }, { status: 'completed', output: [{ type: 'message', content: [{ type: 'refusal' }] }] }]) {
       await assert.rejects(() => requestCreativeDirections(context, { token: 'synthetic-key', fetchImpl: async () => Response.json(payload) }), /incomplete|refused/);
     }
+  } finally { await rm(fixture.root, { recursive: true, force: true }); }
+});
+
+test('an approved request logo ships with a single-image direction that does not use it', async () => {
+  const fixture = await briefFixture();
+  try {
+    const { context } = await prepareBrief(fixture.root);
+    const directions = fixtureDirections(context);
+    await importDirections(fixture.root, { directions });
+    const logoId = fixture.review.entries.find((entry) => entry.role === 'logo').id;
+    const direction = directions.find((item) => item.id === 'D-1');
+    assert.equal(direction.assetTreatment, 'single-contained'); assert.notEqual(direction.assetIds[0], logoId);
+    fixture.request.selectedDirectionId = 'D-1';
+    await writeFile(path.join(fixture.root, 'design-request.json'), JSON.stringify(fixture.request));
+    const { brief, outputDir } = await compileBrief(fixture.root);
+    assert.deepEqual(brief.assets.map((asset) => asset.id).sort(), [direction.assetIds[0], logoId].sort());
+    const logo = brief.assets.find((asset) => asset.id === logoId);
+    assert.equal((await stat(path.join(outputDir, logo.path))).isFile(), true);
   } finally { await rm(fixture.root, { recursive: true, force: true }); }
 });

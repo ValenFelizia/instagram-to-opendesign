@@ -49,6 +49,8 @@ Both files are built together in `data/<username>/brief/<kind>/` by default, wit
 - `BRIEF.md`: the design agent's readable instruction, exact copy, selected layout/hierarchy/treatment, assets, action, constraints, confirmed rules, uncertain observations, evidence, acceptance criteria and pending review.
 - `design-brief.json`: the same typed record, selected and unselected alternatives, permission provenance, hashes, crop candidates and measured asset properties.
 
+Approved logo assets in the request always ship with the brief, whatever the selected direction's image treatment.
+
 Local compile makes no provider calls. Missing confirmation, objective/headline/audience, selection, required information, crop/alt/resolution review or confirmed-copy conflicts produce `needs-review`, never a ready brief. Invalid references, unapproved assets or stale cache fail before replacing a previous bundle. Existing output directories must contain an importer brief marker; a profile, input folder or unrelated directory cannot be overwritten.
 
 The selected bundle can be reviewed and consumed without an OpenDesign package or installation; see [core and adapter ownership](core-and-adapters.md) and the [synthetic portable brief](../examples/consumer-neutral-brief/). For OpenDesign, use the explicit [delivery command](opendesign-handoff.md) with a matching package and read `BRIEF.md` before composing. Hero acceptance requires a render at 1440 and 390 px wide. Story acceptance requires 1080 × 1920, a text transcript/description, and composer review of the native space. Inspect contrast, keyboard/focus and image alternatives in the actual hero. All publication still requires human review.
