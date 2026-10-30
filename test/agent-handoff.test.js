@@ -64,9 +64,15 @@ test('pending exports remain exploration only; stale inputs preserve the previou
   } finally { await rm(fixture.root, { recursive: true, force: true }); }
 });
 
-test('handoff without a design request rejects with a stable code instead of a raw ENOENT', async () => {
+test('handoff without a design request rejects with a stable code and recovery guidance', async () => {
   const fixture = await profileFixture();
   try {
-    await assert.rejects(() => exportAgentHandoff(fixture.root), { code: 'DESIGN_REQUEST_MISSING' });
+    await assert.rejects(() => exportAgentHandoff(fixture.root), (error) => {
+      assert.equal(error.code, 'DESIGN_REQUEST_MISSING');
+      for (const fragment of [path.join(fixture.root, 'design-request.json'), 'brand:brief', '--init', 'docs/design-brief.md', 'brand-output/']) {
+        assert.ok(error.message.includes(fragment), `message names ${fragment}`);
+      }
+      return true;
+    });
   } finally { await rm(fixture.root, { recursive: true, force: true }); }
 });
