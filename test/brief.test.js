@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { readFile, rm, stat, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { compileBrief, importDirections, prepareBrief, suggestDirections, validateDirections, validateRequest } from '../src/brief.js';
-import { requestCreativeDirections } from '../src/providers/openai-directions.js';
+import { DIRECTIONS_SCHEMA, requestCreativeDirections } from '../src/providers/openai-directions.js';
 import { briefFixture, fixtureDirections } from './helpers/brief.js';
 
 test('hero and Story briefs preserve copy, bundle local evidence and execute only a selected distinct direction', async () => {
@@ -112,6 +112,8 @@ test('direction provider uses text-only strict Responses JSON and handles refusa
       const keywords = (node) => typeof node !== 'object' || node === null ? [] : Array.isArray(node) ? node.flatMap(keywords)
         : Object.entries(node).flatMap(([key, value]) => key === 'properties' ? Object.values(value).flatMap(keywords) : [key, ...keywords(value)]);
       assert.deepEqual([...new Set(keywords(body.text.format.schema))].filter((key) => !['type', 'properties', 'required', 'additionalProperties', 'items', 'enum'].includes(key)), []);
+      assert.deepEqual(body.text.format.schema, JSON.parse(JSON.stringify(DIRECTIONS_SCHEMA),
+        (key, value) => ['minItems', 'maxItems', 'minLength', 'pattern', 'uniqueItems'].includes(key) ? undefined : value));
       assert.equal(body.input[1].content, JSON.stringify(context)); assert.ok(!options.body.includes('input_image'));
       return Response.json({ status: 'completed', output: [{ type: 'message', content: [{ type: 'output_text', text: JSON.stringify({ directions: fixtureDirections(context) }) }] }] });
     } });
