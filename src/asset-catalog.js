@@ -35,6 +35,10 @@ export async function initializeAssets(prepared) {
       note: image.review.notes ?? '' }))) };
 }
 
+export function noReadyAssetsWarning(profileDir) {
+  return `No asset is approved for design use, so the package gives the agent no photos or logo. Review permissions in ${path.join(profileDir, 'asset-review.json')} (create it with \`pnpm brand:assets ${profileDir} --init\`), register supplied originals with \`--add manual/<file>\`, then compile again.`;
+}
+
 export function proposedCrop(width, height, target, subjectBox) {
   const ratio = target.width / target.height;
   let cropWidth = 1, cropHeight = 1;

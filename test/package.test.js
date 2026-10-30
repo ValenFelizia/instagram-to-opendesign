@@ -77,6 +77,7 @@ test('pauses for review, resumes with one command, and reuses paid stages', asyn
     assert.equal(built.status, 'complete');
     assert.equal(calls.analysis, 1); assert.equal(calls.colors, 1);
     const manifest = JSON.parse(await readFile(path.join(built.outputDir, 'manifest.json'), 'utf8'));
+    assert.equal(built.readyAssets, 0);
     assert.equal(manifest.id, 'example-studio');
     assert.equal(manifest.source.type, 'local');
     assert.equal(manifest.sourceFiles, undefined);
@@ -96,7 +97,7 @@ test('pauses for review, resumes with one command, and reuses paid stages', asyn
     assert.equal(rerun.status, 'complete');
     assert.equal(rerun.analyzed, false); assert.equal(rerun.colorProposed, false);
     assert.equal(calls.analysis, 1); assert.equal(calls.colors, 1);
-    await compileExisting(files.profileDir, { outputRoot: files.outputRoot });
+    assert.equal((await compileExisting(files.profileDir, { outputRoot: files.outputRoot })).readyAssets, 0);
     assert.equal(calls.analysis, 1); assert.equal(calls.colors, 1);
   } finally { await rm(files.root, { recursive: true, force: true }); }
 });
