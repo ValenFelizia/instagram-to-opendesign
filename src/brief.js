@@ -67,7 +67,11 @@ export async function prepareBrief(profileDir, { requestDocument } = {}) {
   const analysis = JSON.parse(await readFile(path.join(prepared.root, 'brand-analysis.json'), 'utf8'));
   await validateAnalysis(analysis, prepared);
   if (JSON.stringify(analysis.evidence) !== JSON.stringify(prepared.evidence)) throw new Error('Analysis evidence is stale; re-analyze before briefing.');
-  const request = requestDocument ?? JSON.parse(await readFile(path.join(prepared.root, 'design-request.json'), 'utf8'));
+  const requestPath = path.join(prepared.root, 'design-request.json');
+  const request = requestDocument ?? JSON.parse(await readFile(requestPath, 'utf8').catch((error) => {
+    if (error.code !== 'ENOENT') throw error;
+    throw Object.assign(new Error(`Design request is missing: ${requestPath}. Create one with "pnpm brand:brief data/<profile> --init <kind>" and fill it as described in docs/design-brief.md, or use the compiled OpenDesign package in brand-output/<slug>/ for task-free brand context.`), { code: 'DESIGN_REQUEST_MISSING' });
+  }));
   validateRequest(request, prepared.source.profile.username, { versionedTask: Boolean(requestDocument) });
   const channel = ['instagram-story', 'promotional-image'].includes(request.kind) ? 'social' : 'website';
   const decisions = await loadDecisions(prepared, analysis, { channel });

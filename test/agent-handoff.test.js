@@ -4,6 +4,7 @@ import { cp, mkdir, readFile, rm, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { spawnSync } from 'node:child_process';
 import { briefFixture, fixtureDirections } from './helpers/brief.js';
+import { profileFixture } from './helpers/profile.js';
 import { exportAgentHandoff, verifyAgentHandoff, importDirections, prepareBrief } from '../src/core.js';
 import { digest } from '../src/local.js';
 
@@ -60,5 +61,12 @@ test('pending exports remain exploration only; stale inputs preserve the previou
     await mkdir(path.join(built.outputDir, 'source'));
     await writeFile(path.join(built.outputDir, 'source/package-context.json'), '{}');
     await assert.rejects(() => verifyAgentHandoff(built.outputDir), /inventory changed/);
+  } finally { await rm(fixture.root, { recursive: true, force: true }); }
+});
+
+test('handoff without a design request rejects with a stable code instead of a raw ENOENT', async () => {
+  const fixture = await profileFixture();
+  try {
+    await assert.rejects(() => exportAgentHandoff(fixture.root), { code: 'DESIGN_REQUEST_MISSING' });
   } finally { await rm(fixture.root, { recursive: true, force: true }); }
 });
