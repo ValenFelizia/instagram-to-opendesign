@@ -143,3 +143,79 @@ test('an approved request logo ships with a single-image direction that does not
     assert.deepEqual((await readdir(path.join(logoOnly.outputDir, 'assets'))).map((file) => path.parse(file).name), [logoId]);
   } finally { await rm(fixture.root, { recursive: true, force: true }); }
 });
+
+test('a selected direction missing-information item blocks the brief until its exact string is acknowledged', async () => {
+  const fixture = await briefFixture();
+  try {
+    const { context } = await prepareBrief(fixture.root);
+    const directions = fixtureDirections(context);
+    const missing = 'Opening hours were not supplied.';
+    directions[0].missingInformation = [missing];
+    await importDirections(fixture.root, { directions });
+    fixture.request.selectedDirectionId = 'D-1';
+    await writeFile(path.join(fixture.root, 'design-request.json'), JSON.stringify(fixture.request));
+    const built = await compileBrief(fixture.root);
+    assert.equal(built.brief.status, 'needs-review');
+    assert.deepEqual(built.brief.pending, [missing]);
+  } finally { await rm(fixture.root, { recursive: true, force: true }); }
+});
+
+test('acknowledging exact missing-information strings clears only those items and keeps them visible', async () => {
+  const fixture = await briefFixture();
+  try {
+    const { context } = await prepareBrief(fixture.root);
+    const directions = fixtureDirections(context);
+    const hours = 'Opening hours were not supplied.';
+    const fonts = 'No verified font rules were supplied.';
+    directions[0].missingInformation = [hours, fonts];
+    await importDirections(fixture.root, { directions });
+    fixture.request.selectedDirectionId = 'D-1';
+    const compile = async (acknowledgedMissingInformation) => {
+      fixture.request.acknowledgedMissingInformation = acknowledgedMissingInformation;
+      await writeFile(path.join(fixture.root, 'design-request.json'), JSON.stringify(fixture.request));
+      return compileBrief(fixture.root);
+    };
+
+    let built = await compile([hours.slice(0, -1)]);
+    assert.equal(built.brief.status, 'needs-review');
+    assert.deepEqual(built.brief.pending, [hours, fonts]);
+    assert.deepEqual(built.brief.acknowledgedMissingInformation, []);
+
+    built = await compile([hours]);
+    assert.equal(built.brief.status, 'needs-review');
+    assert.deepEqual(built.brief.pending, [fonts]);
+    assert.deepEqual(built.brief.acknowledgedMissingInformation, [hours]);
+
+    built = await compile([hours, fonts]);
+    assert.equal(built.brief.status, 'ready-for-execution');
+    assert.deepEqual(built.brief.pending, []);
+    assert.deepEqual(built.brief.acknowledgedMissingInformation, [hours, fonts]);
+    const markdown = await readFile(path.join(built.outputDir, 'BRIEF.md'), 'utf8');
+    const acknowledgedSection = markdown.split('## Acknowledged missing information')[1].split('## Ideation record')[0];
+    assert.ok(acknowledgedSection.includes(JSON.stringify(hours)) && acknowledgedSection.includes(JSON.stringify(fonts)));
+    assert.match(markdown.split('## Pending review')[1].split('## Acknowledged missing information')[0], /No input blockers/);
+  } finally { await rm(fixture.root, { recursive: true, force: true }); }
+});
+
+test('acknowledging missing information reuses the cached directions without regenerating them', async () => {
+  const fixture = await briefFixture();
+  try {
+    const missing = 'No verified font rules were supplied.';
+    let calls = 0;
+    const provider = async (context) => {
+      calls++;
+      const directions = fixtureDirections(context);
+      directions[0].missingInformation = [missing];
+      return { directions };
+    };
+    assert.equal((await suggestDirections(fixture.root, { provider })).reused, false);
+    fixture.request.selectedDirectionId = 'D-1';
+    await writeFile(path.join(fixture.root, 'design-request.json'), JSON.stringify(fixture.request));
+    assert.equal((await compileBrief(fixture.root)).brief.status, 'needs-review');
+    fixture.request.acknowledgedMissingInformation = [missing];
+    await writeFile(path.join(fixture.root, 'design-request.json'), JSON.stringify(fixture.request));
+    assert.equal((await compileBrief(fixture.root)).brief.status, 'ready-for-execution');
+    assert.equal((await suggestDirections(fixture.root, { provider })).reused, true);
+    assert.equal(calls, 1);
+  } finally { await rm(fixture.root, { recursive: true, force: true }); }
+});
