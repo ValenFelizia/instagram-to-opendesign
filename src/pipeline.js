@@ -35,14 +35,16 @@ export async function reviewCheckpoint(profileDir) {
   const images = new Map(index.images.map((item) => [item.id, item]));
   const posts = new Map(source.posts.map((post) => [post.id, post]));
   const pending = [];
+  let excludedCollaborators = 0;
   for (const id of index.selectedImageIds) {
     const image = images.get(id);
     if (!image) throw new Error(`Selected image is missing from the index: ${id}`);
     const own = id === 'profile/avatar' && image.postId == null ||
       isOwn(posts.get(image.postId)?.ownerUsername, source.profile.username);
-    if (own && !['brand-graphic', 'product-photo', 'mixed'].includes(reviews[id]?.classification)) pending.push(id);
+    if (!own) excludedCollaborators++;
+    else if (!['brand-graphic', 'product-photo', 'mixed'].includes(reviews[id]?.classification)) pending.push(id);
   }
-  return { pending, selected: index.selectedImageIds.length,
+  return { pending, excludedCollaborators, selected: index.selectedImageIds.length,
     contactSheet: path.resolve(profileDir, 'evidence/contact-sheet.svg'),
     reviewFile: path.resolve(profileDir, 'evidence/review.json') };
 }

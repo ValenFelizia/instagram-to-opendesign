@@ -6,7 +6,8 @@ import os from 'node:os';
 import sharp from 'sharp';
 import { ANALYSIS_TOPICS } from '../src/providers/openai.js';
 import { requestColorCandidates } from '../src/providers/openai-colors.js';
-import { compileExisting, runPipeline } from '../src/pipeline.js';
+import { compileExisting, reviewCheckpoint, runPipeline } from '../src/pipeline.js';
+import { profileFixture } from './helpers/profile.js';
 
 const unknown = () => ANALYSIS_TOPICS.map((topic) => ({
   topic, value: null, confidence: null, evidenceIds: [],
@@ -67,6 +68,10 @@ test('pauses for review, resumes with one command, and reuses paid stages', asyn
     const paused = await runPipeline('@example_studio', options);
     assert.equal(paused.status, 'review-required');
     assert.deepEqual(paused.pending, ['OWN/media-1']);
+    const fixtureSource = JSON.parse(await readFile(path.join(files.profileDir, 'instagram-source.json'), 'utf8'));
+    const collaboratorImages = fixtureSource.posts.filter((post) => post.ownerUsername !== 'example_studio')
+      .reduce((total, post) => total + post.media.length, 0);
+    assert.equal(paused.excludedCollaborators, collaboratorImages);
     assert.equal(calls.analysis, 0); assert.equal(calls.colors, 0);
     const reviewPath = path.join(files.profileDir, 'evidence/review.json');
     const review = JSON.parse(await readFile(reviewPath, 'utf8'));
@@ -215,4 +220,11 @@ test('pipeline journals separate provider attempts, cache reuse and rejected ana
     assert.deepEqual(await readFile(path.join(files.profileDir, 'brand-analysis.json')), prior);
     assert.deepEqual(JSON.parse(await readFile(built.runRecordPath, 'utf8')), record);
   } finally { await rm(files.root, { recursive: true, force: true }); }
+});
+
+test('review checkpoint reports no excluded collaborators for a profile-owned contact sheet', async () => {
+  const f = await profileFixture();
+  try {
+    assert.equal((await reviewCheckpoint(f.root)).excludedCollaborators, 0);
+  } finally { await rm(f.root, { recursive: true, force: true }); }
 });
