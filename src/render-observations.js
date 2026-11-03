@@ -46,15 +46,15 @@ export function collectRenderObservations() {
     id: node.getAttribute('data-asset-id'), src: node.getAttribute('src'), visible: visible(node), rect: rect(node),
     fit: getComputedStyle(node).objectFit, alt: node.getAttribute('alt'),
   }));
+  const control = (node) => {
+    const box = node.getBoundingClientRect(), x = box.x + box.width / 2, y = box.y + box.height / 2;
+    const occluded = x >= 0 && x < window.innerWidth && y >= 0 && y < window.innerHeight ? !node.contains(document.elementFromPoint(x, y)) : null;
+    return { tag: node.tagName.toLowerCase(), label: node.innerText, href: node.getAttribute('href'), visible: visible(node), occluded, rect: rect(node) };
+  };
   const actionNode = document.querySelector('[data-action]');
-  let occluded = null;
-  if (actionNode) {
-    const box = actionNode.getBoundingClientRect(), x = box.x + box.width / 2, y = box.y + box.height / 2;
-    if (x >= 0 && x < window.innerWidth && y >= 0 && y < window.innerHeight) occluded = !actionNode.contains(document.elementFromPoint(x, y));
-  }
-  const action = actionNode ? { tag: actionNode.tagName.toLowerCase(), label: actionNode.innerText,
-    href: actionNode.getAttribute('href'), visible: visible(actionNode), occluded, rect: rect(actionNode) } : null;
+  const actions = [...document.querySelectorAll('[data-action]')].filter((node) => node.getAttribute('data-action'))
+    .map((node) => ({ id: node.getAttribute('data-action'), ...control(node) }));
   return { schemaVersion: 'render-observations/v1', viewport: { width: window.innerWidth, height: window.innerHeight },
     visibleText: document.body.innerText, overflow: document.documentElement.scrollWidth > window.innerWidth,
-    copy, assets, action };
+    copy, assets, action: actionNode ? control(actionNode) : null, actions };
 }
