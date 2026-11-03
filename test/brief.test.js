@@ -2,8 +2,10 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readdir, readFile, rm, stat, writeFile } from 'node:fs/promises';
 import path from 'node:path';
+import sharp from 'sharp';
 import { compileBrief, importDirections, prepareBrief, suggestDirections, validateDirections, validateRequest } from '../src/brief.js';
 import { DIRECTIONS_SCHEMA, requestCreativeDirections } from '../src/providers/openai-directions.js';
+import { digest } from '../src/local.js';
 import { briefFixture, fixtureDirections } from './helpers/brief.js';
 
 test('hero and Story briefs preserve copy, bundle local evidence and execute only a selected distinct direction', async () => {
@@ -223,4 +225,83 @@ test('acknowledging missing information reuses the cached directions without reg
     assert.equal((await suggestDirections(fixture.root, { provider })).reused, true);
     assert.equal(calls, 1);
   } finally { await rm(fixture.root, { recursive: true, force: true }); }
+});
+
+test('crop and resolution checks evaluate against request asset slot instead of full hero canvas', async () => {
+  const fixture = await briefFixture('web-hero');
+  try {
+    const photoEntry = fixture.review.entries.find((entry) => entry.role !== 'logo');
+    const photoId = photoEntry.id;
+    const bytes = await sharp({ create: { width: 1200, height: 1500, channels: 3, background: '#123456' } }).jpeg().toBuffer();
+    await writeFile(path.join(fixture.root, photoEntry.path), bytes);
+    photoEntry.sha256 = digest(bytes);
+    photoEntry.subjectBox = { x: 0.1, y: 0.1, width: 0.8, height: 0.8 };
+    await writeFile(path.join(fixture.root, 'asset-review.json'), JSON.stringify(fixture.review));
+
+    const reqAsset = fixture.request.assets.find((item) => item.id === photoId);
+    reqAsset.fit = 'cover';
+    reqAsset.cropReviewed = false;
+    reqAsset.lowResolutionAccepted = false;
+    await writeFile(path.join(fixture.root, 'design-request.json'), JSON.stringify(fixture.request));
+
+    const stateWithoutSlot = await prepareBrief(fixture.root);
+    assert.ok(stateWithoutSlot.blockers.some((b) => b.includes(`Review crop affecting/unknown subject: ${photoId}`)));
+    assert.ok(stateWithoutSlot.blockers.some((b) => b.includes(`Review resolution for actual slot: ${photoId}`)));
+    const assetWithout = stateWithoutSlot.selected.find((a) => a.id === photoId);
+    assert.equal(assetWithout.lowResolution, true);
+    assert.deepEqual(assetWithout.checkedAgainst, { width: 1440, height: 720, source: 'canvas' });
+
+    reqAsset.slot = { width: 560, height: 700 };
+    await writeFile(path.join(fixture.root, 'design-request.json'), JSON.stringify(fixture.request));
+
+    const stateWithSlot = await prepareBrief(fixture.root);
+    assert.ok(!stateWithSlot.blockers.some((b) => b.includes(`Review crop affecting/unknown subject: ${photoId}`)));
+    assert.ok(!stateWithSlot.blockers.some((b) => b.includes(`Review resolution for actual slot: ${photoId}`)));
+    const assetWith = stateWithSlot.selected.find((a) => a.id === photoId);
+    assert.equal(assetWith.lowResolution, false);
+    assert.deepEqual(assetWith.checkedAgainst, { width: 560, height: 700, source: 'slot' });
+
+    fixture.request.selectedDirectionId = 'D-1';
+    await writeFile(path.join(fixture.root, 'design-request.json'), JSON.stringify(fixture.request));
+    await importDirections(fixture.root, { directions: fixtureDirections(stateWithSlot.context) });
+
+    const builtWithSlot = await compileBrief(fixture.root);
+    const mdWithSlot = await readFile(path.join(builtWithSlot.outputDir, 'BRIEF.md'), 'utf8');
+    assert.match(mdWithSlot, /Crop and resolution checked against the 560 × 700 px slot\./);
+
+    delete reqAsset.slot;
+    reqAsset.cropReviewed = true;
+    reqAsset.lowResolutionAccepted = true;
+    await writeFile(path.join(fixture.root, 'design-request.json'), JSON.stringify(fixture.request));
+    const stateWithout = await prepareBrief(fixture.root);
+    await importDirections(fixture.root, { directions: fixtureDirections(stateWithout.context) });
+    const builtWithoutSlot = await compileBrief(fixture.root);
+    const mdWithoutSlot = await readFile(path.join(builtWithoutSlot.outputDir, 'BRIEF.md'), 'utf8');
+    assert.match(mdWithoutSlot, /Crop and resolution checked against the full 1440 × 720 canvas\./);
+  } finally { await rm(fixture.root, { recursive: true, force: true }); }
+});
+
+test('request schemas enforce slot constraints and reject invalid dimensions', () => {
+  const req = {
+    schemaVersion: 'design-request/v1', username: 'example_studio', kind: 'web-hero',
+    objective: 'Test', audience: 'Audience', sourceId: 'S-1', copy: [{ id: 'headline', text: 'Head' }],
+    action: { type: 'none', label: null, url: null, reservedSpace: null }, constraints: [], selectedDirectionId: null,
+    assets: [{ id: 'A-1', fit: 'cover', cropReviewed: false, lowResolutionAccepted: false, alt: { usage: 'decorative', text: '' }, slot: { width: 560, height: 700 } }],
+  };
+  assert.doesNotThrow(() => validateRequest(req, 'example_studio'));
+
+  const badZero = structuredClone(req); badZero.assets[0].slot.width = 0;
+  assert.throws(() => validateRequest(badZero, 'example_studio'), /Invalid design request/);
+
+  const badMissing = structuredClone(req); delete badMissing.assets[0].slot.height;
+  assert.throws(() => validateRequest(badMissing, 'example_studio'), /Invalid design request/);
+
+  const badExtra = structuredClone(req); badExtra.assets[0].slot.extra = true;
+  assert.throws(() => validateRequest(badExtra, 'example_studio'), /Invalid design request/);
+
+  const v2 = { ...req, schemaVersion: 'design-request/v2', pageScope: null, inferenceIds: [] };
+  assert.doesNotThrow(() => validateRequest(v2, 'example_studio', { versionedTask: true }));
+
+  const v2Bad = structuredClone(v2); v2Bad.assets[0].slot.width = -1;
+  assert.throws(() => validateRequest(v2Bad, 'example_studio', { versionedTask: true }), /Invalid design request/);
 });

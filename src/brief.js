@@ -3,7 +3,7 @@ import path from 'node:path';
 import { standaloneRequests } from './request-checkpoints.js';
 import Ajv2020 from 'ajv/dist/2020.js';
 import { prepareAnalysis, validateAnalysis } from './analyze.js';
-import { buildAssetCatalog } from './asset-catalog.js';
+import { buildAssetCatalog, proposedCrop } from './asset-catalog.js';
 import { buildDirectoryAtomically, writeJsonAtomically } from './atomic.js';
 import { loadDecisions } from './decisions.js';
 import { accessibilityPreflight, accessibilityMarkdown, validateAccessibilityPlan } from './accessibility.js';
@@ -85,7 +85,14 @@ export async function prepareBrief(profileDir, { requestDocument } = {}) {
     const asset = entries.find((entry) => entry.id === use.id);
     if (!asset) throw new Error(`Unknown request asset: ${use.id}`);
     if (!asset.readyForDesign) throw new Error(`Request asset is not approved for design: ${use.id}: ${asset.blockers.join('; ')}`);
-    return { ...asset, use };
+    const crop = use.slot ? proposedCrop(asset.technical.width, asset.technical.height, use.slot, asset.subjectBox) : asset.crop;
+    const lowResolution = use.slot
+      ? asset.technical.width < 2 * use.slot.width || asset.technical.height < 2 * use.slot.height
+      : asset.lowResolution;
+    const checkedAgainst = use.slot
+      ? { width: use.slot.width, height: use.slot.height, source: 'slot' }
+      : { width: catalog.target.width, height: catalog.target.height, source: 'canvas' };
+    return { ...asset, use, crop, lowResolution, checkedAgainst };
   });
   const blockers = [];
   if (!request.objective.trim()) blockers.push('Objective is missing.');
@@ -201,10 +208,17 @@ export function briefMarkdown(brief) {
     `Do not invent prices, stock, products, people, fonts or additional copy. Confirmation: ${brief.request.sourceId ?? 'pending'} in the source registry below.\n\n` +
     `## Execute only the selected direction\n\n${selected ? `${layout}\n\n${HIERARCHY[selected.hierarchy]}\n\n${TREATMENT[selected.assetTreatment]}` : 'Pending human selection.'}\n\n` +
     `Use only the files below. Proposal rationales and unselected alternatives are records of ideation, not competing execution instructions.\n\n` +
-    `## Selected assets\n\n${brief.assets.map((asset) => `- ${asset.id}: [${asset.role}](${asset.path}); ${asset.technical.width}×${asset.technical.height}; fit **${asset.use.fit}**.\n` +
-      `  - Image alternative (${asset.use.alt.usage}): ${quoted(asset.use.alt.text)}. Permission source: ${asset.permission.sourceId}.\n` +
-      `  - ${asset.use.fit === 'contain' ? 'Keep the whole original; do not apply the catalog cover-crop candidate.' : `Cover crop candidate: ${quoted(asset.crop)}; renewed visual review remains part of render acceptance.`}\n` +
-      `  - ${asset.lowResolution ? asset.use.lowResolutionAccepted ? 'Low resolution accepted for the actual slot; inspect sharpness in the render.' : 'Resolution review is pending.' : 'Resolution meets the provisional image slot.'}`).join('\n') || 'Pending.'}\n\n` +
+    `## Selected assets\n\n${brief.assets.map((asset) => {
+      const slot = asset.checkedAgainst ?? { width: brief.request?.target?.width ?? (brief.kind === 'instagram-story' ? 1080 : 1440), height: brief.request?.target?.height ?? (brief.kind === 'instagram-story' ? 1920 : 720), source: 'canvas' };
+      const checkedNote = slot.source === 'slot'
+        ? `Crop and resolution checked against the ${slot.width} \u00d7 ${slot.height} px slot.`
+        : `Crop and resolution checked against the full ${slot.width} \u00d7 ${slot.height} canvas.`;
+      return `- ${asset.id}: [${asset.role}](${asset.path}); ${asset.technical.width}×${asset.technical.height}; fit **${asset.use.fit}**.\n` +
+        `  - Image alternative (${asset.use.alt.usage}): ${quoted(asset.use.alt.text)}. Permission source: ${asset.permission.sourceId}.\n` +
+        `  - ${asset.use.fit === 'contain' ? 'Keep the whole original; do not apply the catalog cover-crop candidate.' : `Cover crop candidate: ${quoted(asset.crop)}; renewed visual review remains part of render acceptance.`}\n` +
+        `  - ${asset.lowResolution ? asset.use.lowResolutionAccepted ? 'Low resolution accepted for the actual slot; inspect sharpness in the render.' : 'Resolution review is pending.' : 'Resolution meets the provisional image slot.'}\n` +
+        `  - ${checkedNote}`;
+    }).join('\n') || 'Pending.'}\n\n` +
     `## Action\n\n${quoted(brief.request.action)}\n\n${brief.kind === 'instagram-story' ? 'Native sticker space is a reservation only. Do not draw a fake functioning link/button. Review space and destination in Instagram composer; coordinates are not a permanent platform guarantee. Keep supplied copy clear of this area.' : 'If a link is requested, use a semantic anchor with the exact label and destination, keyboard access and visible focus.'}\n\n` +
     `## Constraints\n\n${brief.request.constraints.map((item) => `- ${quoted(item)}`).join('\n') || '- No additional request constraints.'}\n\n` +
     `## Verified brand rules\n\n${brief.verifiedRules.map((item) => `- ${item.kind}/${item.target}: ${quoted(item.value)}; source ${item.sourceId}.`).join('\n') || 'No confirmed brand rules; retain uncertainty.'}\n\n` +
