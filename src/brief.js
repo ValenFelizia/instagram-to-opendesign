@@ -85,14 +85,11 @@ export async function prepareBrief(profileDir, { requestDocument } = {}) {
     const asset = entries.find((entry) => entry.id === use.id);
     if (!asset) throw new Error(`Unknown request asset: ${use.id}`);
     if (!asset.readyForDesign) throw new Error(`Request asset is not approved for design: ${use.id}: ${asset.blockers.join('; ')}`);
-    const crop = use.slot ? proposedCrop(asset.technical.width, asset.technical.height, use.slot, asset.subjectBox) : asset.crop;
-    const lowResolution = use.slot
-      ? asset.technical.width < 2 * use.slot.width || asset.technical.height < 2 * use.slot.height
-      : asset.lowResolution;
-    const checkedAgainst = use.slot
-      ? { width: use.slot.width, height: use.slot.height, source: 'slot' }
-      : { width: catalog.target.width, height: catalog.target.height, source: 'canvas' };
-    return { ...asset, use, crop, lowResolution, checkedAgainst };
+    // Without a slot the entry stays byte-identical, so earlier direction caches and compiled briefs stay current.
+    if (!use.slot) return { ...asset, use };
+    const { width, height } = use.slot;
+    return { ...asset, use, crop: proposedCrop(asset.technical.width, asset.technical.height, use.slot, asset.subjectBox),
+      lowResolution: asset.technical.width < 2 * width || asset.technical.height < 2 * height, checkedAgainst: { width, height } };
   });
   const blockers = [];
   if (!request.objective.trim()) blockers.push('Objective is missing.');
@@ -210,8 +207,7 @@ export function briefMarkdown(brief) {
     `Use only the files below. Proposal rationales and unselected alternatives are records of ideation, not competing execution instructions.\n\n` +
     `## Selected assets\n\n${brief.assets.map((asset) => {
       const slot = asset.checkedAgainst;
-      // Briefs compiled before slot checks carry no checkedAgainst; omitting the line keeps them byte-identical for delivery.
-      const checked = !slot ? '' : `\n  - Crop and resolution checked against the ${slot.source === 'slot' ? `${slot.width} × ${slot.height} px slot` : `full ${slot.width} × ${slot.height} canvas`}.`;
+      const checked = slot ? `\n  - Crop and resolution checked against the ${slot.width} × ${slot.height} px slot, not the full canvas.` : '';
       return `- ${asset.id}: [${asset.role}](${asset.path}); ${asset.technical.width}×${asset.technical.height}; fit **${asset.use.fit}**.\n` +
         `  - Image alternative (${asset.use.alt.usage}): ${quoted(asset.use.alt.text)}. Permission source: ${asset.permission.sourceId}.\n` +
         `  - ${asset.use.fit === 'contain' ? 'Keep the whole original; do not apply the catalog cover-crop candidate.' : `Cover crop candidate: ${quoted(asset.crop)}; renewed visual review remains part of render acceptance.`}\n` +

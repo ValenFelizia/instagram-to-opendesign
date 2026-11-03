@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { readdir, readFile, rm, stat, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import sharp from 'sharp';
-import { briefMarkdown, compileBrief, importDirections, prepareBrief, suggestDirections, validateDirections, validateRequest } from '../src/brief.js';
+import { compileBrief, importDirections, prepareBrief, suggestDirections, validateDirections, validateRequest } from '../src/brief.js';
 import { DIRECTIONS_SCHEMA, requestCreativeDirections } from '../src/providers/openai-directions.js';
 import { digest } from '../src/local.js';
 import { briefFixture, fixtureDirections } from './helpers/brief.js';
@@ -249,7 +249,7 @@ test('crop and resolution checks evaluate against request asset slot instead of 
     assert.ok(stateWithoutSlot.blockers.some((b) => b.includes(`Review resolution for actual slot: ${photoId}`)));
     const assetWithout = stateWithoutSlot.selected.find((a) => a.id === photoId);
     assert.equal(assetWithout.lowResolution, true);
-    assert.deepEqual(assetWithout.checkedAgainst, { width: 1440, height: 720, source: 'canvas' });
+    assert.equal(assetWithout.checkedAgainst, undefined);
 
     reqAsset.slot = { width: 560, height: 700 };
     await writeFile(path.join(fixture.root, 'design-request.json'), JSON.stringify(fixture.request));
@@ -259,7 +259,7 @@ test('crop and resolution checks evaluate against request asset slot instead of 
     assert.ok(!stateWithSlot.blockers.some((b) => b.includes(`Review resolution for actual slot: ${photoId}`)));
     const assetWith = stateWithSlot.selected.find((a) => a.id === photoId);
     assert.equal(assetWith.lowResolution, false);
-    assert.deepEqual(assetWith.checkedAgainst, { width: 560, height: 700, source: 'slot' });
+    assert.deepEqual(assetWith.checkedAgainst, { width: 560, height: 700 });
 
     fixture.request.selectedDirectionId = 'D-1';
     await writeFile(path.join(fixture.root, 'design-request.json'), JSON.stringify(fixture.request));
@@ -267,7 +267,7 @@ test('crop and resolution checks evaluate against request asset slot instead of 
 
     const builtWithSlot = await compileBrief(fixture.root);
     const mdWithSlot = await readFile(path.join(builtWithSlot.outputDir, 'BRIEF.md'), 'utf8');
-    assert.match(mdWithSlot, /Crop and resolution checked against the 560 × 700 px slot\./);
+    assert.match(mdWithSlot, /Crop and resolution checked against the 560 × 700 px slot, not the full canvas\./);
 
     delete reqAsset.slot;
     reqAsset.cropReviewed = true;
@@ -277,7 +277,7 @@ test('crop and resolution checks evaluate against request asset slot instead of 
     await importDirections(fixture.root, { directions: fixtureDirections(stateWithout.context) });
     const builtWithoutSlot = await compileBrief(fixture.root);
     const mdWithoutSlot = await readFile(path.join(builtWithoutSlot.outputDir, 'BRIEF.md'), 'utf8');
-    assert.match(mdWithoutSlot, /Crop and resolution checked against the full 1440 × 720 canvas\./);
+    assert.doesNotMatch(mdWithoutSlot, /checked against/);
   } finally { await rm(fixture.root, { recursive: true, force: true }); }
 });
 
@@ -306,17 +306,16 @@ test('request schemas enforce slot constraints and reject invalid dimensions', (
   assert.throws(() => validateRequest(v2Bad, 'example_studio', { versionedTask: true }), /Invalid design request/);
 });
 
-test('a brief compiled before slot checks renders unchanged, so delivery still matches its BRIEF.md', async () => {
+test('a request without slots keeps the asset context and input hash it had before slot checks', async () => {
   const fixture = await briefFixture();
   try {
-    const { context } = await prepareBrief(fixture.root);
-    await importDirections(fixture.root, { directions: fixtureDirections(context) });
-    fixture.request.selectedDirectionId = 'D-1';
+    const before = await prepareBrief(fixture.root);
+    for (const asset of before.context.assets) assert.equal('checkedAgainst' in asset, false);
+    fixture.request.assets[0].slot = { width: 560, height: 700 };
     await writeFile(path.join(fixture.root, 'design-request.json'), JSON.stringify(fixture.request));
-    const { brief } = await compileBrief(fixture.root);
-    const legacy = structuredClone(brief); for (const asset of legacy.assets) delete asset.checkedAgainst;
-    assert.match(briefMarkdown(brief), /checked against the full 1440 × 720 canvas/);
-    assert.doesNotMatch(briefMarkdown(legacy), /checked against/);
-    assert.equal(briefMarkdown(legacy), briefMarkdown(brief).replace(/\n  - Crop and resolution checked against [^\n]+/g, ''));
+    assert.notEqual((await prepareBrief(fixture.root)).inputHash, before.inputHash);
+    delete fixture.request.assets[0].slot;
+    await writeFile(path.join(fixture.root, 'design-request.json'), JSON.stringify(fixture.request));
+    assert.equal((await prepareBrief(fixture.root)).inputHash, before.inputHash);
   } finally { await rm(fixture.root, { recursive: true, force: true }); }
 });
