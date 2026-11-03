@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { readdir, readFile, rm, stat, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import sharp from 'sharp';
-import { compileBrief, importDirections, prepareBrief, suggestDirections, validateDirections, validateRequest } from '../src/brief.js';
+import { briefMarkdown, compileBrief, importDirections, prepareBrief, suggestDirections, validateDirections, validateRequest } from '../src/brief.js';
 import { DIRECTIONS_SCHEMA, requestCreativeDirections } from '../src/providers/openai-directions.js';
 import { digest } from '../src/local.js';
 import { briefFixture, fixtureDirections } from './helpers/brief.js';
@@ -304,4 +304,19 @@ test('request schemas enforce slot constraints and reject invalid dimensions', (
 
   const v2Bad = structuredClone(v2); v2Bad.assets[0].slot.width = -1;
   assert.throws(() => validateRequest(v2Bad, 'example_studio', { versionedTask: true }), /Invalid design request/);
+});
+
+test('a brief compiled before slot checks renders unchanged, so delivery still matches its BRIEF.md', async () => {
+  const fixture = await briefFixture();
+  try {
+    const { context } = await prepareBrief(fixture.root);
+    await importDirections(fixture.root, { directions: fixtureDirections(context) });
+    fixture.request.selectedDirectionId = 'D-1';
+    await writeFile(path.join(fixture.root, 'design-request.json'), JSON.stringify(fixture.request));
+    const { brief } = await compileBrief(fixture.root);
+    const legacy = structuredClone(brief); for (const asset of legacy.assets) delete asset.checkedAgainst;
+    assert.match(briefMarkdown(brief), /checked against the full 1440 × 720 canvas/);
+    assert.doesNotMatch(briefMarkdown(legacy), /checked against/);
+    assert.equal(briefMarkdown(legacy), briefMarkdown(brief).replace(/\n  - Crop and resolution checked against [^\n]+/g, ''));
+  } finally { await rm(fixture.root, { recursive: true, force: true }); }
 });
