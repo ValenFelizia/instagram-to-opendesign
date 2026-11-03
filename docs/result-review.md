@@ -7,7 +7,7 @@ Finished end-to-end journals can be supplied as `runRecords` in the review input
 ## Capture the result
 
 1. Preserve the **first** agent output before any correction. Save HTML, supporting local assets/styles and screenshots for each required viewport. Archive the package and complete brief used for the tool arm.
-2. For measurable HTML review, use `data-copy-id="headline"` etc., `img[data-asset-id]` with the brief asset IDs, and `data-action` on the requested semantic web link. These inert markers do not replace accessibility semantics. Without markers, visible copy may be checked but geometry/assets/controls remain pending.
+2. For measurable HTML review, use `data-copy-id="headline"` etc., `img[data-asset-id]` with the brief asset IDs, and `data-action` (or `data-action="<action id>"` when the request declares an `actions` list) on each requested control. These inert markers do not replace accessibility semantics. Without markers, visible copy may be checked but geometry/assets/controls remain pending.
 3. Run the read-only collector returned by `pnpm brand:result --collector` in the rendered browser document at every required viewport, and save its JSON. The collector does not fetch, persist or modify page data. Record the SHA-256 of the exact preserved HTML alongside each observation. The importing reviewer is responsible for capture provenance; hand-written or stale observations are not independently verified browser facts.
 4. Store the owner's **original** feedback in a local file and reference it from the review input. Keep translations identified as translations. Record each prompt, manual edit, asset preparation, ingestion, analysis and review step. Supply minutes/cost or `null`; absence is never zero effort.
 
@@ -49,6 +49,7 @@ Use `supporting` artifacts for explicit styles/assets needed to reopen HTML. `pa
 - Unrounded contrast for measured solid foreground/background pairs; transparent/composited/photo backgrounds remain pending.
 - Horizontal overflow, measured copy/image/action intersections, explicit cover-fit conflicts and reserved native sticker intersections.
 - A marked semantic action's label/destination/visibility and center hit-test obstruction. Hit testing does not establish full visual legibility or keyboard access.
+- When the request declares `actions`, the same measurement per action ID from an optional `actions` observation array: `a` for a link and `button` for a button, the normalized label against its approved copy block, the link destination, visibility and obstruction. A declared action with no observation, or whose hit test is unknown because its center lies outside the viewport, stays pending, and the legacy single-action checks still apply to requests without `actions`.
 
 Screenshots alone do **not** establish computed contrast, action semantics, keyboard/focus, source bytes or contextual alternatives. Crop/subject quality, distortion, clipping masks, reading order, accessibility and composition require human review. The tool cannot certify a rendered piece or assign an objective aesthetic score. A pass concerns only its named check; publication always requires human acceptance. Invalid paths, changed HTML capture hashes and duplicate markers fail before writing an archive.
 

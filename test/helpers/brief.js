@@ -30,6 +30,16 @@ export async function briefFixture(kind = 'web-hero') {
   return { ...fixture, request, review, decisions };
 }
 
+export function withWebActions(request) {
+  request.action = { type: 'none', label: null, url: null, reservedSpace: null };
+  request.copy.push({ id: 'cta-primary', text: 'Get a quote' }, { id: 'cta-secondary', text: 'Message us' });
+  request.actions = [
+    { id: 'quote', role: 'primary', element: 'button', labelCopyId: 'cta-primary', url: null, behavior: 'opens the existing quote form' },
+    { id: 'message', role: 'secondary', element: 'link', labelCopyId: 'cta-secondary', url: 'https://example.com/message', behavior: null },
+  ];
+  return request;
+}
+
 export function fixtureDirections(context) {
   const ids = context.assets.map((entry) => entry.id);
   return [

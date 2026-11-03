@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { mkdir, readFile, rm, writeFile } from 'node:fs/promises';
 import path from 'node:path';
-import { briefFixture, fixtureDirections } from './helpers/brief.js';
+import { briefFixture, fixtureDirections, withWebActions } from './helpers/brief.js';
 import { compileBrief, importDirections, prepareBrief } from '../src/brief.js';
 import { compileExisting } from '../src/pipeline.js';
 import { deliver } from '../src/delivery.js';
@@ -38,6 +38,23 @@ test('delivery binds current approvals, channel, bytes and selected brief; unsaf
       assert.equal(await readFile(path.join(installed.destination, 'delivery.json'), 'utf8'), before);
     } finally { await rm(data, { recursive: true, force: true }); }
   } finally { await rm(fixture.root, { recursive: true, force: true }); }
+});
+
+test('delivery marks every declared action ID for the rendered-result review', async () => {
+  const fixture = await briefFixture(), data = `${fixture.root}-catalog`;
+  try {
+    withWebActions(fixture.request).selectedDirectionId = 'D-1';
+    await writeFile(path.join(fixture.root, 'design-request.json'), JSON.stringify(fixture.request));
+    const { context } = await prepareBrief(fixture.root);
+    await importDirections(fixture.root, { directions: fixtureDirections(context) });
+    const brief = await compileBrief(fixture.root);
+    const pkg = await compileExisting(fixture.root, { outputRoot: path.join(fixture.root, 'package') });
+    const odRoot = path.join(fixture.root, 'od-install');
+    await mkdir(path.join(odRoot, 'apps/daemon'), { recursive: true });
+    await writeFile(path.join(odRoot, 'apps/daemon/package.json'), '{"version":"0.23.1"}');
+    const installed = await deliver(fixture.root, { packageDir: pkg.outputDir, briefDir: brief.outputDir, odRoot, odDataDir: data });
+    assert.match(await readFile(path.join(installed.destination, 'START.md'), 'utf8'), /each requested action with data-action="<action id>" \(quote, message\)/);
+  } finally { await rm(data, { recursive: true, force: true }); await rm(fixture.root, { recursive: true, force: true }); }
 });
 
 test('promotional and website requests use explicit dimensions and authorized local code fingerprints', async () => {
