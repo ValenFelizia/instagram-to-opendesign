@@ -170,6 +170,13 @@
         "null"
       ]
     },
+    "acknowledgedMissingInformation": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
     "accessibility": {
       "type": "object",
       "properties": {

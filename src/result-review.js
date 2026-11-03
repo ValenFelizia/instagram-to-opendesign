@@ -155,7 +155,7 @@ export async function reviewResult(briefDir, input, { outputRoot } = {}) {
   const commonFiles = [];
   if (!input.commonInputs.files?.length) throw new Error('Record the shared source files for a matched comparison.');
   for (const file of [...new Set(input.commonInputs.files)].sort()) commonFiles.push({ path: file, sha256: digest(await readFile(await profileFile(commonRoot, file))) });
-  const { selectedDirectionId, ...commonRequest } = brief.request;
+  const { selectedDirectionId, acknowledgedMissingInformation, ...commonRequest } = brief.request;
   const commonInputHash = digest(json({ request: commonRequest, files: commonFiles }));
   const target = path.resolve(outputRoot, input.experimentId, input.variant, `r${String(input.revision).padStart(3, '0')}`);
   const sourcePackage = input.packageDir ? await realpath(input.packageDir) : null;

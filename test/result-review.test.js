@@ -123,3 +123,34 @@ test('result review imports observed billing once across revisions and retains t
     await assert.rejects(() => reviewResult(built.outputDir, { ...input, experimentId: 'currency', currency: 'EUR' }, { outputRoot: archive }), /currency must match/);
   } finally { await rm(archive, { recursive: true, force: true }); await rm(fixture.root, { recursive: true, force: true }); }
 });
+
+test('an acknowledged missing-information item keeps result reviews matched, while a request change does not', async () => {
+  const fixture = await briefFixture(), archive = `${fixture.root}-results`;
+  try {
+    fixture.request.selectedDirectionId = 'D-1';
+    await writeFile(path.join(fixture.root, 'design-request.json'), JSON.stringify(fixture.request));
+    const { context } = await prepareBrief(fixture.root);
+    const directions = fixtureDirections(context), missing = 'No verified font rules were supplied.';
+    directions[0].missingInformation = [missing];
+    await importDirections(fixture.root, { directions });
+    const pkg = await compileExisting(fixture.root, { outputRoot: path.join(fixture.root, 'package') });
+    const artifacts = path.join(fixture.root, 'render'); await mkdir(artifacts);
+    await writeFile(path.join(artifacts, 'index.html'), '<!doctype html><title>Synthetic acknowledgement fixture</title>');
+    const compile = async () => { await writeFile(path.join(fixture.root, 'design-request.json'), JSON.stringify(fixture.request)); return compileBrief(fixture.root); };
+    const reviewInput = (experimentId, variant) => ({ schemaVersion: 'result-review-input/v1', experimentId, variant, revision: 0, artifactRoot: artifacts,
+      ...(variant === 'tool' ? { packageDir: pkg.outputDir } : {}), commonInputs: { root: fixture.root, files: ['manual/request.md', 'assets/product.jpg'] },
+      run: { model: 'synthetic-model', openDesignVersion: '0.23.1', priorKnowledge: 'none', iterationBudget: 2 },
+      artifacts: [{ id: 'first', kind: 'html', path: 'index.html' }], events: [] });
+    const unacknowledged = await compile(), manual = await reviewResult(unacknowledged.outputDir, reviewInput('acknowledged-missing', 'manual'), { outputRoot: archive });
+    fixture.request.acknowledgedMissingInformation = [missing];
+    const acknowledged = await compile(), tool = await reviewResult(acknowledged.outputDir, reviewInput('acknowledged-missing', 'tool'), { outputRoot: archive });
+    assert.equal(unacknowledged.brief.status, 'needs-review'); assert.equal(acknowledged.brief.status, 'ready-for-execution');
+    assert.equal(tool.report.commonInputHash, manual.report.commonInputHash);
+    assert.equal(compareReviews(manual.report, tool.report).matched, true);
+    fixture.request.objective = 'Introduce a synthetic handcrafted bag for a changed launch';
+    await writeFile(path.join(fixture.root, 'design-request.json'), JSON.stringify(fixture.request));
+    await importDirections(fixture.root, { directions });
+    const changed = await compile(), changedReview = await reviewResult(changed.outputDir, reviewInput('changed-objective', 'tool'), { outputRoot: archive });
+    assert.equal(compareReviews(manual.report, changedReview.report).matched, false);
+  } finally { await rm(archive, { recursive: true, force: true }); await rm(fixture.root, { recursive: true, force: true }); }
+});

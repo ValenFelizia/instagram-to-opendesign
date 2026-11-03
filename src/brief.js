@@ -128,7 +128,7 @@ export async function prepareBrief(profileDir, { requestDocument } = {}) {
     decisions.sources = decisions.sources.filter(source => usedSources.has(source.id));
     decisions.assetSelections = decisions.assetSelections.filter(asset => selected.some(item => item.id === asset.evidenceId));
   }
-  const { selectedDirectionId, existingSite, ...suggestionRequest } = request;
+  const { selectedDirectionId, existingSite, acknowledgedMissingInformation, ...suggestionRequest } = request;
   const context = { request: suggestionRequest,
     observations: decisions.effectiveAnalysis.inferences,
     verifiedRules: decisions.activeRules,
@@ -138,7 +138,7 @@ export async function prepareBrief(profileDir, { requestDocument } = {}) {
     ...(request.schemaVersion === 'design-request/v2' ? { proposalDecisions: decisions.decisions.filter(item => request.inferenceIds.includes(item.inferenceId)) } : {}),
     ...(codeContext ? { existingSite: { sourceId: codeContext.sourceId, files: codeContext.files, access: codeContext.access } } : {}),
   };
-  // Only selection is excluded: approvals, byte hashes, evidence and fit changes invalidate paid cache.
+  // Selection and acknowledgement are excluded: approvals, byte hashes, evidence and fit changes invalidate paid cache.
   const inputHash = digest(json({ version: 'creative-context/v1', model: DIRECTIONS_MODEL, context,
     sources: decisions.sources.map(({ absolutePath, ...source }) => source), codeContext }));
   return { prepared, analysis, request, decisions, selected, catalog, context, inputHash, blockers, codeContext, channel };
@@ -215,6 +215,7 @@ export function briefMarkdown(brief) {
     `## Accessibility preflight\n\nSee [declared usage and manual acceptance tasks](ACCESSIBILITY.md) and [structured checks](accessibility.json). Status: ${brief.accessibility?.status ?? 'manual-review'}. Manual tasks must be reviewed in the rendered result; input readiness is not an accessibility certificate.\n\n` +
     (['instagram-story', 'promotional-image'].includes(brief.kind) ? 'See [the supplied-copy artwork description](ARTWORK-DESCRIPTION.md). Review it against the final image before publishing; this candidate is not a description of an unseen render.\n\n' : '') +
     `## Pending review\n\n${brief.pending.map((item) => `- ${quoted(item)}`).join('\n') || 'No input blockers. Rendering and human acceptance remain required.'}\n\n` +
+    `## Acknowledged missing information\n\n${brief.acknowledgedMissingInformation.map((item) => `- ${quoted(item)}`).join('\n') || 'None acknowledged.'}\n\n` +
     `## Ideation record — do not execute unselected alternatives\n\n${brief.directions.map((item) => `- ${quoted(item.id)} ${quoted(item.label)} (${item.id === selected?.id ? 'selected' : 'unselected'}): ${item.layout}, ${item.hierarchy}, ${item.assetTreatment}; assets ${item.assetIds.join(', ')}; citations ${item.evidenceIds.join(', ')}. Proposal rationale: ${quoted(item.rationale)}. Limits: ${quoted(item.limits)}. Missing: ${quoted(item.missingInformation)}.`).join('\n')}\n`;
 }
 
@@ -227,14 +228,18 @@ export async function selectedBrief(profileDir, { requestDocument, directionsDoc
   if (state.request.selectedDirectionId && !selected) throw new Error('Selected direction does not exist.');
   const pending = [...state.blockers];
   if (!selected) pending.push('Select one direction before execution.');
-  if (selected) pending.push(...selected.missingInformation);
+  const acknowledged = new Set(state.request.acknowledgedMissingInformation ?? []);
+  const missingInformation = selected?.missingInformation ?? [];
+  pending.push(...missingInformation.filter((item) => !acknowledged.has(item)));
   if (selected?.hierarchy === 'brand-first' && !state.request.copy.some((item) => item.id === 'brand')) pending.push('brand-first direction requires confirmed brand copy.');
   const assets = selected ? state.selected.filter((entry) => entry.role === 'logo' || selected.assetIds.includes(entry.id)) : state.selected;
   const accessibility = accessibilityPreflight({ tokens: state.decisions.tokenOverrides, plan: state.request.accessibility, request: state.request, assets });
   pending.push(...accessibility.checks.filter((check) => check.status === 'fail').map((check) => `Accessibility failure ${check.id}: ${check.instruction}`));
   const brief = { schemaVersion: state.request.schemaVersion === 'design-request/v2' ? 'design-brief/v2' : 'design-brief/v1', inputHash: state.inputHash, kind: state.request.kind,
     status: pending.length ? 'needs-review' : state.request.schemaVersion === 'design-request/v2' ? 'inputs-ready' : 'ready-for-execution', request: state.request,
-    selectedDirection: selected, directions: cached.directions, pending, accessibility, codeContext: state.codeContext,
+    selectedDirection: selected, directions: cached.directions, pending,
+    acknowledgedMissingInformation: missingInformation.filter((item) => acknowledged.has(item)),
+    accessibility, codeContext: state.codeContext,
     observations: state.decisions.effectiveAnalysis.inferences,
     verifiedRules: state.decisions.activeRules, brandConflicts: state.decisions.conflicts,
     sources: state.decisions.sources.map(({ absolutePath, ...source }) => ({ ...source, path: `sources/${source.id}${path.extname(source.path)}` })),

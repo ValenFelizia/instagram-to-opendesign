@@ -96,6 +96,10 @@ See [the supplied-copy artwork description](ARTWORK-DESCRIPTION.md). Review it a
 
 No input blockers. Rendering and human acceptance remain required.
 
+## Acknowledged missing information
+
+None acknowledged.
+
 ## Ideation record — do not execute unselected alternatives
 
 - "D-1" "Product clarity" (selected): split, headline-first, single-contained; assets E-IMG-A0A8AF237EC969A8; citations E-IMG-A0A8AF237EC969A8. Proposal rationale: "A product photo supports a focused product panel.". Limits: ["Unproven creative effectiveness."]. Missing: [].
