@@ -105,6 +105,56 @@
         }
       }
     },
+    "actions": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 3,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "role",
+          "element",
+          "labelCopyId",
+          "url",
+          "behavior"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^[a-z0-9][a-z0-9-]{0,31}$"
+          },
+          "role": {
+            "enum": [
+              "primary",
+              "secondary"
+            ]
+          },
+          "element": {
+            "enum": [
+              "button",
+              "link"
+            ]
+          },
+          "labelCopyId": {
+            "type": "string"
+          },
+          "url": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "behavior": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        }
+      }
+    },
     "assets": {
       "type": "array",
       "items": {

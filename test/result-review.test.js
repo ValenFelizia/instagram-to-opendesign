@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { copyFile, mkdir, readFile, rm, writeFile } from 'node:fs/promises';
 import path from 'node:path';
-import { briefFixture, fixtureDirections } from './helpers/brief.js';
+import { briefFixture, fixtureDirections, withWebActions } from './helpers/brief.js';
 import { compileBrief, importDirections, prepareBrief } from '../src/brief.js';
 import { compileExisting } from '../src/pipeline.js';
 import { reviewResult, compareReviews } from '../src/result-review.js';
@@ -152,5 +152,44 @@ test('an acknowledged missing-information item keeps result reviews matched, whi
     await importDirections(fixture.root, { directions });
     const changed = await compile(), changedReview = await reviewResult(changed.outputDir, reviewInput('changed-objective', 'tool'), { outputRoot: archive });
     assert.equal(compareReviews(manual.report, changedReview.report).matched, false);
+  } finally { await rm(archive, { recursive: true, force: true }); await rm(fixture.root, { recursive: true, force: true }); }
+});
+
+test('result review checks each declared action element, label and destination', async () => {
+  const fixture = await briefFixture(), archive = `${fixture.root}-results`;
+  try {
+    withWebActions(fixture.request).selectedDirectionId = 'D-1';
+    await writeFile(path.join(fixture.root, 'design-request.json'), JSON.stringify(fixture.request));
+    const { context } = await prepareBrief(fixture.root);
+    await importDirections(fixture.root, { directions: fixtureDirections(context) });
+    const built = await compileBrief(fixture.root);
+    const artifacts = path.join(fixture.root, 'render'); await mkdir(artifacts);
+    const html = '<!doctype html><title>Synthetic actions</title>'; await writeFile(path.join(artifacts, 'index.html'), html);
+    const rect = { x: 10, y: 10, width: 100, height: 40 };
+    const observed = (actions) => ({ schemaVersion: 'render-observations/v1', viewport: { width: 390, height: 844 }, overflow: false,
+      visibleText: fixture.request.copy.map((item) => item.text).join(' '),
+      copy: fixture.request.copy.map((item) => ({ id: item.id, text: item.text, visible: true, rect,
+        foreground: '#ffffff', background: '#000000', fontSize: 16, fontWeight: 400 })),
+      assets: [], action: null, actions });
+    const good = [{ id: 'quote', tag: 'button', label: 'Get  a quote', href: null, visible: true, occluded: false, rect },
+      { id: 'message', tag: 'a', label: 'Message us', href: 'https://example.com/message', visible: true, occluded: false, rect }];
+    const review = async (experimentId, actions) => {
+      await writeFile(path.join(artifacts, 'observed.json'), JSON.stringify(observed(actions)));
+      const input = { schemaVersion: 'result-review-input/v1', experimentId, variant: 'manual', revision: 0, artifactRoot: artifacts,
+        commonInputs: { root: fixture.root, files: ['manual/request.md'] },
+        run: { model: 'synthetic', openDesignVersion: 'test', priorKnowledge: 'none', iterationBudget: 2 },
+        artifacts: [{ id: 'first', kind: 'html', path: 'index.html' },
+          { id: 'mobile', kind: 'observations', path: 'observed.json', htmlId: 'first', htmlSha256: digest(html) }], events: [] };
+      return (await reviewResult(built.outputDir, input, { outputRoot: archive })).report;
+    };
+    const status = (report, id) => report.checks.find((check) => check.id === id)?.status;
+    const passed = await review('action-pass', good);
+    assert.equal(status(passed, 'mobile-action-quote'), 'pass');
+    assert.equal(status(passed, 'mobile-action-message'), 'pass');
+    assert.equal(status(await review('action-element', [{ ...good[0], tag: 'a', href: 'https://example.com/' }, good[1]]), 'mobile-action-quote'), 'fail');
+    assert.equal(status(await review('action-href', [good[0], { ...good[1], href: 'https://example.com/other' }]), 'mobile-action-message'), 'fail');
+    assert.equal(status(await review('action-missing', []), 'mobile-action-quote'), 'manual-review');
+    assert.equal(status(await review('action-offscreen', [{ ...good[0], occluded: null }, good[1]]), 'mobile-action-quote'), 'manual-review');
+    assert.equal(status(await review('action-offscreen-wrong', [{ ...good[0], tag: 'a', occluded: null }, good[1]]), 'mobile-action-quote'), 'fail');
   } finally { await rm(archive, { recursive: true, force: true }); await rm(fixture.root, { recursive: true, force: true }); }
 });

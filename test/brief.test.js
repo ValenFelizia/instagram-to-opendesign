@@ -6,7 +6,7 @@ import sharp from 'sharp';
 import { compileBrief, importDirections, prepareBrief, suggestDirections, validateDirections, validateRequest } from '../src/brief.js';
 import { DIRECTIONS_SCHEMA, requestCreativeDirections } from '../src/providers/openai-directions.js';
 import { digest } from '../src/local.js';
-import { briefFixture, fixtureDirections } from './helpers/brief.js';
+import { briefFixture, fixtureDirections, withWebActions } from './helpers/brief.js';
 
 test('hero and Story briefs preserve copy, bundle local evidence and execute only a selected distinct direction', async () => {
   for (const kind of ['web-hero', 'instagram-story']) {
@@ -317,5 +317,62 @@ test('a request without slots keeps the asset context and input hash it had befo
     delete fixture.request.assets[0].slot;
     await writeFile(path.join(fixture.root, 'design-request.json'), JSON.stringify(fixture.request));
     assert.equal((await prepareBrief(fixture.root)).inputHash, before.inputHash);
+  } finally { await rm(fixture.root, { recursive: true, force: true }); }
+});
+
+test('a web hero declares a primary button and a secondary link, each tied to an approved copy block', async () => {
+  const fixture = await briefFixture();
+  try {
+    withWebActions(fixture.request).selectedDirectionId = 'D-1';
+    await writeFile(path.join(fixture.root, 'design-request.json'), JSON.stringify(fixture.request));
+    const { context } = await prepareBrief(fixture.root);
+    await importDirections(fixture.root, { directions: fixtureDirections(context) });
+    const { brief, outputDir } = await compileBrief(fixture.root);
+    assert.equal(brief.status, 'ready-for-execution');
+    assert.deepEqual(brief.request.actions, fixture.request.actions);
+    const markdown = await readFile(path.join(outputDir, 'BRIEF.md'), 'utf8');
+    assert.match(markdown, /## Actions/);
+    const primary = markdown.indexOf('primary "quote"'), secondary = markdown.indexOf('secondary "message"');
+    assert.ok(primary > 0 && secondary > primary, 'actions keep their declared order');
+    assert.match(markdown.slice(primary, secondary), /<button type="button">.*"Get a quote".*"opens the existing quote form"/);
+    assert.match(markdown.slice(secondary), /<a>.*"Message us".*"https:\/\/example.com\/message"/);
+    assert.match(markdown, /keyboard access and visible focus/);
+  } finally { await rm(fixture.root, { recursive: true, force: true }); }
+});
+
+test('web action validation names the unknown copy label, missing destination, second primary and each misuse', async () => {
+  const fixture = await briefFixture();
+  try {
+    const valid = withWebActions(structuredClone(fixture.request));
+    validateRequest(valid, 'example_studio');
+    validateRequest({ ...structuredClone(valid), schemaVersion: 'design-request/v2', pageScope: null, inferenceIds: [] }, 'example_studio', { versionedTask: true });
+    const cases = [
+      [(request) => { request.actions[0].labelCopyId = 'cta-missing'; }, /needs an approved copy block/],
+      [(request) => { request.actions[1].url = null; }, /requires a destination URL/],
+      [(request) => { request.actions[1].url = 'mailto:hello@example.com'; }, /must use HTTP\(S\)/],
+      [(request) => { request.actions[1].behavior = 'opens a chat'; }, /not a behavior note/],
+      [(request) => { request.actions[0].url = 'https://example.com/quote'; }, /must not carry a destination/],
+      [(request) => { request.actions[0].behavior = '  '; }, /confirmed behavior or null/],
+      [(request) => { request.actions[1].role = 'primary'; }, /exactly one primary/],
+      [(request) => { request.actions[1].id = 'quote'; }, /Duplicate action ID/],
+      [(request) => { request.kind = 'instagram-story'; request.action = { type: 'native-sticker', label: 'Explore', url: 'https://example.com/', reservedSpace: { x: .15, y: .82, width: .7, height: .08 } }; }, /only to web requests/],
+      [(request) => { request.action = { type: 'link', label: 'Explore', url: 'https://example.com/', reservedSpace: null }; }, /action\.type to none/],
+    ];
+    for (const [mutate, message] of cases) { const bad = structuredClone(valid); mutate(bad); assert.throws(() => validateRequest(bad, 'example_studio'), message); }
+  } finally { await rm(fixture.root, { recursive: true, force: true }); }
+});
+
+test('a button without a confirmed behavior stays a pending brief item instead of an invented action', async () => {
+  const fixture = await briefFixture();
+  try {
+    withWebActions(fixture.request).selectedDirectionId = 'D-1';
+    fixture.request.actions[0].behavior = null;
+    await writeFile(path.join(fixture.root, 'design-request.json'), JSON.stringify(fixture.request));
+    const { context } = await prepareBrief(fixture.root);
+    await importDirections(fixture.root, { directions: fixtureDirections(context) });
+    const { brief, outputDir } = await compileBrief(fixture.root);
+    assert.equal(brief.status, 'needs-review');
+    assert.ok(brief.pending.includes('Confirm what button quote does.'));
+    assert.match(await readFile(path.join(outputDir, 'BRIEF.md'), 'utf8'), /behavior pending confirmation/);
   } finally { await rm(fixture.root, { recursive: true, force: true }); }
 });

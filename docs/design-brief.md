@@ -16,6 +16,8 @@ Choose assets by their catalog IDs, including supplied originals. The catalog mu
 
 For a hero, an action can be `none` or a semantic `link` with exact label and HTTP(S) destination. For a static Story, use `none` or `native-sticker`; provide normalized `reservedSpace` (x, y, width, height from 0 to 1), label and destination. The space is a reservation to review in Instagram composer. A fake drawn button is not an interactive sticker, and coordinates are not a permanent platform guarantee.
 
+A `web-hero`, `website-change` or `conceptual-landing` request may declare an ordered `actions` list of one to three controls instead, and must then set `action` to `none`. Each action names its `role` (`primary` or `secondary`, exactly one primary), its `element` (`button` or `link`), an approved copy block in `labelCopyId`, and either an HTTP(S) `url` for a link or a short `behavior` for a button. A button with `behavior: null` keeps the brief `needs-review` with a pending item; the brief never invents what the button does. `BRIEF.md` lists the actions in order with their elements, exact labels and target or behavior. Requests without `actions` keep the single `action` above, and a Story accepts only that one reserved sticker.
+
 ## Propose and choose
 
 ```powershell
@@ -48,7 +50,7 @@ pnpm brand:brief data/example_studio --compile --out brand-output/example-studio
 
 Both files are built together in `data/<username>/brief/<kind>/` by default, with selected originals, evidence and confirmation snapshots:
 
-- `BRIEF.md`: the design agent's readable instruction, exact copy, selected layout/hierarchy/treatment, assets, action, constraints, confirmed rules, uncertain observations, evidence, acceptance criteria and pending review.
+- `BRIEF.md`: the design agent's readable instruction, exact copy, selected layout/hierarchy/treatment, assets, action or actions, constraints, confirmed rules, uncertain observations, evidence, acceptance criteria and pending review.
 - `design-brief.json`: the same typed record, selected and unselected alternatives, permission provenance, hashes, crop candidates and measured asset properties.
 
 Approved logo assets in the request always ship with the brief, whatever the selected direction's image treatment.

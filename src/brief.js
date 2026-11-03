@@ -17,6 +17,7 @@ const ajv = new Ajv2020({ allErrors: true, strictTypes: false });
 const validateRequestSchema = ajv.compile(requestSchema), validateDirectionsSchema = ajv.compile(DIRECTIONS_SCHEMA);
 const validateTaskRequestSchema = ajv.compile(taskRequestSchema);
 const unique = (items, key, label) => { if (new Set(items.map(key)).size !== items.length) throw new Error(`Duplicate ${label}.`); };
+const webKinds = ['web-hero', 'website-change', 'conceptual-landing'];
 
 export function emptyRequest(username, kind = 'web-hero', target) {
   return { schemaVersion: 'design-request/v1', username, kind, objective: '', audience: '', sourceId: null,
@@ -47,6 +48,26 @@ export function validateRequest(request, username, { versionedTask = false } = {
   if (request.kind === 'instagram-story' && action.type === 'link') throw new Error('A static Story link must be reserved as a native sticker, not drawn as a functioning button.');
   if (request.kind !== 'instagram-story' && (action.type === 'native-sticker' || box)) throw new Error('Native sticker space applies only to Stories.');
   if (request.kind === 'promotional-image' && action.type === 'link') throw new Error('Promotional artwork cannot present a functioning web link. Confirm the publishing destination separately.');
+  const actions = request.actions ?? [];
+  if (actions.length) {
+    if (!webKinds.includes(request.kind)) throw new Error('Several actions apply only to web requests; the Story action stays one reserved native sticker.');
+    if (action.type !== 'none') throw new Error('A request with actions must set action.type to none; declare every control in actions instead.');
+    unique(actions, (item) => item.id, 'action ID');
+    if (actions.filter((item) => item.role === 'primary').length !== 1) throw new Error('Declare exactly one primary action.');
+    const copyIds = new Set(request.copy.map((item) => item.id));
+    for (const item of actions) {
+      if (!copyIds.has(item.labelCopyId)) throw new Error(`Action ${item.id} needs an approved copy block for its label: ${item.labelCopyId}.`);
+      if (item.element === 'link') {
+        if (!item.url) throw new Error(`Link action ${item.id} requires a destination URL.`);
+        let url; try { url = new URL(item.url); } catch { throw new Error(`Action ${item.id} destination is not a valid URL.`); }
+        if (!['https:', 'http:'].includes(url.protocol)) throw new Error(`Action ${item.id} destination must use HTTP(S).`);
+        if (item.behavior !== null) throw new Error(`Link action ${item.id} takes a destination, not a behavior note.`);
+      } else {
+        if (item.url !== null) throw new Error(`Button action ${item.id} must not carry a destination; record its behavior instead.`);
+        if (item.behavior !== null && !item.behavior.trim()) throw new Error(`Button action ${item.id} needs a confirmed behavior or null.`);
+      }
+    }
+  }
   for (const asset of request.assets) if (asset.alt.usage === 'decorative' && asset.alt.text) throw new Error('Decorative asset must have empty alt text.');
 }
 
@@ -111,6 +132,7 @@ export async function prepareBrief(profileDir, { requestDocument } = {}) {
     if (entry.use.alt.usage === 'unknown' || entry.use.alt.usage === 'informative' && !entry.use.alt.text.trim()) blockers.push(`Review image alternative: ${entry.id}.`);
   }
   if (request.action.type === 'native-sticker' && !request.action.reservedSpace) blockers.push('Reserve native sticker space and review it in Instagram composer.');
+  for (const item of request.actions ?? []) if (item.element === 'button' && item.behavior === null) blockers.push(`Confirm what button ${item.id} does.`);
   let codeContext = null;
   if (request.schemaVersion === 'design-request/v2' && request.kind === 'website-change' && !request.existingSite) blockers.push('Selected website editing requires current authorized code context.');
   if (request.existingSite) {
@@ -192,6 +214,16 @@ const TREATMENT = {
   paired: 'Compose two approved images as a pair with unequal emphasis; keep copy in its own region and respect both approved fits.',
 };
 
+const ELEMENT_MARK = { link: '`<a>`', button: '`<button type="button">`' };
+
+function actionsMarkdown(request) {
+  const label = (id) => request.copy.find((item) => item.id === id)?.text;
+  const controls = request.actions.map((item) => `- ${item.role} ${quoted(item.id)}: ${ELEMENT_MARK[item.element]} ${quoted(label(item.labelCopyId))}; ` +
+    (item.element === 'link' ? quoted(item.url) : item.behavior === null ? 'behavior pending confirmation' : `behavior ${quoted(item.behavior)}`) + '.');
+  return `## Actions\n\nIn order, each tied to the approved copy block named by its label:\n\n${controls.join('\n')}\n\n` +
+    'Links use a semantic anchor with the exact label and destination; buttons use a native `<button type="button">`, never an anchor styled as one. Both keep keyboard access and visible focus.\n\n';
+}
+
 export function briefMarkdown(brief) {
   const selected = brief.selectedDirection;
   const layout = selected?.layout === 'split' && brief.kind === 'instagram-story'
@@ -213,7 +245,8 @@ export function briefMarkdown(brief) {
         `  - ${asset.use.fit === 'contain' ? 'Keep the whole original; do not apply the catalog cover-crop candidate.' : `Cover crop candidate: ${quoted(asset.crop)}; renewed visual review remains part of render acceptance.`}\n` +
         `  - ${asset.lowResolution ? asset.use.lowResolutionAccepted ? 'Low resolution accepted for the actual slot; inspect sharpness in the render.' : 'Resolution review is pending.' : 'Resolution meets the provisional image slot.'}` + checked;
     }).join('\n') || 'Pending.'}\n\n` +
-    `## Action\n\n${quoted(brief.request.action)}\n\n${brief.kind === 'instagram-story' ? 'Native sticker space is a reservation only. Do not draw a fake functioning link/button. Review space and destination in Instagram composer; coordinates are not a permanent platform guarantee. Keep supplied copy clear of this area.' : 'If a link is requested, use a semantic anchor with the exact label and destination, keyboard access and visible focus.'}\n\n` +
+    (brief.request.actions ? actionsMarkdown(brief.request)
+      : `## Action\n\n${quoted(brief.request.action)}\n\n${brief.kind === 'instagram-story' ? 'Native sticker space is a reservation only. Do not draw a fake functioning link/button. Review space and destination in Instagram composer; coordinates are not a permanent platform guarantee. Keep supplied copy clear of this area.' : 'If a link is requested, use a semantic anchor with the exact label and destination, keyboard access and visible focus.'}\n\n`) +
     `## Constraints\n\n${brief.request.constraints.map((item) => `- ${quoted(item)}`).join('\n') || '- No additional request constraints.'}\n\n` +
     `## Verified brand rules\n\n${brief.verifiedRules.map((item) => `- ${item.kind}/${item.target}: ${quoted(item.value)}; source ${item.sourceId}.`).join('\n') || 'No confirmed brand rules; retain uncertainty.'}\n\n` +
     `## Source comparisons\n\n${brief.brandConflicts.map((item) => `- ${quoted(item)}`).join('\n') || 'No source comparisons recorded.'}\n\n` +
@@ -255,9 +288,9 @@ export async function selectedBrief(profileDir, { requestDocument, directionsDoc
     assets: assets.map(({ absolutePath, ...entry }) => ({ ...entry, path: `assets/${entry.id}${path.extname(entry.path)}` })),
     acceptanceCriteria: [
       'Use the exact approved copy and selected direction; invent no brand facts or extra assets.',
-      ...(['web-hero', 'website-change', 'conceptual-landing'].includes(state.request.kind) ? [
+      ...(webKinds.includes(state.request.kind) ? [
         'Render and review at 1440 px and 390 px wide: no overlap, clipped copy or horizontal overflow.',
-        'Use semantic headings, meaningful image alternatives, keyboard access and visible focus for links.',
+        'Use semantic headings, meaningful image alternatives, keyboard access and visible focus for links and buttons.',
         'Check actual color contrast and reduced-motion behavior; tokens alone do not prove accessibility.',
       ] : [`Render at ${state.request.target ? `${state.request.target.width} × ${state.request.target.height}` : '1080 × 1920'}; review copy legibility, image subject and any reserved sticker space.`,
         'Supply a text transcript/description with the exported Story; static artwork is not an accessible web control.']),

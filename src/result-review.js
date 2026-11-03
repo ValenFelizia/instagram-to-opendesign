@@ -27,6 +27,10 @@ const observationSchema = { type: 'object', additionalProperties: false,
       tag: { type: 'string' }, label: { type: 'string' }, href: { type: ['string', 'null'] }, visible: { type: 'boolean' }, rect: box,
       occluded: { type: ['boolean', 'null'] },
     } }] },
+    actions: { type: 'array', items: { type: 'object', additionalProperties: false, required: ['id', 'tag', 'label', 'href', 'visible', 'occluded', 'rect'], properties: {
+      id: { type: 'string' }, tag: { type: 'string' }, label: { type: 'string' }, href: { type: ['string', 'null'] }, visible: { type: 'boolean' }, rect: box,
+      occluded: { type: ['boolean', 'null'] },
+    } } },
   } };
 const validateObservation = new Ajv2020({ strictTypes: false }).compile(observationSchema);
 const safeId = /^[A-Za-z0-9][A-Za-z0-9-]{0,63}$/;
@@ -46,6 +50,7 @@ export async function reviewResult(briefDir, input, { outputRoot } = {}) {
   const checks = [], archive = new Map(), references = new Set([
     ...brief.request.copy.map((item) => item.id), ...brief.assets.map((item) => item.id),
     ...brief.verifiedRules.map((item) => item.id), ...brief.evidence.map((item) => item.id), 'action', 'viewport',
+    ...(brief.request.actions ?? []).map((item) => item.id),
   ]);
   const add = (id, status, instruction, referenceIds = [], observation = null) => {
     references.add(id); checks.push({ id, status, instruction, referenceIds, observation, cause: 'unknown', scope: 'request' });
@@ -72,7 +77,7 @@ export async function reviewResult(briefDir, input, { outputRoot } = {}) {
     if (!html || artifact.htmlSha256 !== (await preserve(html.path)).sha256) throw new Error('DOM observations must reference the exact preserved HTML hash.');
     const observed = JSON.parse(await readFile(await profileFile(root, artifact.path), 'utf8'));
     if (!validateObservation(observed)) throw new Error('Invalid rendered DOM observations.');
-    for (const items of [observed.copy, observed.assets]) if (new Set(items.map((item) => item.id)).size !== items.length) throw new Error('Duplicate observed marker; review ambiguous IDs.');
+    for (const items of [observed.copy, observed.assets, observed.actions ?? []]) if (new Set(items.map((item) => item.id)).size !== items.length) throw new Error('Duplicate observed marker; review ambiguous IDs.');
     viewports.push(observed.viewport);
     const prefix = artifact.id;
     add(`${prefix}-overflow`, observed.overflow ? 'fail' : 'pass', 'Check horizontal overflow at the captured viewport.', ['viewport'], observed.viewport);
@@ -106,6 +111,16 @@ export async function reviewResult(briefDir, input, { outputRoot } = {}) {
       const good = action?.visible && !action.occluded && action.tag === 'a' && normalize(action.label) === normalize(brief.request.action.label) && action.href === brief.request.action.url;
       add(`${prefix}-action`, !action ? 'manual-review' : good ? 'pass' : 'fail', 'Keep the exact semantic link, approved label and destination visible.', ['action'], action);
       if (action) for (const image of observed.assets.filter((item) => item.visible)) if (intersects(action.rect, image.rect)) add(`${prefix}-action-overlap-${image.id}`, 'fail', 'Selected direction requires separate action and image regions; review the overlap.', ['action', image.id]);
+    }
+    for (const action of brief.request.actions ?? []) {
+      const node = observed.actions?.find((item) => item.id === action.id);
+      const label = brief.request.copy.find((item) => item.id === action.labelCopyId)?.text ?? '';
+      const matches = node?.visible && node.occluded !== true && node.tag === (action.element === 'link' ? 'a' : 'button') &&
+        normalize(node.label) === normalize(label) && (action.element !== 'link' || node.href === action.url);
+      // A null hit test (center outside the viewport) proves nothing; only a confirmed unobstructed control passes.
+      add(`${prefix}-action-${action.id}`, !node ? 'manual-review' : !matches ? 'fail' : node.occluded === false ? 'pass' : 'manual-review',
+        `Keep the declared ${action.element}, exact approved label${action.element === 'link' ? ' and destination' : ''} visible.`, [action.id], node);
+      if (node) for (const image of observed.assets.filter((item) => item.visible)) if (intersects(node.rect, image.rect)) add(`${prefix}-action-overlap-${action.id}-${image.id}`, 'fail', 'Selected direction requires separate action and image regions; review the overlap.', [action.id, image.id]);
     }
     if (['instagram-story', 'promotional-image'].includes(brief.kind)) {
       if (observed.action?.visible && ['a', 'button'].includes(observed.action.tag)) add(`${prefix}-static-action`, 'fail', 'Do not simulate a functioning web control in static artwork; review its native publishing action separately.', ['action']);
@@ -237,7 +252,7 @@ export function resultMarkdown(report, { lang = 'es' } = {}) {
     if (check.id.includes('-asset-')) return 'Usar el archivo aprobado exacto; verificar los bytes si la fuente es remota o integrada.';
     if (check.id.includes('-crop-')) return 'Revisar encuadre, sujeto, distorsión y resolución según el ajuste aprobado.';
     if (check.id.includes('-alt-')) return 'Conservar la alternativa contextual de imagen aprobada.';
-    if (check.id.includes('-action')) return 'Mantener visible el enlace semántico con el texto y destino aprobados; revisar si otra capa lo cubre.';
+    if (check.id.includes('-action')) return 'Mantener visible cada acción con su elemento, texto y destino aprobados; revisar si otra capa lo cubre.';
     if (check.id.includes('-sticker-')) return 'Mantener texto e imágenes fuera del área reservada para el sticker nativo.';
     if (check.id.includes('-dimensions')) return 'Usar las dimensiones aprobadas para el arte exportado.';
     if (check.id.includes('-overflow')) return 'Comprobar que no haya desbordamiento horizontal.';
