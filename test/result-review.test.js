@@ -189,5 +189,7 @@ test('result review checks each declared action element, label and destination',
     assert.equal(status(await review('action-element', [{ ...good[0], tag: 'a', href: 'https://example.com/' }, good[1]]), 'mobile-action-quote'), 'fail');
     assert.equal(status(await review('action-href', [good[0], { ...good[1], href: 'https://example.com/other' }]), 'mobile-action-message'), 'fail');
     assert.equal(status(await review('action-missing', []), 'mobile-action-quote'), 'manual-review');
+    assert.equal(status(await review('action-offscreen', [{ ...good[0], occluded: null }, good[1]]), 'mobile-action-quote'), 'manual-review');
+    assert.equal(status(await review('action-offscreen-wrong', [{ ...good[0], tag: 'a', occluded: null }, good[1]]), 'mobile-action-quote'), 'fail');
   } finally { await rm(archive, { recursive: true, force: true }); await rm(fixture.root, { recursive: true, force: true }); }
 });

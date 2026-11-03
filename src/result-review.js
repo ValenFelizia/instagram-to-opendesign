@@ -115,9 +115,10 @@ export async function reviewResult(briefDir, input, { outputRoot } = {}) {
     for (const action of brief.request.actions ?? []) {
       const node = observed.actions?.find((item) => item.id === action.id);
       const label = brief.request.copy.find((item) => item.id === action.labelCopyId)?.text ?? '';
-      const good = node?.visible && !node.occluded && node.tag === (action.element === 'link' ? 'a' : 'button') &&
+      const matches = node?.visible && node.occluded !== true && node.tag === (action.element === 'link' ? 'a' : 'button') &&
         normalize(node.label) === normalize(label) && (action.element !== 'link' || node.href === action.url);
-      add(`${prefix}-action-${action.id}`, !node ? 'manual-review' : good ? 'pass' : 'fail',
+      // A null hit test (center outside the viewport) proves nothing; only a confirmed unobstructed control passes.
+      add(`${prefix}-action-${action.id}`, !node ? 'manual-review' : !matches ? 'fail' : node.occluded === false ? 'pass' : 'manual-review',
         `Keep the declared ${action.element}, exact approved label${action.element === 'link' ? ' and destination' : ''} visible.`, [action.id], node);
       if (node) for (const image of observed.assets.filter((item) => item.visible)) if (intersects(node.rect, image.rect)) add(`${prefix}-action-overlap-${action.id}-${image.id}`, 'fail', 'Selected direction requires separate action and image regions; review the overlap.', [action.id, image.id]);
     }
